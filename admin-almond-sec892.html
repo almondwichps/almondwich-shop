@@ -147,6 +147,9 @@
               <i class="fa-solid fa-receipt text-brand-500"></i>
               <span>รายการคำสั่งซื้อ</span>
             </h2>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-xs font-bold text-slate-500">กรองสถานะ:</span>
             <select id="orderStatusFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none">
               <option value="ACTIVE">⚡ ออเดอร์ปัจจุบัน (Active)</option>
               <option value="ALL">📋 ทั้งหมด (All)</option>
@@ -158,14 +161,35 @@
             </select>
           </div>
 
-          <div class="text-xs text-slate-500 flex items-center space-x-2">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span>อัปเดตสถานะแบบ Real-time</span>
+          <!-- View Switcher -->
+          <div class="flex items-center space-x-2">
+            <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+              <button id="btnViewCards" type="button" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-brand-600 transition flex items-center space-x-1.5 cursor-pointer">
+                <i class="fa-solid fa-address-card"></i>
+                <span>การ์ดจัดส่ง</span>
+              </button>
+              <button id="btnViewTable" type="button" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center space-x-1.5 cursor-pointer">
+                <i class="fa-solid fa-table-list"></i>
+                <span>ตาราง</span>
+              </button>
+            </div>
+            <div class="hidden sm:flex text-xs text-slate-500 items-center space-x-1.5 pl-1">
+              <span class="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span>Real-time</span>
+            </div>
           </div>
         </div>
 
-        <!-- Orders Table -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- 1. Mobile Order Cards (Default view for easy delivery on phone) -->
+        <div id="ordersCardsContainer" class="space-y-3">
+          <div class="py-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-500 mb-2"></i>
+            <p class="font-medium text-xs">กำลังโหลดรายการออเดอร์...</p>
+          </div>
+        </div>
+
+        <!-- 2. Desktop Orders Table (Optional on desktop) -->
+        <div id="ordersTableWrapper" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
               <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
@@ -792,10 +816,10 @@
       }
     }
 
-    // --- 4. Render: Orders Table + 1:1 LINE Chat Deep Link ---
+    // --- 4. Render: Orders Table + Mobile Delivery Cards + 1:1 LINE Chat Deep Link ---
     function renderOrdersTable() {
       var tbody = document.getElementById('ordersTableBody');
-      if (!tbody) return;
+      var cardsContainer = document.getElementById('ordersCardsContainer');
       var filterEl = document.getElementById('orderStatusFilter');
       var filter = filterEl ? filterEl.value : 'ACTIVE';
       var list = st.orders || [];
@@ -803,7 +827,8 @@
       else if (filter !== 'ALL') list = list.filter(function(o){ return o.status === filter; });
 
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-1"></i><p class="font-medium">ไม่พบรายการออเดอร์ในขณะนี้</p></td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-1"></i><p class="font-medium">ไม่พบรายการออเดอร์ในขณะนี้</p></td></tr>';
+        if (cardsContainer) cardsContainer.innerHTML = '<div class="py-12 text-center text-slate-400 bg-white rounded-2xl border border-slate-200"><i class="fa-solid fa-box-open text-3xl text-slate-300 mb-2"></i><p class="font-bold text-slate-600 text-sm">ไม่พบรายการออเดอร์ในขณะนี้</p><p class="text-xs text-slate-400 mt-0.5">เมื่อมีลูกค้าสั่งซื้อ ออเดอร์จะแสดงที่นี่ทันที</p></div>';
         return;
       }
 
@@ -817,60 +842,183 @@
 
       var botBasicId = (st.config && (st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID)) ? String(st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID).trim() : '';
 
-      tbody.innerHTML = list.map(function(o) {
-        var items = Array.isArray(o.items) ? o.items.map(function(i){
-          var noteBadge = (i.note && String(i.note).trim()) ? ('<br><span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block mt-0.5"><i class="fa-solid fa-pen-nib text-amber-600 mr-1"></i>' + String(i.note).trim() + '</span>') : '';
-          return '<div class="py-0.5"><span class="font-semibold text-slate-800">' + (i.name||i.id) + '</span> <span class="font-bold text-brand-600">x' + i.qty + '</span>' + noteBadge + '</div>';
-        }).join('<div class="my-1 border-t border-slate-100"></div>') : (o.items||'');
-        var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold cursor-pointer" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
-        
-        // 💬 1:1 LINE Chat Deep Link
-        var chatLink = '';
-        if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
-          if (botBasicId) {
-            var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
-            chatLink = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1 bg-green-50 hover:bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold border border-green-200 transition"><i class="fa-brands fa-line text-green-600"></i><span>ทักแชต</span></a>';
-          } else {
-            chatLink = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"><i class="fa-brands fa-line"></i><span>ทักแชต</span></button>';
+      // --- 4.1 Render Desktop Table Body ---
+      if (tbody) {
+        tbody.innerHTML = list.map(function(o) {
+          var items = Array.isArray(o.items) ? o.items.map(function(i){
+            var noteBadge = (i.note && String(i.note).trim()) ? ('<br><span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block mt-0.5"><i class="fa-solid fa-pen-nib text-amber-600 mr-1"></i>' + String(i.note).trim() + '</span>') : '';
+            return '<div class="py-0.5"><span class="font-semibold text-slate-800">' + (i.name||i.id) + '</span> <span class="font-bold text-brand-600">x' + i.qty + '</span>' + noteBadge + '</div>';
+          }).join('<div class="my-1 border-t border-slate-100"></div>') : (o.items||'');
+          var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold cursor-pointer" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
+          
+          var chatLink = '';
+          if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
+            if (botBasicId) {
+              var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
+              chatLink = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1 bg-green-50 hover:bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold border border-green-200 transition"><i class="fa-brands fa-line text-green-600"></i><span>ทักแชต</span></a>';
+            } else {
+              chatLink = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"><i class="fa-brands fa-line"></i><span>ทักแชต</span></button>';
+            }
           }
-        }
 
-        // Customer name with nickname
-        var custNameHtml = '<div class="font-bold text-slate-900">' + (o.customerNickname ? ('<span class="text-brand-600 font-extrabold">' + o.customerNickname + '</span><br><span class="text-[10px] text-slate-400 font-normal">(' + (o.customerName||'ลูกค้า') + ')</span>') : (o.customerName||'ลูกค้า')) + '</div>';
-        if (chatLink) custNameHtml += '<div class="mt-1">' + chatLink + '</div>';
+          var custNameHtml = '<div class="font-bold text-slate-900">' + (o.customerNickname ? ('<span class="text-brand-600 font-extrabold">' + o.customerNickname + '</span><br><span class="text-[10px] text-slate-400 font-normal">(' + (o.customerName||'ลูกค้า') + ')</span>') : (o.customerName||'ลูกค้า')) + '</div>';
+          if (chatLink) custNameHtml += '<div class="mt-1">' + chatLink + '</div>';
 
-        // Delivery details & Direct phone call button
-        var deliveryHtml = '<div class="text-xs space-y-1">';
-        if (o.deliveryLocation) {
-          deliveryHtml += '<div class="font-semibold text-slate-800 flex items-start space-x-1"><i class="fa-solid fa-location-dot text-brand-500 mt-0.5 shrink-0"></i><span>' + o.deliveryLocation + '</span></div>';
-        } else {
-          deliveryHtml += '<span class="text-slate-400">-</span>';
-        }
-        if (o.phoneNumber) {
-          deliveryHtml += '<div><a href="tel:' + o.phoneNumber + '" class="inline-flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 transition"><i class="fa-solid fa-phone text-blue-600"></i><span>' + o.phoneNumber + '</span></a></div>';
-        }
-        if (o.deliveryNote) {
-          deliveryHtml += '<div class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-0.5"><i class="fa-solid fa-comment-dots text-amber-600 mr-1"></i>' + o.deliveryNote + '</div>';
-        }
-        deliveryHtml += '</div>';
+          var deliveryHtml = '<div class="text-xs space-y-1">';
+          if (o.deliveryLocation) {
+            deliveryHtml += '<div class="font-semibold text-slate-800 flex items-start space-x-1"><i class="fa-solid fa-location-dot text-brand-500 mt-0.5 shrink-0"></i><span>' + o.deliveryLocation + '</span></div>';
+          } else {
+            deliveryHtml += '<span class="text-slate-400">-</span>';
+          }
+          if (o.phoneNumber) {
+            deliveryHtml += '<div><a href="tel:' + o.phoneNumber + '" class="inline-flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 transition"><i class="fa-solid fa-phone text-blue-600"></i><span>' + o.phoneNumber + '</span></a></div>';
+          }
+          if (o.deliveryNote) {
+            deliveryHtml += '<div class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-0.5"><i class="fa-solid fa-comment-dots text-amber-600 mr-1"></i>' + o.deliveryNote + '</div>';
+          }
+          deliveryHtml += '</div>';
 
-        var confirm_btn = o.status === 'Pending' ? '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Paid">ยืนยัน</button>' : '';
-        var deliver_btn = (o.status === 'Paid' || o.status === 'COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
-        var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
-        
-        return '<tr class="hover:bg-slate-50 transition">' +
-          '<td class="py-3 px-4 font-mono font-bold">' + (o.orderId||'') + '<br><span class="text-[10px] text-slate-400 font-normal">' + (o.timestamp||'') + '</span></td>' +
-          '<td class="py-3 px-4">' + custNameHtml + '</td>' +
-          '<td class="py-3 px-4">' + deliveryHtml + '</td>' +
-          '<td class="py-3 px-4 text-slate-600">' + items + '</td>' +
-          '<td class="py-3 px-4 text-center font-bold">' + (o.totalQty||0) + '</td>' +
-          '<td class="py-3 px-4 text-right font-bold text-brand-600">' + (o.totalPrice||0) + ' ฿</td>' +
-          '<td class="py-3 px-4 text-center font-medium">' + (o.paymentMethod||'') + '</td>' +
-          '<td class="py-3 px-4 text-center">' + slip + '</td>' +
-          '<td class="py-3 px-4 text-center">' + (statusMap[o.status]||o.status) + '</td>' +
-          '<td class="py-3 px-4 text-center space-x-1">' + confirm_btn + ' ' + deliver_btn + ' ' + cancel_btn + '</td>' +
-        '</tr>';
-      }).join('');
+          var confirm_btn = o.status === 'Pending' ? '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Paid">ยืนยัน</button>' : '';
+          var deliver_btn = (o.status === 'Paid' || o.status === 'COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
+          var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
+          
+          return '<tr class="hover:bg-slate-50 transition">' +
+            '<td class="py-3 px-4 font-mono font-bold">' + (o.orderId||'') + '<br><span class="text-[10px] text-slate-400 font-normal">' + (o.timestamp||'') + '</span></td>' +
+            '<td class="py-3 px-4">' + custNameHtml + '</td>' +
+            '<td class="py-3 px-4">' + deliveryHtml + '</td>' +
+            '<td class="py-3 px-4 text-slate-600">' + items + '</td>' +
+            '<td class="py-3 px-4 text-center font-bold">' + (o.totalQty||0) + '</td>' +
+            '<td class="py-3 px-4 text-right font-bold text-brand-600">' + (o.totalPrice||0) + ' ฿</td>' +
+            '<td class="py-3 px-4 text-center font-medium">' + (o.paymentMethod||'') + '</td>' +
+            '<td class="py-3 px-4 text-center">' + slip + '</td>' +
+            '<td class="py-3 px-4 text-center">' + (statusMap[o.status]||o.status) + '</td>' +
+            '<td class="py-3 px-4 text-center space-x-1">' + confirm_btn + ' ' + deliver_btn + ' ' + cancel_btn + '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // --- 4.2 Render Mobile-First Delivery Cards ---
+      if (cardsContainer) {
+        cardsContainer.innerHTML = list.map(function(o) {
+          var itemsMobile = Array.isArray(o.items) ? o.items.map(function(i){
+            var noteHtml = (i.note && String(i.note).trim())
+              ? ('<div class="text-[11px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 inline-flex items-center space-x-1 mt-1"><i class="fa-solid fa-pen-nib text-amber-600"></i><span>' + String(i.note).trim() + '</span></div>')
+              : '';
+            return '<div class="flex items-start justify-between py-1.5 border-b border-slate-100 last:border-none">' +
+              '<div class="flex-1 pr-2">' +
+                '<div class="font-bold text-slate-800 text-xs">' + (i.name||i.id) + '</div>' +
+                noteHtml +
+              '</div>' +
+              '<span class="font-extrabold text-brand-600 text-xs shrink-0">x' + i.qty + '</span>' +
+            '</div>';
+          }).join('') : ('<div class="text-xs text-slate-600">' + (o.items||'') + '</div>');
+
+          var badgeBg = 'bg-slate-100 text-slate-700';
+          var badgeText = o.status;
+          if (o.status === 'Pending') { badgeBg = 'bg-amber-100 text-amber-800 border-amber-200'; badgeText = '⏳ รอตรวจสอบ'; }
+          else if (o.status === 'Paid') { badgeBg = 'bg-blue-100 text-blue-800 border-blue-200'; badgeText = '💳 ชำระแล้ว'; }
+          else if (o.status === 'COD') { badgeBg = 'bg-purple-100 text-purple-800 border-purple-200'; badgeText = '📦 ปลายทาง'; }
+          else if (o.status === 'Delivered') { badgeBg = 'bg-green-100 text-green-800 border-green-200'; badgeText = '✅ ส่งแล้ว'; }
+          else if (o.status === 'Cancelled') { badgeBg = 'bg-red-100 text-red-800 border-red-200'; badgeText = '❌ ยกเลิก'; }
+
+          var slipHtml = o.slipUrl 
+            ? ('<button type="button" class="slip-btn inline-flex items-center space-x-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded-xl border border-blue-200 text-xs cursor-pointer shadow-sm active:scale-95" data-slip="' + o.slipUrl + '"><i class="fa-solid fa-receipt text-blue-500"></i><span>ดูสลิปโอน</span></button>') 
+            : '';
+
+          var chatLinkMobile = '';
+          if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
+            if (botBasicId) {
+              var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
+              chatLinkMobile = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition"><i class="fa-brands fa-line text-sm"></i><span>แชต LINE</span></a>';
+            } else {
+              chatLinkMobile = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1.5 bg-slate-100 text-slate-500 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer"><i class="fa-brands fa-line"></i><span>แชต LINE</span></button>';
+            }
+          }
+
+          var actionButtonsMobile = '';
+          if (o.status === 'Pending') {
+            actionButtonsMobile = 
+              '<div class="space-y-2 pt-2 border-t border-slate-100">' +
+                '<button type="button" class="order-status-btn w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold py-3 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Paid">' +
+                  '<i class="fa-solid fa-check text-base"></i><span>ยืนยันได้รับเงินแล้ว</span>' +
+                '</button>' +
+                '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
+                  '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
+                '</button>' +
+              '</div>';
+          } else if (o.status === 'Paid' || o.status === 'COD') {
+            actionButtonsMobile = 
+              '<div class="space-y-2 pt-2 border-t border-slate-100">' +
+                '<button type="button" class="order-status-btn w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Delivered">' +
+                  '<i class="fa-solid fa-motorcycle text-lg"></i><span>จัดส่งถึงมือแล้ว (ส่งสำเร็จ)</span>' +
+                '</button>' +
+                '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
+                  '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
+                '</button>' +
+              '</div>';
+          } else if (o.status === 'Delivered') {
+            actionButtonsMobile = 
+              '<div class="pt-2 border-t border-slate-100">' +
+                '<div class="w-full bg-green-50 text-green-700 border border-green-200 py-3 rounded-xl font-bold text-xs text-center flex items-center justify-center space-x-1.5">' +
+                  '<i class="fa-solid fa-circle-check text-green-600 text-sm"></i><span>จัดส่งถึงมือเรียบร้อยแล้ว</span>' +
+                '</div>' +
+              '</div>';
+          } else {
+            actionButtonsMobile = 
+              '<div class="pt-2 border-t border-slate-100">' +
+                '<div class="w-full bg-slate-100 text-slate-500 py-2.5 rounded-xl font-medium text-xs text-center">' +
+                  '<span>ออเดอร์นี้ถูกยกเลิกแล้ว</span>' +
+                '</div>' +
+              '</div>';
+          }
+
+          return '<div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">' +
+            '<div class="flex items-center justify-between border-b border-slate-100 pb-2.5">' +
+              '<div>' +
+                '<div class="font-mono font-black text-xs sm:text-sm text-slate-900">' + (o.orderId||'') + '</div>' +
+                '<div class="text-[10px] text-slate-400">' + (o.timestamp||'') + '</div>' +
+              '</div>' +
+              '<span class="px-2.5 py-1 rounded-xl text-[11px] font-extrabold border ' + badgeBg + '">' + badgeText + '</span>' +
+            '</div>' +
+
+            '<div class="bg-gradient-to-r from-brand-50/60 to-amber-50/40 border border-brand-100 rounded-xl p-3 space-y-2">' +
+              '<div class="flex items-start justify-between">' +
+                '<div>' +
+                  '<span class="text-[10px] font-bold text-slate-400 block uppercase">ผู้รับของ:</span>' +
+                  '<span class="text-sm sm:text-base font-black text-brand-700">' + (o.customerNickname || o.customerName || 'คุณลูกค้า') + '</span>' +
+                  (o.customerNickname ? (' <span class="text-[11px] text-slate-500 font-normal">(' + (o.customerName||'') + ')</span>') : '') +
+                '</div>' +
+                (chatLinkMobile ? ('<div class="shrink-0">' + chatLinkMobile + '</div>') : '') +
+              '</div>' +
+
+              '<div class="text-xs font-bold text-slate-800 flex items-start space-x-1.5 pt-0.5">' +
+                '<i class="fa-solid fa-location-dot text-brand-600 text-sm mt-0.5 shrink-0"></i>' +
+                '<span class="text-slate-900 leading-tight">' + (o.deliveryLocation || '-') + '</span>' +
+              '</div>' +
+
+              (o.deliveryNote ? ('<div class="text-[11px] text-amber-900 bg-amber-100/70 px-2 py-1 rounded-lg border border-amber-200/80"><i class="fa-solid fa-comment-dots text-amber-600 mr-1"></i>' + o.deliveryNote + '</div>') : '') +
+
+              (o.phoneNumber ? ('<div class="pt-1"><a href="tel:' + o.phoneNumber + '" class="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow-sm transition active:scale-[0.99]"><i class="fa-solid fa-phone"></i><span>โทรหาลูกค้า: ' + o.phoneNumber + '</span></a></div>') : '') +
+            '</div>' +
+
+            '<div class="bg-slate-50 rounded-xl p-3 border border-slate-100">' +
+              '<div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">รายการแซนวิช:</div>' +
+              itemsMobile +
+            '</div>' +
+
+            '<div class="flex items-center justify-between pt-1 text-xs">' +
+              '<div>' +
+                '<span class="text-slate-500 text-[11px]">ยอดรวม: </span>' +
+                '<span class="font-black text-brand-600 text-sm sm:text-base">' + (o.totalPrice||0) + ' ฿</span>' +
+                '<span class="text-[11px] text-slate-400 ml-1">(' + (o.totalQty||0) + ' กล่อง • ' + (o.paymentMethod||'') + ')</span>' +
+              '</div>' +
+              (slipHtml ? ('<div>' + slipHtml + '</div>') : '') +
+            '</div>' +
+
+            actionButtonsMobile +
+          '</div>';
+        }).join('');
+      }
     }
 
     // --- 5. Render: Prep BOM ---
@@ -886,9 +1034,28 @@
           l1.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการที่ต้องผลิต</p>';
         } else {
           l1.innerHTML = mKeys.map(function(k){
-            return '<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">' +
-              '<span class="font-bold text-slate-700 text-xs">' + k + '</span>' +
-              '<span class="bg-blue-100 text-blue-800 font-black px-2.5 py-0.5 rounded-lg text-xs">' + p.layer1Menu[k] + ' กล่อง</span>' +
+            var itemData = p.layer1Menu[k];
+            var total = (typeof itemData === 'object' && itemData !== null) ? (itemData.totalQty || 0) : itemData;
+            var breakdownHtml = '';
+            if (typeof itemData === 'object' && itemData !== null && Array.isArray(itemData.orderBreakdown) && itemData.orderBreakdown.length > 0) {
+              breakdownHtml = '<div class="mt-2.5 pt-2 border-t border-slate-200/70 space-y-1.5 text-xs">' +
+                itemData.orderBreakdown.map(function(b) {
+                  var noteBadge = (b.note && String(b.note).trim()) 
+                    ? (' <span class="text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 text-[11px] font-medium"><i class="fa-solid fa-pen-nib text-amber-600 mr-1"></i>' + b.note + '</span>') 
+                    : '';
+                  return '<div class="flex items-center justify-between text-slate-600 bg-white px-2.5 py-1.5 rounded-xl border border-slate-100">' +
+                    '<div><span class="font-bold text-slate-800">' + b.customer + '</span>' + noteBadge + '</div>' +
+                    '<span class="font-extrabold text-brand-600 shrink-0 ml-2">x' + b.qty + '</span>' +
+                  '</div>';
+                }).join('') +
+              '</div>';
+            }
+            return '<div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">' +
+              '<div class="flex items-center justify-between">' +
+                '<span class="font-bold text-slate-800 text-xs sm:text-sm">' + k + '</span>' +
+                '<span class="bg-blue-100 text-blue-800 font-black px-2.5 py-1 rounded-xl text-xs sm:text-sm">' + total + ' กล่อง</span>' +
+              '</div>' +
+              breakdownHtml +
             '</div>';
           }).join('');
         }
@@ -897,14 +1064,38 @@
       var l2 = document.getElementById('prepIngredientsSummaryList');
       if (l2) {
         var iKeys = Object.keys(p.layer2Ingredients || {});
+        // Filter out non-ingredient keys
+        var excludedKeys = ['image_url', 'description', 'menu_id', 'menu_name', 'price', 'status'];
+        iKeys = iKeys.filter(function(k) {
+          return !excludedKeys.includes(k.toLowerCase());
+        });
+
         if (!iKeys.length) {
           l2.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการวัตถุดิบ</p>';
         } else {
-          var labelMap = { bread:'ขนมปัง (แผ่น)', eggs:'ไข่ไก่ (ฟอง)', sausages:'ไส้กรอก (ชิ้น)', crabsticks:'ปูอัด (ชิ้น)', boxes:'กล่องบรรจุ (ใบ)' };
+          var labelMap = {
+            'Bread_slice': 'ขนมปัง (แผ่น)',
+            'bread_slice': 'ขนมปัง (แผ่น)',
+            'bread': 'ขนมปัง (แผ่น)',
+            'Egg_ea': 'ไข่ไก่ (ฟอง)',
+            'egg_ea': 'ไข่ไก่ (ฟอง)',
+            'eggs': 'ไข่ไก่ (ฟอง)',
+            'Sausage_ea': 'ไส้กรอก (ชิ้น)',
+            'sausage_ea': 'ไส้กรอก (ชิ้น)',
+            'sausages': 'ไส้กรอก (ชิ้น)',
+            'Crabstick_ea': 'ปูอัด (ชิ้น)',
+            'crabstick_ea': 'ปูอัด (ชิ้น)',
+            'crabsticks': 'ปูอัด (ชิ้น)',
+            'Box_ea': 'กล่องบรรจุ (ใบ)',
+            'box_ea': 'กล่องบรรจุ (ใบ)',
+            'boxes': 'กล่องบรรจุ (ใบ)'
+          };
+
           l2.innerHTML = iKeys.map(function(k){
-            return '<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">' +
-              '<span class="font-bold text-slate-700 text-xs">' + (labelMap[k]||k) + '</span>' +
-              '<span class="bg-amber-100 text-amber-800 font-black px-2.5 py-0.5 rounded-lg text-xs">' + p.layer2Ingredients[k] + '</span>' +
+            var thaiName = labelMap[k] || k;
+            return '<div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200">' +
+              '<span class="font-bold text-slate-700 text-xs sm:text-sm">' + thaiName + '</span>' +
+              '<span class="bg-amber-100 text-amber-800 font-black px-3 py-1 rounded-xl text-xs sm:text-sm">' + p.layer2Ingredients[k] + '</span>' +
             '</div>';
           }).join('');
         }
@@ -1104,45 +1295,75 @@
       const filterEl = document.getElementById('orderStatusFilter');
       if (filterEl) filterEl.addEventListener('change', renderOrdersTable);
 
-      // Event Delegation: Orders Table Buttons (Slip, Status, Prompt Bot ID)
-      const ordersTbody = document.getElementById('ordersTableBody');
-      if (ordersTbody) {
-        ordersTbody.addEventListener('click', async function(e) {
-          var slipBtn = e.target.closest('.slip-btn');
-          if (slipBtn) {
-            var url = slipBtn.getAttribute('data-slip');
-            var modal = document.getElementById('slipModal');
-            var img = document.getElementById('modalSlipImg');
-            var link = document.getElementById('modalSlipDirectLink');
-            if (img) img.src = url;
-            if (link) link.href = url;
-            if (modal) modal.classList.remove('hidden');
-            return;
-          }
+      // View Switcher (Cards vs Table)
+      var btnViewCards = document.getElementById('btnViewCards');
+      var btnViewTable = document.getElementById('btnViewTable');
+      var cardCont = document.getElementById('ordersCardsContainer');
+      var tableCont = document.getElementById('ordersTableWrapper');
 
-          var statusBtn = e.target.closest('.order-status-btn');
-          if (statusBtn) {
-            var oId = statusBtn.getAttribute('data-order-id');
-            var newSt = statusBtn.getAttribute('data-status');
-            if (confirm('ต้องการเปลี่ยนสถานะออเดอร์ ' + oId + ' เป็น "' + newSt + '"?')) {
-              try {
-                await adminApi('updateOrderStatus', { orderId: oId, status: newSt });
-                loadAllAdminData();
-              } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
-            }
-            return;
-          }
-
-          var botBtn = e.target.closest('.btn-prompt-bot-id');
-          if (botBtn) {
-            alert('กรุณาระบุ LINE OA Basic ID ในแท็บ "4. ตั้งค่าร้านค้า" ก่อนใช้งานปุ่มทักแชต 1:1');
-            switchTab('settings');
-            var el = document.getElementById('cfg_Line_Bot_Basic_ID');
-            if (el) el.focus();
-            return;
-          }
+      if (btnViewCards) {
+        btnViewCards.addEventListener('click', function() {
+          btnViewCards.className = "px-3 py-1.5 rounded-lg bg-white shadow-sm text-brand-600 transition flex items-center space-x-1.5 cursor-pointer";
+          if (btnViewTable) btnViewTable.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center space-x-1.5 cursor-pointer";
+          if (cardCont) cardCont.classList.remove('hidden');
+          if (tableCont) tableCont.classList.add('hidden');
         });
       }
+
+      if (btnViewTable) {
+        btnViewTable.addEventListener('click', function() {
+          if (btnViewCards) btnViewCards.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition flex items-center space-x-1.5 cursor-pointer";
+          btnViewTable.className = "px-3 py-1.5 rounded-lg bg-white shadow-sm text-brand-600 transition flex items-center space-x-1.5 cursor-pointer";
+          if (cardCont) cardCont.classList.add('hidden');
+          if (tableCont) tableCont.classList.remove('hidden');
+        });
+      }
+
+      // Event Delegation: Orders Action Buttons (Slip, Status, Prompt Bot ID) on both Cards & Table
+      var handleOrderAction = async function(e) {
+        var slipBtn = e.target.closest('.slip-btn');
+        if (slipBtn) {
+          var url = slipBtn.getAttribute('data-slip');
+          var modal = document.getElementById('slipModal');
+          var img = document.getElementById('modalSlipImg');
+          var link = document.getElementById('modalSlipDirectLink');
+          if (img) img.src = url;
+          if (link) link.href = url;
+          if (modal) modal.classList.remove('hidden');
+          return;
+        }
+
+        var statusBtn = e.target.closest('.order-status-btn');
+        if (statusBtn) {
+          var oId = statusBtn.getAttribute('data-order-id');
+          var newSt = statusBtn.getAttribute('data-status');
+          var confirmMsg = (newSt === 'Delivered')
+            ? ('ยืนยันว่าจัดส่งออเดอร์ ' + oId + ' ถึงมือลูกค้าสำเร็จแล้วใช่หรือไม่?\n(ระบบจะมอบแต้มสะสมให้ลูกค้าทันที)')
+            : ('ต้องการเปลี่ยนสถานะออเดอร์ ' + oId + ' เป็น "' + newSt + '"?');
+
+          if (confirm(confirmMsg)) {
+            try {
+              await adminApi('updateOrderStatus', { orderId: oId, status: newSt });
+              loadAllAdminData();
+            } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+          }
+          return;
+        }
+
+        var botBtn = e.target.closest('.btn-prompt-bot-id');
+        if (botBtn) {
+          alert('กรุณาระบุ LINE OA Basic ID ในแท็บ "4. ตั้งค่าร้านค้า" ก่อนใช้งานปุ่มทักแชต 1:1');
+          switchTab('settings');
+          var el = document.getElementById('cfg_Line_Bot_Basic_ID');
+          if (el) el.focus();
+          return;
+        }
+      };
+
+      const ordersTbody = document.getElementById('ordersTableBody');
+      if (ordersTbody) ordersTbody.addEventListener('click', handleOrderAction);
+      const ordersCards = document.getElementById('ordersCardsContainer');
+      if (ordersCards) ordersCards.addEventListener('click', handleOrderAction);
 
       // Close Slip Modal
       var closeSlip = function() { document.getElementById('slipModal').classList.add('hidden'); };
