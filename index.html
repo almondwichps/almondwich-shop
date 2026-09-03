@@ -1022,17 +1022,12 @@
       }
     }
 
-    // 4. MAIN INITIALIZATION & EVENT BINDINGS
     function initCustomerApp() {
-      // Immediate render from injected server data (0ms)
-      if (serverMenus && Array.isArray(serverMenus) && serverMenus.length > 0) {
-        onMenusLoaded(serverMenus);
-      } else {
-        onMenusLoaded(DEFAULT_MENUS);
-      }
+      // Immediate render from available state/defaults
+      onMenusLoaded(state.availableMenus || DEFAULT_MENUS);
 
-      if (serverConfig && (serverConfig.success || serverConfig.storeTitle || serverConfig.Store_Title)) {
-        updateStoreStatusUI(serverConfig);
+      if (state.config) {
+        updateStoreStatusUI(state.config);
       }
 
       // Event Delegation for Qty + and - buttons
