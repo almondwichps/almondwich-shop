@@ -50,8 +50,13 @@
       </div>
       <form id="pinForm" class="space-y-4">
         <div>
-          <input type="password" id="inputAdminPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autofocus required
-            class="w-full text-center text-3xl tracking-[0.4em] font-mono font-bold bg-slate-50 border-2 border-slate-200 focus:border-brand-500 focus:bg-white rounded-2xl py-3 px-4 outline-none transition">
+          <div class="relative flex items-center">
+            <input type="password" id="inputAdminPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autofocus required
+              class="w-full text-center text-3xl tracking-[0.4em] font-mono font-bold bg-slate-50 border-2 border-slate-200 focus:border-brand-500 focus:bg-white rounded-2xl py-3 pl-10 pr-10 outline-none transition">
+            <button type="button" id="btnTogglePin" class="absolute right-3 text-slate-400 hover:text-slate-600 p-2 text-base focus:outline-none cursor-pointer" title="แสดง/ซ่อนรหัส PIN">
+              <i id="eyeIcon" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
           <p id="pinErrorMsg" class="hidden text-xs text-red-500 font-bold mt-2"></p>
         </div>
         <button type="submit" id="btnSubmitPin" class="w-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
@@ -898,6 +903,22 @@
             return;
           }
           handlePinLogin(pin);
+        });
+      }
+
+      // Toggle PIN visibility button
+      const btnToggle = document.getElementById('btnTogglePin');
+      const inputPin = document.getElementById('inputAdminPin');
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (btnToggle && inputPin && eyeIcon) {
+        btnToggle.addEventListener('click', function() {
+          if (inputPin.type === 'password') {
+            inputPin.type = 'text';
+            eyeIcon.className = 'fa-solid fa-eye-slash text-brand-500';
+          } else {
+            inputPin.type = 'password';
+            eyeIcon.className = 'fa-solid fa-eye';
+          }
         });
       }
 
