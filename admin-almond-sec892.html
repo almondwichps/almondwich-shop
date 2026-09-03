@@ -9,6 +9,15 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <link rel="manifest" href="manifest-admin.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Almond Admin">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="https://img.icons8.com/color/192/sandwich.png">
+  <link rel="icon" type="image/png" href="https://img.icons8.com/color/96/sandwich.png">
+
   <script>
     tailwind.config = {
       theme: {
@@ -91,6 +100,11 @@
 
         <!-- Quick Action Buttons -->
         <div class="flex items-center space-x-2">
+          <button id="btn-install-pwa" type="button" title="ติดตั้งแอปลงมือถือ" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-mobile-screen"></i>
+            <span class="hidden sm:inline">โหลดแอปลงจอ</span>
+          </button>
+
           <button id="btn-refresh" type="button" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 transition flex items-center space-x-1.5 cursor-pointer">
             <i class="fa-solid fa-rotate"></i>
             <span class="hidden sm:inline">รีเฟรช</span>
@@ -528,6 +542,108 @@
     </div>
   </div>
 
+  <!-- LINE CHAT HELPER MODAL -->
+  <div id="lineChatModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+          <i class="fa-brands fa-line text-green-500 text-xl"></i>
+          <span>ทักแชตลูกค้าผ่าน LINE</span>
+        </h3>
+        <button id="btn-close-chat-modal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs space-y-1">
+        <div class="text-slate-500 text-[11px]">ลูกค้าที่สั่งซื้อ:</div>
+        <div id="chatModalCustName" class="font-bold text-sm text-slate-800"></div>
+        <div id="chatModalCustPhone" class="text-slate-600 text-xs"></div>
+      </div>
+
+      <div class="space-y-2">
+        <a id="chatModalWebBtn" href="#" target="_blank" class="w-full bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow transition">
+          <i class="fa-brands fa-line text-base"></i>
+          <span>เปิด LINE OA Manager (เว็บแชต)</span>
+        </a>
+
+        <button id="chatModalCopyBtn" type="button" class="w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 border border-slate-200 transition cursor-pointer">
+          <i class="fa-solid fa-copy text-slate-500"></i>
+          <span id="chatModalCopyText">คัดลอกชื่อลูกค้าเพื่อค้นหาในแอป LINE</span>
+        </button>
+
+        <a id="chatModalCallBtn" href="#" class="w-full bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 border border-blue-200 transition">
+          <i class="fa-solid fa-phone text-blue-600"></i>
+          <span id="chatModalCallText">โทรหาลูกค้าโดยตรง</span>
+        </a>
+      </div>
+
+      <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+        <div class="font-bold flex items-center space-x-1 mb-1 text-amber-800">
+          <i class="fa-solid fa-circle-info text-amber-600"></i>
+          <span>ข้อควรรู้เกี่ยวกับ LINE Official Account:</span>
+        </div>
+        ตามนโยบายความเป็นส่วนตัวของ LINE แอดมินร้านจะเปิดห้องแชทได้ ก็ต่อเมื่อ <strong>ลูกค้าเคยส่งข้อความหา LINE OA ของร้านมาก่อน</strong> หากลูกค้ายังไม่เคยพิมพ์ทักแชตมา ในระบบ LINE OA จะยังไม่มีประวัติห้องแชท แนะนำให้กดปุ่ม <strong>"โทรหาลูกค้า"</strong> แทนครับ
+      </div>
+
+      <div class="pt-1">
+        <button id="btn-close-chat-modal2" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold py-2 rounded-xl text-xs cursor-pointer">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA INSTALL INSTRUCTIONS MODAL -->
+  <div id="pwaInstallModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+          <span class="text-xl">🥪</span>
+          <span>ติดตั้งแอปลงบนหน้าจอมือถือ</span>
+        </h3>
+        <button id="btn-close-pwa-modal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-600 space-y-3">
+        <p class="leading-relaxed">ติดตั้งหน้าร้านไว้บนหน้าจอ เพื่อเปิดดูออเดอร์และส่งของได้ทันที เหมือนแอปทั่วไป โดยไม่ต้องพิมพ์ลิงก์และไม่ต้องกรอกรหัสใหม่ทุกครั้ง!</p>
+
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+          <div class="font-bold text-slate-800 flex items-center space-x-1.5 text-xs text-brand-600">
+            <i class="fa-brands fa-apple text-base"></i>
+            <span>สำหรับ iPhone / iPad (Safari)</span>
+          </div>
+          <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-600">
+            <li>เปิดหน้านี้ด้วยเบราว์เซอร์ <strong>Safari</strong></li>
+            <li>แตะปุ่ม <strong>แชร์</strong> (ไอคอนสี่เหลี่ยมลูกศรชี้ขึ้น <i class="fa-solid fa-arrow-up-from-bracket"></i> ด้านล่าง)</li>
+            <li>เลื่อนลงมาแล้วเลือก <strong>"เพิ่มไปยังหน้าจอโฮม (Add to Home Screen)"</strong> <i class="fa-solid fa-plus-square"></i></li>
+            <li>แตะ <strong>"เพิ่ม (Add)"</strong> มุมขวาบน จะได้ไอคอนแอปบนหน้าจอทันที</li>
+          </ol>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+          <div class="font-bold text-slate-800 flex items-center space-x-1.5 text-xs text-green-600">
+            <i class="fa-brands fa-android text-base"></i>
+            <span>สำหรับ Android (Chrome)</span>
+          </div>
+          <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-600">
+            <li>เปิดหน้านี้ด้วย <strong>Google Chrome</strong></li>
+            <li>แตะปุ่ม <strong>จุด 3 จุด (⋮)</strong> มุมขวาบน</li>
+            <li>เลือก <strong>"ติดตั้งแอป (Install app)"</strong> หรือ <strong>"เพิ่มลงในหน้าจอหลัก"</strong></li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="pt-1">
+        <button id="btn-close-pwa-modal2" type="button" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs shadow cursor-pointer">
+          เข้าใจแล้ว
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MENU ADD/EDIT MODAL -->
   <div id="menuModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
@@ -712,7 +828,7 @@
 
     // --- 1. REST API Helper (No Content-Type Header to prevent CORS Preflight) ---
     async function adminApi(action, payload) {
-      const pin = sessionStorage.getItem('admin_pin') || '';
+      const pin = localStorage.getItem('almond_admin_pin') || sessionStorage.getItem('admin_pin') || '';
       const bodyObj = Object.assign({ action: action, pin: pin }, payload || {});
       try {
         const res = await fetch(GAS_API_URL, {
@@ -722,6 +838,7 @@
         });
         const data = await res.json();
         if (data && data.error === 'unauthorized') {
+          localStorage.removeItem('almond_admin_pin');
           sessionStorage.removeItem('admin_pin');
           showPinGate(true, 'รหัส PIN ไม่ถูกต้องหรือเซสชันหมดอายุ กรุณากรอกรหัสใหม่อีกครั้ง');
           throw new Error('Unauthorized');
@@ -780,11 +897,14 @@
         const data = await res.json();
 
         if (data && data.success) {
+          localStorage.setItem('almond_admin_pin', pin);
           sessionStorage.setItem('admin_pin', pin);
           showPinGate(false);
           loadAllAdminData();
           runDiagnostics();
         } else {
+          localStorage.removeItem('almond_admin_pin');
+          sessionStorage.removeItem('admin_pin');
           showPinGate(true, data.message || "รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
         }
       } catch (err) {
@@ -844,6 +964,13 @@
 
       var botBasicId = (st.config && (st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID)) ? String(st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID).trim() : '';
 
+      var formatPhone = function(p) {
+        if (!p) return '';
+        var s = String(p).trim().replace(/[^\d]/g, '');
+        if (s.length === 9 && !s.startsWith('0')) s = '0' + s;
+        return s;
+      };
+
       // --- 4.1 Render Desktop Table Body ---
       if (tbody) {
         tbody.innerHTML = list.map(function(o) {
@@ -855,25 +982,21 @@
           
           var chatLink = '';
           if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
-            if (botBasicId) {
-              var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
-              chatLink = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1 bg-green-50 hover:bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold border border-green-200 transition"><i class="fa-brands fa-line text-green-600"></i><span>ทักแชต</span></a>';
-            } else {
-              chatLink = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"><i class="fa-brands fa-line"></i><span>ทักแชต</span></button>';
-            }
+            chatLink = '<button type="button" class="btn-line-chat-modal inline-flex items-center space-x-1 bg-green-50 hover:bg-green-100 active:bg-green-200 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold border border-green-200 transition cursor-pointer" data-uid="' + o.lineUid + '" data-name="' + (o.customerNickname || o.customerName || 'ลูกค้า') + '" data-phone="' + phoneStr + '"><i class="fa-brands fa-line text-green-600"></i><span>ทักแชต</span></button>';
           }
 
           var custNameHtml = '<div class="font-bold text-slate-900">' + (o.customerNickname ? ('<span class="text-brand-600 font-extrabold">' + o.customerNickname + '</span><br><span class="text-[10px] text-slate-400 font-normal">(' + (o.customerName||'ลูกค้า') + ')</span>') : (o.customerName||'ลูกค้า')) + '</div>';
           if (chatLink) custNameHtml += '<div class="mt-1">' + chatLink + '</div>';
 
+          var phoneStr = formatPhone(o.phoneNumber);
           var deliveryHtml = '<div class="text-xs space-y-1">';
           if (o.deliveryLocation) {
             deliveryHtml += '<div class="font-semibold text-slate-800 flex items-start space-x-1"><i class="fa-solid fa-location-dot text-brand-500 mt-0.5 shrink-0"></i><span>' + o.deliveryLocation + '</span></div>';
           } else {
             deliveryHtml += '<span class="text-slate-400">-</span>';
           }
-          if (o.phoneNumber) {
-            deliveryHtml += '<div><a href="tel:' + o.phoneNumber + '" class="inline-flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 transition"><i class="fa-solid fa-phone text-blue-600"></i><span>' + o.phoneNumber + '</span></a></div>';
+          if (phoneStr) {
+            deliveryHtml += '<div><a href="tel:' + phoneStr + '" class="inline-flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 transition"><i class="fa-solid fa-phone text-blue-600"></i><span>' + phoneStr + '</span></a></div>';
           }
           if (o.deliveryNote) {
             deliveryHtml += '<div class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-0.5"><i class="fa-solid fa-comment-dots text-amber-600 mr-1"></i>' + o.deliveryNote + '</div>';
@@ -927,14 +1050,11 @@
             ? ('<button type="button" class="slip-btn inline-flex items-center space-x-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded-xl border border-blue-200 text-xs cursor-pointer shadow-sm active:scale-95" data-slip="' + o.slipUrl + '"><i class="fa-solid fa-receipt text-blue-500"></i><span>ดูสลิปโอน</span></button>') 
             : '';
 
+          var phoneStrMobile = formatPhone(o.phoneNumber);
+
           var chatLinkMobile = '';
           if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
-            if (botBasicId) {
-              var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
-              chatLinkMobile = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition"><i class="fa-brands fa-line text-sm"></i><span>แชต LINE</span></a>';
-            } else {
-              chatLinkMobile = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1.5 bg-slate-100 text-slate-500 px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 cursor-pointer"><i class="fa-brands fa-line"></i><span>แชต LINE</span></button>';
-            }
+            chatLinkMobile = '<button type="button" class="btn-line-chat-modal inline-flex items-center space-x-1.5 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer" data-uid="' + o.lineUid + '" data-name="' + (o.customerNickname || o.customerName || 'ลูกค้า') + '" data-phone="' + phoneStrMobile + '"><i class="fa-brands fa-line text-sm"></i><span>แชต LINE</span></button>';
           }
 
           var actionButtonsMobile = '';
@@ -1000,7 +1120,7 @@
 
               (o.deliveryNote ? ('<div class="text-[11px] text-amber-900 bg-amber-100/70 px-2 py-1 rounded-lg border border-amber-200/80"><i class="fa-solid fa-comment-dots text-amber-600 mr-1"></i>' + o.deliveryNote + '</div>') : '') +
 
-              (o.phoneNumber ? ('<div class="pt-1"><a href="tel:' + o.phoneNumber + '" class="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow-sm transition active:scale-[0.99]"><i class="fa-solid fa-phone"></i><span>โทรหาลูกค้า: ' + o.phoneNumber + '</span></a></div>') : '') +
+              (phoneStrMobile ? ('<div class="pt-1"><a href="tel:' + phoneStrMobile + '" class="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-2 shadow-sm transition active:scale-[0.99]"><i class="fa-solid fa-phone"></i><span>โทรหาลูกค้า: ' + phoneStrMobile + '</span></a></div>') : '') +
             '</div>' +
 
             '<div class="bg-slate-50 rounded-xl p-3 border border-slate-100">' +
@@ -1251,8 +1371,8 @@
         });
       }
 
-      // Check existing session
-      const savedPin = sessionStorage.getItem('admin_pin');
+      // Check existing session (Auto login from localStorage)
+      const savedPin = localStorage.getItem('almond_admin_pin') || sessionStorage.getItem('admin_pin');
       if (savedPin) {
         handlePinLogin(savedPin);
       } else {
@@ -1264,6 +1384,7 @@
       if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
           if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+            localStorage.removeItem('almond_admin_pin');
             sessionStorage.removeItem('admin_pin');
             showPinGate(true);
           }
@@ -1352,6 +1473,15 @@
           return;
         }
 
+        var chatBtn = e.target.closest('.btn-line-chat-modal');
+        if (chatBtn) {
+          var uid = chatBtn.getAttribute('data-uid');
+          var name = chatBtn.getAttribute('data-name') || 'ลูกค้า';
+          var phone = chatBtn.getAttribute('data-phone') || '';
+          openLineChatModal(uid, name, phone);
+          return;
+        }
+
         var botBtn = e.target.closest('.btn-prompt-bot-id');
         if (botBtn) {
           alert('กรุณาระบุ LINE OA Basic ID ในแท็บ "4. ตั้งค่าร้านค้า" ก่อนใช้งานปุ่มทักแชต 1:1');
@@ -1366,6 +1496,92 @@
       if (ordersTbody) ordersTbody.addEventListener('click', handleOrderAction);
       const ordersCards = document.getElementById('ordersCardsContainer');
       if (ordersCards) ordersCards.addEventListener('click', handleOrderAction);
+
+      // Open LINE Chat Modal
+      function openLineChatModal(uid, name, phone) {
+        var modal = document.getElementById('lineChatModal');
+        var nameEl = document.getElementById('chatModalCustName');
+        var phoneEl = document.getElementById('chatModalCustPhone');
+        var webBtn = document.getElementById('chatModalWebBtn');
+        var copyBtn = document.getElementById('chatModalCopyBtn');
+        var copyText = document.getElementById('chatModalCopyText');
+        var callBtn = document.getElementById('chatModalCallBtn');
+        var callText = document.getElementById('chatModalCallText');
+
+        if (nameEl) nameEl.textContent = name;
+        if (phoneEl) phoneEl.textContent = phone ? ('เบอร์โทรศัพท์: ' + phone) : 'ไม่ได้ระบุเบอร์โทร';
+
+        var botId = (st.config && (st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID)) ? String(st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID).trim() : '';
+        if (botId) {
+          var cleanBotId = '@' + botId.replace(/^@/, '');
+          if (webBtn) webBtn.href = 'https://manager.line.biz/account/' + cleanBotId + '/chat';
+        } else {
+          if (webBtn) webBtn.href = 'https://manager.line.biz/';
+        }
+
+        if (copyBtn) {
+          copyBtn.onclick = function() {
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(name).then(function() {
+                if (copyText) copyText.textContent = '✅ คัดลอกชื่อ "' + name + '" แล้ว!';
+                setTimeout(function(){ if (copyText) copyText.textContent = 'คัดลอกชื่อลูกค้าเพื่อค้นหาในแอป LINE'; }, 3000);
+              });
+            } else {
+              alert('ชื่อลูกค้า: ' + name);
+            }
+          };
+        }
+
+        if (callBtn) {
+          if (phone) {
+            callBtn.href = 'tel:' + phone;
+            callBtn.classList.remove('hidden');
+            if (callText) callText.textContent = 'โทรหาลูกค้า: ' + phone;
+          } else {
+            callBtn.classList.add('hidden');
+          }
+        }
+
+        if (modal) modal.classList.remove('hidden');
+      }
+
+      // Close LINE Chat Modal
+      var closeChatModal = function() { document.getElementById('lineChatModal').classList.add('hidden'); };
+      var cc1 = document.getElementById('btn-close-chat-modal');
+      var cc2 = document.getElementById('btn-close-chat-modal2');
+      if (cc1) cc1.addEventListener('click', closeChatModal);
+      if (cc2) cc2.addEventListener('click', closeChatModal);
+
+      // PWA Install Prompt & Modal
+      var deferredInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+      });
+
+      var btnInstallPwa = document.getElementById('btn-install-pwa');
+      if (btnInstallPwa) {
+        btnInstallPwa.addEventListener('click', function() {
+          if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then(function(choiceResult) {
+              if (choiceResult.outcome === 'accepted') {
+                alert('กำลังติดตั้งแอปลงบนหน้าจอของคุณเรียบร้อยแล้ว!');
+              }
+              deferredInstallPrompt = null;
+            });
+          } else {
+            var modal = document.getElementById('pwaInstallModal');
+            if (modal) modal.classList.remove('hidden');
+          }
+        });
+      }
+
+      var closePwaModal = function() { document.getElementById('pwaInstallModal').classList.add('hidden'); };
+      var cp1 = document.getElementById('btn-close-pwa-modal');
+      var cp2 = document.getElementById('btn-close-pwa-modal2');
+      if (cp1) cp1.addEventListener('click', closePwaModal);
+      if (cp2) cp2.addEventListener('click', closePwaModal);
 
       // Close Slip Modal
       var closeSlip = function() { document.getElementById('slipModal').classList.add('hidden'); };
@@ -1757,6 +1973,7 @@
             try {
               var res = await adminApi('changeAdminPin', { newPin: newPin });
               if (res && res.success) {
+                localStorage.setItem('almond_admin_pin', newPin);
                 sessionStorage.setItem('admin_pin', newPin);
                 document.getElementById('inputNewPin').value = '';
                 alert('เปลี่ยนรหัส PIN สำเร็จแล้ว! บันทึกลง Google Sheet เรียบร้อย');
