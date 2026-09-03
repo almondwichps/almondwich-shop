@@ -475,9 +475,19 @@
       <div class="space-y-1">
         <h3 class="font-bold text-lg text-gray-900">สั่งซื้อสำเร็จแล้ว!</h3>
         <p class="text-xs text-gray-500">รหัสออเดอร์: <span id="modalOrderId" class="font-mono font-bold text-brand-600">--</span></p>
-        <p class="text-xs text-gray-600 pt-2">ร้านค้าได้รับคำสั่งซื้อของคุณเรียบร้อยแล้ว เตรียมรับความอร่อยในวันพรุ่งนี้ได้เลยครับ 🥪</p>
+        <p class="text-xs text-gray-600 pt-1">ร้านค้าได้รับคำสั่งซื้อของคุณเรียบร้อยแล้ว เตรียมรับความอร่อยได้เลยครับ 🥪</p>
       </div>
-      <button id="btnCloseSuccessModal" type="button" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition cursor-pointer">
+
+      <!-- Quick Action: Send Order Notification to LINE OA -->
+      <div id="lineNotifyBox" class="space-y-2 pt-1">
+        <a id="btnSendLineNotify" href="#" target="_blank" class="w-full bg-[#06c755] hover:bg-[#05b34c] active:bg-[#049b42] text-white font-bold py-3 px-4 rounded-xl text-xs shadow-md flex items-center justify-center space-x-2 transition active:scale-[0.99]">
+          <i class="fa-brands fa-line text-lg"></i>
+          <span>💬 ส่งข้อความแจ้งร้านค้าผ่าน LINE</span>
+        </a>
+        <p class="text-[11px] text-gray-400">แตะเพื่อเปิดแชท LINE ร้านค้า ข้อความถูกพิมพ์รอไว้แล้ว แค่กดส่งได้เลย!</p>
+      </div>
+
+      <button id="btnCloseSuccessModal" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-xl text-xs transition cursor-pointer">
         ดูรายการในประวัติสั่งซื้อ
       </button>
     </div>
@@ -1148,6 +1158,32 @@
         const modal = document.getElementById('successModal');
         if (modal) modal.classList.remove('hidden');
 
+        // Configure LINE OA Notification Link
+        const botId = (state.config && (state.config.lineBotBasicId || state.config.Line_Bot_Basic_ID)) ? String(state.config.lineBotBasicId || state.config.Line_Bot_Basic_ID).trim() : '';
+        const btnSendLine = document.getElementById('btnSendLineNotify');
+        const lineBox = document.getElementById('lineNotifyBox');
+
+        if (botId && btnSendLine) {
+          const cleanBotId = '@' + botId.replace(/^@/, '');
+          const custNick = (document.getElementById('custNicknameInput') ? document.getElementById('custNicknameInput').value.trim() : '') || state.displayName || 'ลูกค้า';
+          const loc = (document.getElementById('deliveryLocationInput') ? document.getElementById('deliveryLocationInput').value.trim() : '') || '-';
+          const method = state.selectedPaymentMethod === 'COD' ? 'เก็บเงินปลายทาง (COD)' : 'โอนเงินแล้ว';
+
+          const itemsText = (state.cartItems || []).map(i => {
+            let n = i.name;
+            if (i.note) n += ` (${i.note})`;
+            return `• ${n} x${i.qty}`;
+          }).join('\n');
+
+          const orderMsg = `สั่งแซนวิชเรียบร้อยแล้วค่ะ 🥪\nรหัสออเดอร์: ${res.orderId}\nผู้รับ: ${custNick}\nสถานที่ส่ง: ${loc}\n${itemsText}\nยอดรวม: ${state.totalPrice || 0} บาท (${method})`;
+
+          const lineUrl = `https://line.me/R/oaMessage/${encodeURIComponent(cleanBotId)}/?${encodeURIComponent(orderMsg)}`;
+          btnSendLine.href = lineUrl;
+          if (lineBox) lineBox.classList.remove('hidden');
+        } else if (lineBox) {
+          lineBox.classList.add('hidden');
+        }
+
         state.slipBase64 = '';
         state.isRedeemingPoints = false;
         
@@ -1246,19 +1282,22 @@
         let statusBadge = '';
         switch (ord.status) {
           case 'Pending':
-            statusBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">รอตรวจสอบ / Pending</span>';
+            statusBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">⏳ รอตรวจสลิป / Pending</span>';
             break;
           case 'Paid':
-            statusBadge = '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ชำระแล้ว / Paid</span>';
+            statusBadge = '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🍳 ร้านรับออเดอร์แล้ว (กำลังทำแซนวิช)</span>';
             break;
           case 'COD':
-            statusBadge = '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold">เก็บเงินปลายทาง / COD</span>';
+            statusBadge = '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold">⏳ รอยืนยันรับออเดอร์ (ปลายทาง)</span>';
+            break;
+          case 'Confirmed_COD':
+            statusBadge = '<span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🍳 ร้านรับออเดอร์แล้ว (ปลายทาง)</span>';
             break;
           case 'Delivered':
-            statusBadge = '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-[10px] font-bold">จัดส่งแล้ว / Delivered</span>';
+            statusBadge = '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🛵 จัดส่งสำเร็จแล้ว / Delivered</span>';
             break;
           case 'Cancelled':
-            statusBadge = '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ยกเลิกแล้ว / Cancelled</span>';
+            statusBadge = '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px] font-bold">❌ ยกเลิกแล้ว / Cancelled</span>';
             break;
           default:
             statusBadge = `<span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-[10px] font-bold">${ord.status}</span>`;

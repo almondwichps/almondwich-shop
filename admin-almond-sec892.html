@@ -110,11 +110,6 @@
             <span class="hidden sm:inline">รีเฟรช</span>
           </button>
 
-          <button id="btn-finish-all" type="button" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer">
-            <i class="fa-solid fa-truck-fast"></i>
-            <span class="hidden sm:inline">จัดส่งเสร็จสิ้นทั้งหมด</span>
-          </button>
-
           <button id="btn-logout" type="button" title="ออกจากระบบ" class="bg-red-900/80 hover:bg-red-800 text-red-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-red-700/50 transition flex items-center space-x-1 cursor-pointer">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
             <span class="hidden sm:inline">ออก</span>
@@ -122,8 +117,8 @@
         </div>
       </div>
 
-      <!-- NAVIGATION TABS (DESKTOP) -->
-      <div class="border-t border-slate-800 bg-slate-900/90 backdrop-blur px-4">
+      <!-- NAVIGATION TABS (DESKTOP ONLY: Hidden on mobile because mobile uses bottom nav) -->
+      <div class="hidden md:block border-t border-slate-800 bg-slate-900/90 backdrop-blur px-4">
         <div class="max-w-7xl mx-auto flex space-x-2 text-xs font-bold overflow-x-auto py-2">
           <button type="button" id="dtab-orders" data-tab="orders" class="tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer">
             <i class="fa-solid fa-list-check"></i>
@@ -174,9 +169,10 @@
               <select id="orderStatusFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none">
                 <option value="ACTIVE">⚡ ออเดอร์ปัจจุบัน (Active)</option>
                 <option value="ALL">📋 ทั้งหมด (All)</option>
-                <option value="Pending">⏳ รอตรวจสอบ (Pending)</option>
-                <option value="Paid">💳 ชำระแล้ว (Paid)</option>
-                <option value="COD">📦 เก็บเงินปลายทาง (COD)</option>
+                <option value="Pending">⏳ รอตรวจสลิป (Pending)</option>
+                <option value="COD">📦 ปลายทาง - รอยืนยัน (COD)</option>
+                <option value="Paid">🍳 รับแล้ว - โอนเงิน (Paid)</option>
+                <option value="Confirmed_COD">🍳 รับแล้ว - ปลายทาง (Confirmed COD)</option>
                 <option value="Delivered">✅ จัดส่งแล้ว (Delivered)</option>
                 <option value="Cancelled">❌ ยกเลิกแล้ว (Cancelled)</option>
               </select>
@@ -945,7 +941,7 @@
       var filterEl = document.getElementById('orderStatusFilter');
       var filter = filterEl ? filterEl.value : 'ACTIVE';
       var list = st.orders || [];
-      if (filter === 'ACTIVE') list = list.filter(function(o){ return o.status === 'Pending' || o.status === 'Paid' || o.status === 'COD'; });
+      if (filter === 'ACTIVE') list = list.filter(function(o){ return o.status === 'Pending' || o.status === 'Paid' || o.status === 'COD' || o.status === 'Confirmed_COD'; });
       else if (filter !== 'ALL') list = list.filter(function(o){ return o.status === filter; });
 
       if (!list.length) {
@@ -955,11 +951,12 @@
       }
 
       var statusMap = {
-        Pending: '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">รอตรวจสอบ</span>',
-        Paid: '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ชำระแล้ว</span>',
-        COD: '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ปลายทาง</span>',
-        Delivered: '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-[10px] font-bold">จัดส่งแล้ว</span>',
-        Cancelled: '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ยกเลิกแล้ว</span>'
+        Pending: '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">⏳ รอตรวจสลิป</span>',
+        COD: '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold">📦 ปลายทาง (รอยืนยัน)</span>',
+        Paid: '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🍳 รับแล้ว (โอนเงิน)</span>',
+        Confirmed_COD: '<span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🍳 รับแล้ว (ปลายทาง)</span>',
+        Delivered: '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-[10px] font-bold">✅ จัดส่งแล้ว</span>',
+        Cancelled: '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px] font-bold">❌ ยกเลิก</span>'
       };
 
       var botBasicId = (st.config && (st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID)) ? String(st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID).trim() : '';
@@ -1003,8 +1000,14 @@
           }
           deliveryHtml += '</div>';
 
-          var confirm_btn = o.status === 'Pending' ? '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Paid">ยืนยัน</button>' : '';
-          var deliver_btn = (o.status === 'Paid' || o.status === 'COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
+          var confirm_btn = '';
+          if (o.status === 'Pending') {
+            confirm_btn = '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Paid" title="ตรวจสอบยอดเงินและรับออเดอร์">รับออเดอร์</button>';
+          } else if (o.status === 'COD') {
+            confirm_btn = '<button class="order-status-btn bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Confirmed_COD" title="ยืนยันรับออเดอร์เก็บปลายทาง">รับออเดอร์</button>';
+          }
+
+          var deliver_btn = (o.status === 'Paid' || o.status === 'Confirmed_COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
           var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
           
           return '<tr class="hover:bg-slate-50 transition">' +
@@ -1040,9 +1043,10 @@
 
           var badgeBg = 'bg-slate-100 text-slate-700';
           var badgeText = o.status;
-          if (o.status === 'Pending') { badgeBg = 'bg-amber-100 text-amber-800 border-amber-200'; badgeText = '⏳ รอตรวจสอบ'; }
-          else if (o.status === 'Paid') { badgeBg = 'bg-blue-100 text-blue-800 border-blue-200'; badgeText = '💳 ชำระแล้ว'; }
-          else if (o.status === 'COD') { badgeBg = 'bg-purple-100 text-purple-800 border-purple-200'; badgeText = '📦 ปลายทาง'; }
+          if (o.status === 'Pending') { badgeBg = 'bg-amber-100 text-amber-800 border-amber-200'; badgeText = '⏳ รอตรวจสลิป'; }
+          else if (o.status === 'COD') { badgeBg = 'bg-purple-100 text-purple-800 border-purple-200'; badgeText = '📦 ปลายทาง (รอยืนยัน)'; }
+          else if (o.status === 'Paid') { badgeBg = 'bg-blue-100 text-blue-800 border-blue-200'; badgeText = '🍳 รับแล้ว (โอนเงิน)'; }
+          else if (o.status === 'Confirmed_COD') { badgeBg = 'bg-indigo-100 text-indigo-800 border-indigo-200'; badgeText = '🍳 รับแล้ว (ปลายทาง)'; }
           else if (o.status === 'Delivered') { badgeBg = 'bg-green-100 text-green-800 border-green-200'; badgeText = '✅ ส่งแล้ว'; }
           else if (o.status === 'Cancelled') { badgeBg = 'bg-red-100 text-red-800 border-red-200'; badgeText = '❌ ยกเลิก'; }
 
@@ -1061,18 +1065,28 @@
           if (o.status === 'Pending') {
             actionButtonsMobile = 
               '<div class="space-y-2 pt-2 border-t border-slate-100">' +
-                '<button type="button" class="order-status-btn w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold py-3 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Paid">' +
-                  '<i class="fa-solid fa-check text-base"></i><span>ยืนยันได้รับเงินแล้ว</span>' +
+                '<button type="button" class="order-status-btn w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Paid">' +
+                  '<i class="fa-solid fa-circle-check text-base"></i><span>✅ ตรวจสอบยอดแล้ว & รับออเดอร์</span>' +
                 '</button>' +
                 '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
                   '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
                 '</button>' +
               '</div>';
-          } else if (o.status === 'Paid' || o.status === 'COD') {
+          } else if (o.status === 'COD') {
+            actionButtonsMobile = 
+              '<div class="space-y-2 pt-2 border-t border-slate-100">' +
+                '<button type="button" class="order-status-btn w-full bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Confirmed_COD">' +
+                  '<i class="fa-solid fa-circle-check text-base"></i><span>✅ ยืนยันรับออเดอร์ (เก็บปลายทาง)</span>' +
+                '</button>' +
+                '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
+                  '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
+                '</button>' +
+              '</div>';
+          } else if (o.status === 'Paid' || o.status === 'Confirmed_COD') {
             actionButtonsMobile = 
               '<div class="space-y-2 pt-2 border-t border-slate-100">' +
                 '<button type="button" class="order-status-btn w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Delivered">' +
-                  '<i class="fa-solid fa-motorcycle text-lg"></i><span>จัดส่งถึงมือแล้ว (ส่งสำเร็จ)</span>' +
+                  '<i class="fa-solid fa-motorcycle text-lg"></i><span>🛵 จัดส่งถึงมือแล้ว (ส่งสำเร็จ)</span>' +
                 '</button>' +
                 '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
                   '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
@@ -1311,6 +1325,13 @@
 
     // --- 9. Data Loading & Operations ---
     async function loadAllAdminData() {
+      const refBtn = document.getElementById('btn-refresh');
+      let origHtml = '';
+      if (refBtn) {
+        origHtml = refBtn.innerHTML;
+        refBtn.disabled = true;
+        refBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin text-brand-400"></i><span class="hidden sm:inline ml-1.5">กำลังโหลด...</span>';
+      }
       try {
         const data = await adminApi('getAdminData');
         if (!data || !data.success) return;
@@ -1324,6 +1345,11 @@
         populateSettingsForm();
       } catch (err) {
         console.warn("loadAllAdminData error:", err);
+      } finally {
+        if (refBtn) {
+          refBtn.disabled = false;
+          refBtn.innerHTML = origHtml || '<i class="fa-solid fa-rotate"></i><span class="hidden sm:inline">รีเฟรช</span>';
+        }
       }
     }
 
@@ -1403,17 +1429,6 @@
       const refreshBtn = document.getElementById('btn-refresh');
       if (refreshBtn) refreshBtn.addEventListener('click', function() { loadAllAdminData(); });
 
-      // Finish All Orders Button
-      const finishBtn = document.getElementById('btn-finish-all');
-      if (finishBtn) finishBtn.addEventListener('click', async function() {
-        if (!confirm('ยืนยันปิดจบยอดและบันทึก "จัดส่งแล้ว (Delivered)" ทั้งหมด? (ระบบจะแจกแต้มสะสมให้ลูกค้าทุกคนอัตโนมัติ)')) return;
-        try {
-          await adminApi('batchCompleteAllOrders');
-          loadAllAdminData();
-          alert('บันทึกส่งมอบทั้งหมดและแจกแต้มสะสมเรียบร้อยแล้ว!');
-        } catch(e) { alert('เกิดข้อผิดพลาด: ' + e); }
-      });
-
       // Order Filter
       const filterEl = document.getElementById('orderStatusFilter');
       if (filterEl) filterEl.addEventListener('change', renderOrdersTable);
@@ -1460,9 +1475,16 @@
         if (statusBtn) {
           var oId = statusBtn.getAttribute('data-order-id');
           var newSt = statusBtn.getAttribute('data-status');
-          var confirmMsg = (newSt === 'Delivered')
-            ? ('ยืนยันว่าจัดส่งออเดอร์ ' + oId + ' ถึงมือลูกค้าสำเร็จแล้วใช่หรือไม่?\n(ระบบจะมอบแต้มสะสมให้ลูกค้าทันที)')
-            : ('ต้องการเปลี่ยนสถานะออเดอร์ ' + oId + ' เป็น "' + newSt + '"?');
+          var confirmMsg = '';
+          if (newSt === 'Delivered') {
+            confirmMsg = 'ยืนยันว่าจัดส่งออเดอร์ ' + oId + ' ถึงมือลูกค้าสำเร็จแล้วใช่หรือไม่?\n(ระบบจะมอบแต้มสะสมให้ลูกค้าทันที)';
+          } else if (newSt === 'Paid') {
+            confirmMsg = 'ยืนยันตรวจสอบยอดเงินถูกต้องและรับออเดอร์ ' + oId + ' ใช่หรือไม่?';
+          } else if (newSt === 'Confirmed_COD') {
+            confirmMsg = 'ยืนยันรับออเดอร์ ' + oId + ' (เก็บเงินปลายทาง) ใช่หรือไม่?';
+          } else {
+            confirmMsg = 'ต้องการเปลี่ยนสถานะออเดอร์ ' + oId + ' เป็น "' + newSt + '"?';
+          }
 
           if (confirm(confirmMsg)) {
             try {
