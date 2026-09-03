@@ -177,10 +177,28 @@
 
         <!-- Transfer Slip Upload Section -->
         <div id="transferDetailsSection" class="space-y-3 pt-2">
-          <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 flex flex-col items-center text-center space-y-2">
-            <div class="bg-white p-2 rounded-lg border border-gray-200 shadow-sm inline-block">
-              <img id="promptPayQrImg" src="https://via.placeholder.com/150x150.png?text=PromptPay+QR" alt="PromptPay QR" class="w-36 h-36 object-contain">
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 flex flex-col items-center text-center space-y-2.5">
+            <div class="relative group cursor-pointer" id="btnZoomQr" title="แตะเพื่อขยายรูป QR Code">
+              <div class="bg-white p-2 rounded-xl border border-gray-200 shadow-sm inline-block">
+                <img id="promptPayQrImg" src="https://via.placeholder.com/150x150.png?text=PromptPay+QR" alt="PromptPay QR" class="w-36 h-36 object-contain">
+              </div>
+              <div class="absolute inset-0 bg-black/10 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <span class="bg-black/70 text-white text-[10px] px-2.5 py-1 rounded-full font-bold shadow"><i class="fa-solid fa-magnifying-glass-plus"></i> แตะขยาย</span>
+              </div>
             </div>
+
+            <!-- Quick Action Buttons for QR Code -->
+            <div class="flex items-center space-x-2">
+              <button type="button" id="btnZoomQr2" class="text-[11px] bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer transition">
+                <i class="fa-solid fa-magnifying-glass-plus text-brand-500"></i>
+                <span>ขยายรูป QR</span>
+              </button>
+              <a id="btnDownloadQr" href="#" target="_blank" download="PromptPay_QR.png" class="text-[11px] bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer transition">
+                <i class="fa-solid fa-download text-brand-500"></i>
+                <span>บันทึกรูป QR</span>
+              </a>
+            </div>
+
             <div class="text-xs text-gray-700">
               <p class="font-bold text-gray-900" id="promptPayAccName">Sandwich Shop</p>
               <p class="font-mono text-gray-600" id="promptPayNumber">PromptPay: 0812345678</p>
@@ -202,6 +220,51 @@
                 </div>
               </label>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DELIVERY DETAILS (FOR IN-PERSON DELIVERY) -->
+      <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+          <h3 class="font-bold text-xs text-gray-900 uppercase tracking-wide flex items-center space-x-1.5">
+            <i class="fa-solid fa-location-dot text-brand-500 text-sm"></i>
+            <span>ข้อมูลจัดส่งถึงมือ (แม่ค้าไปส่งเอง)</span>
+          </h3>
+          <span class="text-[10px] text-brand-600 font-semibold bg-brand-50 px-2 py-0.5 rounded-md">🛵 ส่งถึงโต๊ะ</span>
+        </div>
+        
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">
+              ชื่อเล่นผู้รับของ <span class="text-red-500">*</span>
+              <span class="text-[10px] text-gray-400 font-normal">(เช่น พี่นก, น้องมายด์)</span>
+            </label>
+            <input type="text" id="custNicknameInput" required placeholder="ระบุชื่อเล่นคนรับสินค้า (ระบบจะจำไว้ให้อัตโนมัติ)" class="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 outline-none focus:border-brand-500 focus:bg-white font-medium text-gray-800 transition">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">
+              สถานที่จัดส่ง / ตึก / ชั้น / แผนก <span class="text-red-500">*</span>
+              <span class="text-[10px] text-gray-400 font-normal">(เช่น ตึก A ชั้น 4 แผนกบัญชี)</span>
+            </label>
+            <input type="text" id="deliveryLocationInput" required placeholder="ระบุตึก, ชั้น, แผนก หรือตำแหน่งที่ให้ไปส่ง" class="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 outline-none focus:border-brand-500 focus:bg-white font-medium text-gray-800 transition">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">
+              เบอร์โทรศัพท์ติดต่อ
+              <span class="text-[10px] text-gray-400 font-normal">(ไม่บังคับ - เผื่อหาตำแหน่งไม่เจอ)</span>
+            </label>
+            <input type="tel" id="custPhoneInput" placeholder="เช่น 0812345678" class="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 outline-none focus:border-brand-500 focus:bg-white font-mono text-gray-800 transition">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-gray-700 mb-1">
+              หมายเหตุเพิ่มเติมถึงแม่ค้า
+              <span class="text-[10px] text-gray-400 font-normal">(ไม่บังคับ เช่น ฝากไว้โต๊ะหน้าห้อง, ไม่ใส่พริกไทย)</span>
+            </label>
+            <input type="text" id="deliveryNoteInput" placeholder="เช่น ฝากไว้ที่ป้อม รปภ., วางไว้หน้าห้อง, โทรหาก่อนถึง" class="w-full bg-gray-50 border border-gray-300 rounded-xl p-2.5 outline-none focus:border-brand-500 focus:bg-white text-gray-800 transition">
           </div>
         </div>
       </div>
@@ -289,6 +352,31 @@
       <button id="btnCloseSuccessModal" type="button" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition cursor-pointer">
         ดูรายการในประวัติสั่งซื้อ
       </button>
+    </div>
+  </div>
+
+  <!-- QR ZOOM LIGHTBOX MODAL -->
+  <div id="qrZoomModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 text-center">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+        <h3 class="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+          <i class="fa-solid fa-qrcode text-brand-500"></i>
+          <span>สแกนชำระเงินผ่าน PromptPay</span>
+        </h3>
+        <button id="btnCloseQrZoom" type="button" class="text-gray-400 hover:text-gray-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="bg-white p-3 rounded-2xl border border-gray-100 shadow-inner flex items-center justify-center">
+        <img id="qrZoomModalImg" src="" alt="PromptPay QR Large" class="w-64 h-64 object-contain">
+      </div>
+      <p class="text-[11px] text-gray-500">แคปหน้าจอหรือกดบันทึกรูป เพื่อสแกนในแอปธนาคาร</p>
+      <div class="pt-1">
+        <a id="modalDownloadQrLink" href="#" target="_blank" download="PromptPay_QR.png" class="w-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md transition cursor-pointer">
+          <i class="fa-solid fa-download"></i>
+          <span>บันทึกรูป QR ลงเครื่อง</span>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -411,14 +499,25 @@
       const closedBanner = document.getElementById('storeClosedBanner');
       const submitBtn = document.getElementById('btnSubmitOrder');
 
+      const enableCutoff = config.enableCutoffTime !== false;
+      const enableQuota = config.enableMaxQuota !== false;
+
       if (quotaBadge) {
-        quotaBadge.textContent = `เหลือ ${remainingQ} / ${maxQ} กล่อง`;
+        if (enableQuota) {
+          quotaBadge.textContent = `เหลือ ${remainingQ} / ${maxQ} กล่อง`;
+          quotaBadge.classList.remove('hidden');
+        } else {
+          quotaBadge.textContent = `ไม่จำกัดโควตา`;
+          quotaBadge.classList.remove('hidden');
+        }
       }
 
-      const isOpen = config.isStoreOpen !== false && remainingQ > 0;
+      const isQuotaOk = enableQuota ? (remainingQ > 0) : true;
+      const isOpen = config.isStoreOpen !== false && isQuotaOk;
       if (isOpen) {
         if (statusDot) statusDot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
-        if (statusText) statusText.textContent = `เปิดรับออเดอร์ (ปิดรับ ${cutoff} น.)`;
+        const cutoffMsg = enableCutoff ? ` (ปิดรับ ${cutoff} น.)` : ` (เปิดรับตลอดวัน)`;
+        if (statusText) statusText.textContent = `เปิดรับออเดอร์${cutoffMsg}`;
         if (closedBanner) closedBanner.classList.add('hidden');
         if (submitBtn) submitBtn.disabled = false;
       } else {
@@ -442,16 +541,23 @@
           }
         };
 
+        let activeQrSrc = cleanNum ? `https://promptpay.io/${cleanNum}.png` : '';
         if (qrUrl && qrUrl.trim().length > 5) {
           let directSrc = qrUrl.trim();
           if (directSrc.indexOf('drive.google.com') > -1) {
             const match = directSrc.match(/\/d\/([a-zA-Z0-9_-]+)/) || directSrc.match(/id=([a-zA-Z0-9_-]+)/);
             if (match && match[1]) directSrc = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
           }
-          qrImg.src = directSrc;
-        } else if (cleanNum) {
-          qrImg.src = `https://promptpay.io/${cleanNum}.png`;
+          activeQrSrc = directSrc;
         }
+        qrImg.src = activeQrSrc;
+
+        const btnDl = document.getElementById('btnDownloadQr');
+        const modalDl = document.getElementById('modalDownloadQrLink');
+        const zoomImg = document.getElementById('qrZoomModalImg');
+        if (btnDl) btnDl.href = activeQrSrc;
+        if (modalDl) modalDl.href = activeQrSrc;
+        if (zoomImg) zoomImg.src = activeQrSrc;
       }
     }
 
@@ -470,14 +576,21 @@
           state.cart[menu.id] = 0;
         }
 
+        const imgHtml = (menu.imageUrl && menu.imageUrl.trim().length > 5)
+          ? `<img src="${menu.imageUrl}" alt="${menu.name}" class="w-16 h-16 rounded-xl object-cover shrink-0 border border-gray-100 shadow-sm" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-16 h-16 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl shrink-0 border border-amber-100 shadow-inner\\'>🥪</div>';">`
+          : `<div class="w-16 h-16 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl shrink-0 border border-amber-100 shadow-inner">🥪</div>`;
+
         const card = document.createElement('div');
-        card.className = "bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm flex items-center justify-between";
+        card.className = "bg-white rounded-xl p-3 border border-gray-200 shadow-sm flex items-center justify-between gap-2";
         card.innerHTML = `
-          <div class="flex-1 pr-2">
-            <h4 class="font-bold text-xs text-gray-800">${menu.name}</h4>
-            <div class="text-brand-600 font-extrabold text-xs mt-0.5">${menu.price} ฿</div>
+          <div class="flex items-center space-x-3 flex-1 min-w-0 pr-1">
+            ${imgHtml}
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-xs text-gray-800 line-clamp-2">${menu.name}</h4>
+              <div class="text-brand-600 font-extrabold text-xs mt-1">${menu.price} ฿</div>
+            </div>
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2 shrink-0">
             <button data-qty-btn="-1" data-menu-id="${menu.id}" type="button" class="qty-btn w-8 h-8 rounded-lg bg-gray-100 active:bg-gray-300 text-gray-700 font-bold flex items-center justify-center text-sm transition cursor-pointer">
               <i class="fa-solid fa-minus pointer-events-none"></i>
             </button>
@@ -680,6 +793,35 @@
         return;
       }
 
+      const nicknameInput = document.getElementById('custNicknameInput');
+      const locationInput = document.getElementById('deliveryLocationInput');
+      const phoneInput = document.getElementById('custPhoneInput');
+      const noteInput = document.getElementById('deliveryNoteInput');
+
+      const nickname = (nicknameInput ? nicknameInput.value : '').trim();
+      const location = (locationInput ? locationInput.value : '').trim();
+      const phone = (phoneInput ? phoneInput.value : '').trim();
+      const note = (noteInput ? noteInput.value : '').trim();
+
+      if (!nickname) {
+        alert("กรุณาระบุชื่อเล่นผู้รับของ");
+        if (nicknameInput) nicknameInput.focus();
+        return;
+      }
+
+      if (!location) {
+        alert("กรุณาระบุสถานที่จัดส่ง / ตึก / ชั้น / แผนก");
+        if (locationInput) locationInput.focus();
+        return;
+      }
+
+      // Auto-remember locally for convenience on subsequent visits
+      try {
+        localStorage.setItem('almondwich_nickname', nickname);
+        localStorage.setItem('almondwich_location', location);
+        if (phone) localStorage.setItem('almondwich_phone', phone);
+      } catch (e) {}
+
       let discount = 0;
       if (state.isRedeemingPoints) {
         const freeItem = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
@@ -691,6 +833,10 @@
       const payload = {
         lineUid: state.lineUid,
         customerName: state.displayName,
+        customerNickname: nickname,
+        deliveryLocation: location,
+        phoneNumber: phone,
+        deliveryNote: note,
         items: items,
         totalQty: totalQty,
         totalPrice: totalPrice,
@@ -968,14 +1114,9 @@
         liffDebug('init OK | inClient=' + liff.isInClient() + ' | loggedIn=' + liff.isLoggedIn());
 
         if (!liff.isLoggedIn()) {
-          if (liff.isInClient()) {
-            liffDebug('Not logged in → liff.login()');
-            liff.login();
-            return;
-          } else {
-            liffDebug('⚠️ Not in LINE client — guest mode', true);
-            state.displayName = 'คุณลูกค้า';
-          }
+          liffDebug('Not logged in → liff.login()');
+          liff.login();
+          return;
         } else {
           liffDebug('Logged in! Getting profile...');
           const profile = await liff.getProfile();
@@ -1130,6 +1271,34 @@
       if (btnCloseModal) {
         btnCloseModal.addEventListener('click', closeSuccessModal);
       }
+
+      // QR Code Zoom Modal Controls
+      const qrZoomModal = document.getElementById('qrZoomModal');
+      const openQrZoom = () => { if (qrZoomModal) qrZoomModal.classList.remove('hidden'); };
+      const closeQrZoom = () => { if (qrZoomModal) qrZoomModal.classList.add('hidden'); };
+
+      const btnZoom1 = document.getElementById('btnZoomQr');
+      const btnZoom2 = document.getElementById('btnZoomQr2');
+      const btnCloseZoom = document.getElementById('btnCloseQrZoom');
+      if (btnZoom1) btnZoom1.addEventListener('click', openQrZoom);
+      if (btnZoom2) btnZoom2.addEventListener('click', openQrZoom);
+      if (btnCloseZoom) btnCloseZoom.addEventListener('click', closeQrZoom);
+
+      // Auto-fill delivery details from localStorage
+      try {
+        const savedNick = localStorage.getItem('almondwich_nickname');
+        const savedLoc = localStorage.getItem('almondwich_location');
+        const savedPhone = localStorage.getItem('almondwich_phone');
+        if (savedNick && document.getElementById('custNicknameInput')) {
+          document.getElementById('custNicknameInput').value = savedNick;
+        }
+        if (savedLoc && document.getElementById('deliveryLocationInput')) {
+          document.getElementById('deliveryLocationInput').value = savedLoc;
+        }
+        if (savedPhone && document.getElementById('custPhoneInput')) {
+          document.getElementById('custPhoneInput').value = savedPhone;
+        }
+      } catch (e) {}
 
       // Background Live updates
       loadStoreData();

@@ -172,6 +172,7 @@
                 <tr>
                   <th class="py-3 px-4">รหัสออเดอร์ / เวลา</th>
                   <th class="py-3 px-4">ลูกค้า / แชต LINE</th>
+                  <th class="py-3 px-4">สถานที่ส่ง / โทร</th>
                   <th class="py-3 px-4">รายการที่สั่ง</th>
                   <th class="py-3 px-4 text-center">กล่อง</th>
                   <th class="py-3 px-4 text-right">ยอดเงิน</th>
@@ -183,7 +184,7 @@
               </thead>
               <tbody id="ordersTableBody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="9" class="py-8 text-center text-slate-400">
+                  <td colspan="10" class="py-8 text-center text-slate-400">
                     <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-500 mb-2"></i>
                     <p class="font-medium">กำลังโหลดรายการออเดอร์...</p>
                   </td>
@@ -254,6 +255,7 @@
               <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
                 <tr>
                   <th class="py-3 px-4">รหัส</th>
+                  <th class="py-3 px-4 text-center">รูป</th>
                   <th class="py-3 px-4">ชื่อเมนู</th>
                   <th class="py-3 px-4 text-right">ราคา</th>
                   <th class="py-3 px-4 text-center">สถานะ</th>
@@ -267,7 +269,7 @@
               </thead>
               <tbody id="menuTableBody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="10" class="py-8 text-center text-slate-400">
+                  <td colspan="11" class="py-8 text-center text-slate-400">
                     กำลังโหลดเมนู...
                   </td>
                 </tr>
@@ -371,15 +373,37 @@
                 <span>รอบเวลาและโควตาประจำวัน</span>
               </h3>
 
-              <div class="grid grid-cols-2 gap-3">
-                <div class="space-y-1">
-                  <label class="font-semibold text-slate-700 block">เวลาปิดรับออเดอร์ (Cutoff):</label>
-                  <input type="time" id="cfg_Cutoff_Time" value="20:00" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono text-sm">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Cutoff Control -->
+                <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                  <div class="flex items-center justify-between">
+                    <label class="font-bold text-slate-800 text-xs flex items-center space-x-2 cursor-pointer">
+                      <input type="checkbox" id="cfg_Enable_Cutoff_Time" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer">
+                      <span>เปิดใช้เวลาปิดรับ (Cutoff)</span>
+                    </label>
+                    <span id="cutoffStatusBadge" class="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">เปิดใช้งาน</span>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-[11px] text-slate-500 block">เวลาปิดรับออเดอร์:</label>
+                    <input type="time" id="cfg_Cutoff_Time" value="20:00" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-mono text-sm">
+                  </div>
+                  <p class="text-[10px] text-slate-400">หากปิดใช้งาน ลูกค้าจะสั่งได้ตลอดเวลาจนกว่าร้านจะปิด</p>
                 </div>
 
-                <div class="space-y-1">
-                  <label class="font-semibold text-slate-700 block">โควตาสูงสุดต่อวัน (กล่อง):</label>
-                  <input type="number" id="cfg_Max_Quota_Per_Day" value="30" min="1" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-sm">
+                <!-- Quota Control -->
+                <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                  <div class="flex items-center justify-between">
+                    <label class="font-bold text-slate-800 text-xs flex items-center space-x-2 cursor-pointer">
+                      <input type="checkbox" id="cfg_Enable_Max_Quota" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer">
+                      <span>เปิดใช้จำกัดโควตาต่อวัน</span>
+                    </label>
+                    <span id="quotaStatusBadge" class="text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded">เปิดใช้งาน</span>
+                  </div>
+                  <div class="space-y-1">
+                    <label class="text-[11px] text-slate-500 block">โควตาสูงสุดต่อวัน (กล่อง):</label>
+                    <input type="number" id="cfg_Max_Quota_Per_Day" value="30" min="1" class="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-sm">
+                  </div>
+                  <p class="text-[10px] text-slate-400">หากปิดใช้งาน ร้านจะรับออเดอร์ได้ไม่อั้น ไม่จำกัดจำนวน</p>
                 </div>
               </div>
             </div>
@@ -536,6 +560,25 @@
             <div class="col-span-2">
               <label class="text-slate-500 block">กล่องบรรจุ (ใบ):</label>
               <input type="number" id="form_Box_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+            </div>
+          </div>
+        </div>
+
+        <!-- MENU IMAGE SECTION -->
+        <div class="border-t border-slate-100 pt-2.5 space-y-2">
+          <label class="font-bold text-slate-700 block">รูปภาพเมนูแซนวิช:</label>
+          <div class="flex items-center space-x-3">
+            <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+              <img id="form_Menu_Image_Preview" src="" alt="Menu Preview" class="w-full h-full object-cover hidden">
+              <span id="form_Menu_Image_Placeholder" class="text-2xl text-slate-300">🥪</span>
+            </div>
+            <div class="flex-1 space-y-1.5">
+              <input type="text" id="form_Image_URL" placeholder="ใส่ URL รูปภาพ หรือกดอัปโหลด" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-mono">
+              <label class="cursor-pointer inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition border border-slate-300">
+                <input type="file" id="menuImageFileInput" accept="image/*" class="sr-only">
+                <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i>
+                <span id="uploadMenuImgBtnText">อัปโหลดรูปจากเครื่อง</span>
+              </label>
             </div>
           </div>
         </div>
@@ -728,26 +771,46 @@
 
       tbody.innerHTML = list.map(function(o) {
         var items = Array.isArray(o.items) ? o.items.map(function(i){ return (i.name||i.id)+' (x'+i.qty+')'; }).join(', ') : (o.items||'');
-        var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
+        var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold cursor-pointer" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
         
-        // 💬 1:1 LINE Chat Deep Link (UpgradeContext.md #4)
+        // 💬 1:1 LINE Chat Deep Link
         var chatLink = '';
         if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
           if (botBasicId) {
             var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
             chatLink = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1 bg-green-50 hover:bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold border border-green-200 transition"><i class="fa-brands fa-line text-green-600"></i><span>ทักแชต</span></a>';
           } else {
-            chatLink = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200"><i class="fa-brands fa-line"></i><span>ทักแชต</span></button>';
+            chatLink = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 cursor-pointer"><i class="fa-brands fa-line"></i><span>ทักแชต</span></button>';
           }
         }
 
-        var confirm_btn = o.status === 'Pending' ? '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold" data-order-id="'+o.orderId+'" data-status="Paid">ยืนยัน</button>' : '';
-        var deliver_btn = (o.status === 'Paid' || o.status === 'COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
-        var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
+        // Customer name with nickname
+        var custNameHtml = '<div class="font-bold text-slate-900">' + (o.customerNickname ? ('<span class="text-brand-600 font-extrabold">' + o.customerNickname + '</span><br><span class="text-[10px] text-slate-400 font-normal">(' + (o.customerName||'ลูกค้า') + ')</span>') : (o.customerName||'ลูกค้า')) + '</div>';
+        if (chatLink) custNameHtml += '<div class="mt-1">' + chatLink + '</div>';
+
+        // Delivery details & Direct phone call button
+        var deliveryHtml = '<div class="text-xs space-y-1">';
+        if (o.deliveryLocation) {
+          deliveryHtml += '<div class="font-semibold text-slate-800 flex items-start space-x-1"><i class="fa-solid fa-location-dot text-brand-500 mt-0.5 shrink-0"></i><span>' + o.deliveryLocation + '</span></div>';
+        } else {
+          deliveryHtml += '<span class="text-slate-400">-</span>';
+        }
+        if (o.phoneNumber) {
+          deliveryHtml += '<div><a href="tel:' + o.phoneNumber + '" class="inline-flex items-center space-x-1 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 transition"><i class="fa-solid fa-phone text-blue-600"></i><span>' + o.phoneNumber + '</span></a></div>';
+        }
+        if (o.deliveryNote) {
+          deliveryHtml += '<div class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-0.5"><i class="fa-solid fa-comment-dots text-amber-600 mr-1"></i>' + o.deliveryNote + '</div>';
+        }
+        deliveryHtml += '</div>';
+
+        var confirm_btn = o.status === 'Pending' ? '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Paid">ยืนยัน</button>' : '';
+        var deliver_btn = (o.status === 'Paid' || o.status === 'COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
+        var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
         
         return '<tr class="hover:bg-slate-50 transition">' +
           '<td class="py-3 px-4 font-mono font-bold">' + (o.orderId||'') + '<br><span class="text-[10px] text-slate-400 font-normal">' + (o.timestamp||'') + '</span></td>' +
-          '<td class="py-3 px-4 font-medium">' + (o.customerName||'ลูกค้า') + '<div class="mt-1">' + chatLink + '</div></td>' +
+          '<td class="py-3 px-4">' + custNameHtml + '</td>' +
+          '<td class="py-3 px-4">' + deliveryHtml + '</td>' +
           '<td class="py-3 px-4 text-slate-600">' + items + '</td>' +
           '<td class="py-3 px-4 text-center font-bold">' + (o.totalQty||0) + '</td>' +
           '<td class="py-3 px-4 text-right font-bold text-brand-600">' + (o.totalPrice||0) + ' ฿</td>' +
@@ -803,14 +866,18 @@
       if (!tbody) return;
       var list = st.menuItems || [];
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">ไม่พบเมนูในระบบ</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="11" class="py-8 text-center text-slate-400">ไม่พบเมนูในระบบ</td></tr>';
         return;
       }
       tbody.innerHTML = list.map(function(m) {
         var isOpen = m.Status === 'OPEN';
-        var statusBtn = '<button class="toggle-menu-btn '+(isOpen ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300')+' px-2.5 py-0.5 rounded-full text-[10px] font-bold border" data-menu-id="'+m.Menu_ID+'" data-current-status="'+m.Status+'">'+(isOpen ? '🟢 OPEN' : '🔴 CLOSED')+'</button>';
+        var statusBtn = '<button class="toggle-menu-btn '+(isOpen ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300')+' px-2.5 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer" data-menu-id="'+m.Menu_ID+'" data-current-status="'+m.Status+'">'+(isOpen ? '🟢 OPEN' : '🔴 CLOSED')+'</button>';
+        var imgThumb = (m.Image_URL && m.Image_URL.trim().length > 5)
+          ? '<img src="' + m.Image_URL + '" class="w-10 h-10 rounded-lg object-cover border border-slate-200 mx-auto shadow-sm" alt="thumb" onerror="this.onerror=null; this.parentElement.innerHTML=\'<span class=\\\'text-lg text-slate-300\\\'>🥪</span>\';">'
+          : '<span class="text-lg text-slate-300">🥪</span>';
         return '<tr class="hover:bg-slate-50 transition">' +
           '<td class="py-3 px-4 font-mono font-bold">' + m.Menu_ID + '</td>' +
+          '<td class="py-3 px-4 text-center">' + imgThumb + '</td>' +
           '<td class="py-3 px-4 font-medium">' + m.Menu_Name + '</td>' +
           '<td class="py-3 px-4 text-right font-bold text-brand-600">' + m.Price + ' ฿</td>' +
           '<td class="py-3 px-4 text-center">' + statusBtn + '</td>' +
@@ -819,7 +886,7 @@
           '<td class="py-3 px-4 text-center">' + (m.Sausage_ea||0) + '</td>' +
           '<td class="py-3 px-4 text-center">' + (m.Crabstick_ea||0) + '</td>' +
           '<td class="py-3 px-4 text-center">' + (m.Box_ea||1) + '</td>' +
-          '<td class="py-3 px-4 text-center"><button class="edit-menu-btn text-brand-600 hover:text-brand-800 font-bold" data-menu-id="'+m.Menu_ID+'"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button></td>' +
+          '<td class="py-3 px-4 text-center"><button class="edit-menu-btn text-brand-600 hover:text-brand-800 font-bold cursor-pointer" data-menu-id="'+m.Menu_ID+'"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button></td>' +
         '</tr>';
       }).join('');
     }
@@ -839,6 +906,24 @@
       setVal('cfg_PromptPay_Number', c.promptPayNumber || '');
       setVal('cfg_PromptPay_QR_URL', c.promptPayQrUrl || '');
       setVal('cfg_Line_Bot_Basic_ID', c.lineBotBasicId || c.Line_Bot_Basic_ID || '');
+
+      var enableCutoff = c.enableCutoffTime !== false;
+      var enableQuota = c.enableMaxQuota !== false;
+      var chkCutoffEl = document.getElementById('cfg_Enable_Cutoff_Time');
+      var chkQuotaEl = document.getElementById('cfg_Enable_Max_Quota');
+      if (chkCutoffEl) chkCutoffEl.checked = enableCutoff;
+      if (chkQuotaEl) chkQuotaEl.checked = enableQuota;
+      
+      var badgeCutoff = document.getElementById('cutoffStatusBadge');
+      if (badgeCutoff) {
+        badgeCutoff.textContent = enableCutoff ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+        badgeCutoff.className = enableCutoff ? 'text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded';
+      }
+      var badgeQuota = document.getElementById('quotaStatusBadge');
+      if (badgeQuota) {
+        badgeQuota.textContent = enableQuota ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+        badgeQuota.className = enableQuota ? 'text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded';
+      }
 
       var img = document.getElementById('adminQrPreviewImg');
       if (img) {
@@ -1030,6 +1115,11 @@
           document.getElementById('form_Sausage_ea').value = 1;
           document.getElementById('form_Crabstick_ea').value = 0;
           document.getElementById('form_Box_ea').value = 1;
+          document.getElementById('form_Image_URL').value = '';
+          var imgPrev = document.getElementById('form_Menu_Image_Preview');
+          var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
+          if (imgPrev) { imgPrev.src = ''; imgPrev.classList.add('hidden'); }
+          if (imgPlace) imgPlace.classList.remove('hidden');
           document.getElementById('menuModal').classList.remove('hidden');
         });
       }
@@ -1073,9 +1163,68 @@
             document.getElementById('form_Sausage_ea').value = m.Sausage_ea || 0;
             document.getElementById('form_Crabstick_ea').value = m.Crabstick_ea || 0;
             document.getElementById('form_Box_ea').value = m.Box_ea || 1;
+            document.getElementById('form_Image_URL').value = m.Image_URL || '';
+            var imgPrev = document.getElementById('form_Menu_Image_Preview');
+            var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
+            if (m.Image_URL && m.Image_URL.trim().length > 5) {
+              if (imgPrev) { imgPrev.src = m.Image_URL; imgPrev.classList.remove('hidden'); }
+              if (imgPlace) imgPlace.classList.add('hidden');
+            } else {
+              if (imgPrev) { imgPrev.src = ''; imgPrev.classList.add('hidden'); }
+              if (imgPlace) imgPlace.classList.remove('hidden');
+            }
             document.getElementById('menuModal').classList.remove('hidden');
             return;
           }
+        });
+      }
+
+      // Live Image Preview for URL input
+      var menuUrlInput = document.getElementById('form_Image_URL');
+      if (menuUrlInput) {
+        menuUrlInput.addEventListener('input', function() {
+          var val = menuUrlInput.value.trim();
+          var imgPrev = document.getElementById('form_Menu_Image_Preview');
+          var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
+          if (val.length > 5) {
+            if (imgPrev) { imgPrev.src = val; imgPrev.classList.remove('hidden'); }
+            if (imgPlace) imgPlace.classList.add('hidden');
+          } else {
+            if (imgPrev) { imgPrev.src = ''; imgPrev.classList.add('hidden'); }
+            if (imgPlace) imgPlace.classList.remove('hidden');
+          }
+        });
+      }
+
+      // Menu Image File Upload
+      var menuImgFileInput = document.getElementById('menuImageFileInput');
+      if (menuImgFileInput) {
+        menuImgFileInput.addEventListener('change', function(e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          var btnText = document.getElementById('uploadMenuImgBtnText');
+          if (btnText) btnText.textContent = 'กำลังอัปโหลด...';
+          var reader = new FileReader();
+          reader.onload = async function(evt) {
+            var b64 = evt.target.result;
+            try {
+              var res = await adminApi('uploadMenuImage', { base64Data: b64, fileName: file.name });
+              if (res && res.imageUrl) {
+                document.getElementById('form_Image_URL').value = res.imageUrl;
+                var imgPrev = document.getElementById('form_Menu_Image_Preview');
+                var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
+                if (imgPrev) { imgPrev.src = res.imageUrl; imgPrev.classList.remove('hidden'); }
+                if (imgPlace) imgPlace.classList.add('hidden');
+                alert('อัปโหลดรูปภาพเมนูเรียบร้อยแล้ว!');
+              } else {
+                alert('อัปโหลดไม่สำเร็จ: ' + (res ? res.message : 'Unknown error'));
+              }
+            } catch(err) { alert('อัปโหลดไม่สำเร็จ: ' + err); }
+            finally {
+              if (btnText) btnText.textContent = 'อัปโหลดรูปจากเครื่อง';
+            }
+          };
+          reader.readAsDataURL(file);
         });
       }
 
@@ -1093,7 +1242,8 @@
             Egg_ea: Number(document.getElementById('form_Egg_ea').value),
             Sausage_ea: Number(document.getElementById('form_Sausage_ea').value),
             Crabstick_ea: Number(document.getElementById('form_Crabstick_ea').value),
-            Box_ea: Number(document.getElementById('form_Box_ea').value)
+            Box_ea: Number(document.getElementById('form_Box_ea').value),
+            Image_URL: (document.getElementById('form_Image_URL')?.value || '').trim()
           };
           try {
             await adminApi('saveMenuItem', { payload: p });
@@ -1101,6 +1251,28 @@
             loadAllAdminData();
             alert('บันทึกเมนูสำเร็จ!');
           } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+        });
+      }
+
+      // Store Settings Toggles Listener
+      var chkCutoffEl = document.getElementById('cfg_Enable_Cutoff_Time');
+      if (chkCutoffEl) {
+        chkCutoffEl.addEventListener('change', function() {
+          var b = document.getElementById('cutoffStatusBadge');
+          if (b) {
+            b.textContent = chkCutoffEl.checked ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+            b.className = chkCutoffEl.checked ? 'text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded';
+          }
+        });
+      }
+      var chkQuotaEl = document.getElementById('cfg_Enable_Max_Quota');
+      if (chkQuotaEl) {
+        chkQuotaEl.addEventListener('change', function() {
+          var b = document.getElementById('quotaStatusBadge');
+          if (b) {
+            b.textContent = chkQuotaEl.checked ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+            b.className = chkQuotaEl.checked ? 'text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded';
+          }
         });
       }
 
@@ -1115,7 +1287,9 @@
             Store_Title: document.getElementById('cfg_Store_Title').value.trim(),
             Store_Subtitle: document.getElementById('cfg_Store_Subtitle').value.trim(),
             Store_Announcement: document.getElementById('cfg_Store_Announcement').value.trim(),
+            Enable_Cutoff_Time: document.getElementById('cfg_Enable_Cutoff_Time')?.checked ? "TRUE" : "FALSE",
             Cutoff_Time: document.getElementById('cfg_Cutoff_Time').value,
+            Enable_Max_Quota: document.getElementById('cfg_Enable_Max_Quota')?.checked ? "TRUE" : "FALSE",
             Max_Quota_Per_Day: Number(document.getElementById('cfg_Max_Quota_Per_Day').value),
             PromptPay_Account_Name: document.getElementById('cfg_PromptPay_Account_Name').value.trim(),
             PromptPay_Number: document.getElementById('cfg_PromptPay_Number').value.trim(),
