@@ -537,6 +537,11 @@
           <input type="number" id="form_Price" required min="0" placeholder="35" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold">
         </div>
 
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-600 block">คำอธิบายเมนู (สำหรับแสดงให้ลูกค้าอ่าน):</label>
+          <textarea id="form_Description" rows="2" placeholder="เช่น แซนวิชโบราณน้ำสลัดเข้มข้น ไส้แน่นเต็มแผ่น อิ่มคุ้ม" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium"></textarea>
+        </div>
+
         <!-- BOM INGREDIENTS SECTION -->
         <div class="border-t border-slate-100 pt-2 space-y-2">
           <p class="font-bold text-slate-700 text-xs">สูตรวัตถุดิบต่อ 1 กล่อง (BOM):</p>
@@ -566,9 +571,9 @@
 
         <!-- MENU IMAGE SECTION -->
         <div class="border-t border-slate-100 pt-2.5 space-y-2">
-          <label class="font-bold text-slate-700 block">รูปภาพเมนูแซนวิช:</label>
+          <label class="font-bold text-slate-700 block">รูปภาพเมนูแซนวิช (สี่เหลี่ยมจัตุรัส 1:1):</label>
           <div class="flex items-center space-x-3">
-            <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+            <div class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden shadow-inner aspect-square">
               <img id="form_Menu_Image_Preview" src="" alt="Menu Preview" class="w-full h-full object-cover hidden">
               <span id="form_Menu_Image_Placeholder" class="text-2xl text-slate-300">🥪</span>
             </div>
@@ -576,8 +581,8 @@
               <input type="text" id="form_Image_URL" placeholder="ใส่ URL รูปภาพ หรือกดอัปโหลด" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5 text-xs font-mono">
               <label class="cursor-pointer inline-flex items-center space-x-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition border border-slate-300">
                 <input type="file" id="menuImageFileInput" accept="image/*" class="sr-only">
-                <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i>
-                <span id="uploadMenuImgBtnText">อัปโหลดรูปจากเครื่อง</span>
+                <i class="fa-solid fa-crop-simple text-brand-500"></i>
+                <span id="uploadMenuImgBtnText">อัปโหลด & ครอบตัด 1:1</span>
               </label>
             </div>
           </div>
@@ -592,6 +597,49 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- SQUARE (1:1) CROPPER MODAL -->
+  <div id="squareCropModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-xs text-slate-800 flex items-center space-x-1.5">
+          <i class="fa-solid fa-crop-simple text-brand-500"></i>
+          <span>เลือกพื้นที่แสดงผลรูปภาพ (1:1)</span>
+        </h3>
+        <button id="btnCancelCrop" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <p class="text-[11px] text-slate-500 text-center">
+        ลากเลื่อนรูปเพื่อเลือกตำแหน่ง หรือปรับซูมตามต้องการ
+      </p>
+
+      <div class="relative w-[260px] h-[260px] mx-auto rounded-2xl overflow-hidden border-2 border-brand-500 shadow-inner bg-slate-900 flex items-center justify-center touch-none select-none">
+        <canvas id="cropCanvas" width="260" height="260" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+      </div>
+
+      <!-- Zoom Slider -->
+      <div class="space-y-1 px-2">
+        <div class="flex justify-between text-[11px] text-slate-500 font-semibold">
+          <span><i class="fa-solid fa-magnifying-glass-minus mr-1"></i>ย่อ</span>
+          <span>ขนาดรูปภาพ</span>
+          <span>ขยาย<i class="fa-solid fa-magnifying-glass-plus ml-1"></i></span>
+        </div>
+        <input type="range" id="cropZoomRange" min="1" max="3" step="0.02" value="1" class="w-full accent-brand-500 cursor-pointer">
+      </div>
+
+      <div class="flex items-center space-x-2 pt-2 border-t border-slate-100">
+        <button id="btnCancelCrop2" type="button" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition cursor-pointer">
+          ยกเลิก
+        </button>
+        <button id="btnConfirmCrop" type="button" class="w-2/3 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer">
+          <i class="fa-solid fa-check"></i>
+          <span id="confirmCropBtnText">ใช้รูปสี่เหลี่ยมนี้</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -770,7 +818,10 @@
       var botBasicId = (st.config && (st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID)) ? String(st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID).trim() : '';
 
       tbody.innerHTML = list.map(function(o) {
-        var items = Array.isArray(o.items) ? o.items.map(function(i){ return (i.name||i.id)+' (x'+i.qty+')'; }).join(', ') : (o.items||'');
+        var items = Array.isArray(o.items) ? o.items.map(function(i){
+          var noteBadge = (i.note && String(i.note).trim()) ? ('<br><span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block mt-0.5"><i class="fa-solid fa-pen-nib text-amber-600 mr-1"></i>' + String(i.note).trim() + '</span>') : '';
+          return '<div class="py-0.5"><span class="font-semibold text-slate-800">' + (i.name||i.id) + '</span> <span class="font-bold text-brand-600">x' + i.qty + '</span>' + noteBadge + '</div>';
+        }).join('<div class="my-1 border-t border-slate-100"></div>') : (o.items||'');
         var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold cursor-pointer" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
         
         // 💬 1:1 LINE Chat Deep Link
@@ -1109,6 +1160,7 @@
           document.getElementById('form_Menu_ID').readOnly = false;
           document.getElementById('form_Menu_Name').value = '';
           document.getElementById('form_Price').value = 35;
+          document.getElementById('form_Description').value = '';
           document.getElementById('form_Status').value = 'OPEN';
           document.getElementById('form_Bread_slice').value = 2;
           document.getElementById('form_Egg_ea').value = 1;
@@ -1157,6 +1209,7 @@
             document.getElementById('form_Menu_ID').readOnly = true;
             document.getElementById('form_Menu_Name').value = m.Menu_Name;
             document.getElementById('form_Price').value = m.Price;
+            document.getElementById('form_Description').value = m.Description || m.description || '';
             document.getElementById('form_Status').value = m.Status;
             document.getElementById('form_Bread_slice').value = m.Bread_slice || 0;
             document.getElementById('form_Egg_ea').value = m.Egg_ea || 0;
@@ -1196,33 +1249,195 @@
         });
       }
 
-      // Menu Image File Upload
+      // -------------------------------------------------------------
+      // ✂️ INTERACTIVE SQUARE (1:1) CROPPER LOGIC
+      // -------------------------------------------------------------
+      var cropModal = document.getElementById('squareCropModal');
+      var cropCanvas = document.getElementById('cropCanvas');
+      var cropCtx = cropCanvas ? cropCanvas.getContext('2d') : null;
+      var cropZoom = document.getElementById('cropZoomRange');
+      var cropImg = new Image();
+      var cropLoaded = false;
+      var cropScale = 1;
+      var cropX = 0, cropY = 0;
+      var isDraggingCrop = false;
+      var dragStartX = 0, dragStartY = 0;
+      var dragOrigX = 0, dragOrigY = 0;
+
+      function renderCrop() {
+        if (!cropLoaded || !cropCtx) return;
+        var cw = cropCanvas.width;
+        var ch = cropCanvas.height;
+        cropCtx.clearRect(0, 0, cw, ch);
+
+        var baseScale = Math.max(cw / cropImg.width, ch / cropImg.height);
+        var currentScale = baseScale * cropScale;
+        var dw = cropImg.width * currentScale;
+        var dh = cropImg.height * currentScale;
+
+        // Constrain offset so image always covers the square canvas
+        var minX = cw - dw;
+        var minY = ch - dh;
+        if (cropX > 0) cropX = 0;
+        if (cropX < minX) cropX = minX;
+        if (cropY > 0) cropY = 0;
+        if (cropY < minY) cropY = minY;
+
+        cropCtx.drawImage(cropImg, cropX, cropY, dw, dh);
+
+        // Draw 3x3 rule of thirds guidelines overlay
+        cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        cropCtx.lineWidth = 1;
+        cropCtx.beginPath();
+        cropCtx.moveTo(cw / 3, 0); cropCtx.lineTo(cw / 3, ch);
+        cropCtx.moveTo((cw * 2) / 3, 0); cropCtx.lineTo((cw * 2) / 3, ch);
+        cropCtx.moveTo(0, ch / 3); cropCtx.lineTo(cw, ch / 3);
+        cropCtx.moveTo(0, (ch * 2) / 3); cropCtx.lineTo(cw, (ch * 2) / 3);
+        cropCtx.stroke();
+      }
+
+      function initCropWithImage(dataUrl) {
+        cropImg.onload = function() {
+          cropLoaded = true;
+          cropScale = 1;
+          if (cropZoom) cropZoom.value = 1;
+          var cw = cropCanvas.width;
+          var ch = cropCanvas.height;
+          var baseScale = Math.max(cw / cropImg.width, ch / cropImg.height);
+          var dw = cropImg.width * baseScale;
+          var dh = cropImg.height * baseScale;
+          // Center initially
+          cropX = (cw - dw) / 2;
+          cropY = (ch - dh) / 2;
+          renderCrop();
+          if (cropModal) cropModal.classList.remove('hidden');
+        };
+        cropImg.src = dataUrl;
+      }
+
+      if (cropCanvas) {
+        // Mouse drag
+        cropCanvas.addEventListener('mousedown', function(e) {
+          isDraggingCrop = true;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          dragOrigX = cropX;
+          dragOrigY = cropY;
+        });
+        window.addEventListener('mousemove', function(e) {
+          if (!isDraggingCrop) return;
+          var dx = e.clientX - dragStartX;
+          var dy = e.clientY - dragStartY;
+          cropX = dragOrigX + dx;
+          cropY = dragOrigY + dy;
+          renderCrop();
+        });
+        window.addEventListener('mouseup', function() { isDraggingCrop = false; });
+
+        // Touch drag for mobile
+        cropCanvas.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 1) {
+            isDraggingCrop = true;
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+            dragOrigX = cropX;
+            dragOrigY = cropY;
+          }
+        }, { passive: true });
+        window.addEventListener('touchmove', function(e) {
+          if (!isDraggingCrop || e.touches.length !== 1) return;
+          var dx = e.touches[0].clientX - dragStartX;
+          var dy = e.touches[0].clientY - dragStartY;
+          cropX = dragOrigX + dx;
+          cropY = dragOrigY + dy;
+          renderCrop();
+        }, { passive: true });
+        window.addEventListener('touchend', function() { isDraggingCrop = false; });
+      }
+
+      if (cropZoom) {
+        cropZoom.addEventListener('input', function(e) {
+          var oldScale = cropScale;
+          cropScale = parseFloat(e.target.value) || 1;
+          var cw = cropCanvas.width;
+          var ch = cropCanvas.height;
+          var baseScale = Math.max(cw / cropImg.width, ch / cropImg.height);
+          // Zoom from center
+          var ratio = (baseScale * cropScale) / (baseScale * oldScale);
+          cropX = (cropX - cw / 2) * ratio + cw / 2;
+          cropY = (cropY - ch / 2) * ratio + ch / 2;
+          renderCrop();
+        });
+      }
+
+      // Close / Cancel Crop Modal
+      var closeCrop = function() {
+        if (cropModal) cropModal.classList.add('hidden');
+        var input = document.getElementById('menuImageFileInput');
+        if (input) input.value = '';
+      };
+      var btnCC1 = document.getElementById('btnCancelCrop');
+      var btnCC2 = document.getElementById('btnCancelCrop2');
+      if (btnCC1) btnCC1.addEventListener('click', closeCrop);
+      if (btnCC2) btnCC2.addEventListener('click', closeCrop);
+
+      // Confirm Crop & Upload
+      var btnConfirmCrop = document.getElementById('btnConfirmCrop');
+      if (btnConfirmCrop) {
+        btnConfirmCrop.addEventListener('click', async function() {
+          if (!cropLoaded) return;
+          var btnText = document.getElementById('confirmCropBtnText');
+          if (btnText) btnText.textContent = 'กำลังตัด & อัปโหลด...';
+          btnConfirmCrop.disabled = true;
+
+          try {
+            // High-resolution offscreen export (600x600 for sharp mobile screens)
+            var exportCanvas = document.createElement('canvas');
+            exportCanvas.width = 600;
+            exportCanvas.height = 600;
+            var eCtx = exportCanvas.getContext('2d');
+
+            var cw = cropCanvas.width;
+            var ch = cropCanvas.height;
+            var baseScale = Math.max(cw / cropImg.width, ch / cropImg.height);
+            var currentScale = baseScale * cropScale;
+            var dw = cropImg.width * currentScale;
+            var dh = cropImg.height * currentScale;
+
+            var mult = 600 / 260;
+            eCtx.drawImage(cropImg, cropX * mult, cropY * mult, dw * mult, dh * mult);
+
+            var croppedB64 = exportCanvas.toDataURL('image/jpeg', 0.88);
+            var res = await adminApi('uploadMenuImage', { base64Data: croppedB64, fileName: 'menu_' + Date.now() + '.jpg' });
+            if (res && res.imageUrl) {
+              document.getElementById('form_Image_URL').value = res.imageUrl;
+              var imgPrev = document.getElementById('form_Menu_Image_Preview');
+              var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
+              if (imgPrev) { imgPrev.src = res.imageUrl; imgPrev.classList.remove('hidden'); }
+              if (imgPlace) imgPlace.classList.add('hidden');
+              closeCrop();
+              alert('ครอบตัดและอัปโหลดรูปภาพ 1:1 เรียบร้อยแล้ว!');
+            } else {
+              alert('อัปโหลดไม่สำเร็จ: ' + (res ? res.message : 'Unknown error'));
+            }
+          } catch(err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            if (btnText) btnText.textContent = 'ใช้รูปสี่เหลี่ยมนี้';
+            btnConfirmCrop.disabled = false;
+          }
+        });
+      }
+
+      // Menu Image File Upload -> triggers Interactive Cropper
       var menuImgFileInput = document.getElementById('menuImageFileInput');
       if (menuImgFileInput) {
         menuImgFileInput.addEventListener('change', function(e) {
           var file = e.target.files[0];
           if (!file) return;
-          var btnText = document.getElementById('uploadMenuImgBtnText');
-          if (btnText) btnText.textContent = 'กำลังอัปโหลด...';
           var reader = new FileReader();
-          reader.onload = async function(evt) {
-            var b64 = evt.target.result;
-            try {
-              var res = await adminApi('uploadMenuImage', { base64Data: b64, fileName: file.name });
-              if (res && res.imageUrl) {
-                document.getElementById('form_Image_URL').value = res.imageUrl;
-                var imgPrev = document.getElementById('form_Menu_Image_Preview');
-                var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
-                if (imgPrev) { imgPrev.src = res.imageUrl; imgPrev.classList.remove('hidden'); }
-                if (imgPlace) imgPlace.classList.add('hidden');
-                alert('อัปโหลดรูปภาพเมนูเรียบร้อยแล้ว!');
-              } else {
-                alert('อัปโหลดไม่สำเร็จ: ' + (res ? res.message : 'Unknown error'));
-              }
-            } catch(err) { alert('อัปโหลดไม่สำเร็จ: ' + err); }
-            finally {
-              if (btnText) btnText.textContent = 'อัปโหลดรูปจากเครื่อง';
-            }
+          reader.onload = function(evt) {
+            initCropWithImage(evt.target.result);
           };
           reader.readAsDataURL(file);
         });
@@ -1237,6 +1452,7 @@
             Menu_ID: document.getElementById('form_Menu_ID').value.trim().toUpperCase(),
             Menu_Name: document.getElementById('form_Menu_Name').value.trim(),
             Price: Number(document.getElementById('form_Price').value),
+            Description: (document.getElementById('form_Description')?.value || '').trim(),
             Status: document.getElementById('form_Status').value,
             Bread_slice: Number(document.getElementById('form_Bread_slice').value),
             Egg_ea: Number(document.getElementById('form_Egg_ea').value),
