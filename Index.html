@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<!-- Last Updated: 2026-09-02 01:26 AM -->
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title id="pageTitle">Fresh Sandwiches - สั่งแซนวิชล่วงหน้า</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- LINE LIFF SDK -->
+  <script async charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf8f6',
+              100: '#f2e8e5',
+              500: '#e07a5f',
+              600: '#d1664b',
+              700: '#b84c32',
+              900: '#3d405b'
+            },
+            lineGreen: '#06C755'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Prompt", "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen pb-24">
+
+  <!-- LIFF Debug Toast -->
+  <div id="liffDebugToast" style="display:none;position:fixed;top:4px;left:50%;transform:translateX(-50%);z-index:9999;padding:6px 14px;border-radius:20px;color:#fff;font-size:12px;max-width:90%;text-align:center;word-break:break-all;pointer-events:none;"></div>
+
+  <!-- TOP HEADER -->
+  <header class="bg-white shadow-sm sticky top-0 z-30 px-4 py-3 border-b border-gray-100">
+    <div class="max-w-md mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span id="storeIconDisplay" class="text-2xl">🥪</span>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <h1 id="storeTitleDisplay" class="font-bold text-gray-900 text-base leading-tight">Fresh Sandwiches</h1>
+            <span class="text-[10px] bg-brand-500 text-white font-mono px-1.5 py-0.5 rounded-full font-bold shadow-sm">v4.0.0</span>
+          </div>
+          <p id="storeSubtitleDisplay" class="text-xs text-gray-500">พรีออเดอร์ แซนวิชสดใหม่ทุกวัน</p>
+        </div>
+      </div>
+      
+      <!-- User profile badge -->
+      <div id="userProfileBadge" class="flex items-center space-x-2 bg-gray-50 py-1 px-2.5 rounded-full border border-gray-200">
+        <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=e07a5f&color=fff" class="w-6 h-6 rounded-full border border-gray-300 object-cover" alt="Avatar">
+        <span id="userName" class="text-xs font-semibold text-gray-700 max-w-[100px] truncate">กำลังโหลด...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- STORE ANNOUNCEMENT BANNER -->
+  <div id="storeAnnouncementBanner" class="hidden bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-xs text-amber-800 font-medium">
+    <span id="storeAnnouncementText"></span>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-md mx-auto px-4 pt-4">
+
+    <!-- LOYALTY POINTS BANNER -->
+    <section class="bg-gradient-to-r from-amber-500 to-brand-500 rounded-2xl p-4 text-white shadow-md mb-4 flex items-center justify-between">
+      <div>
+        <div class="text-xs font-medium text-amber-100 uppercase tracking-wider flex items-center space-x-1">
+          <i class="fa-solid fa-crown text-yellow-300"></i>
+          <span>คะแนนสะสมของคุณ</span>
+        </div>
+        <div class="flex items-baseline space-x-1 mt-1">
+          <span id="userPointsDisplay" class="text-2xl font-black">0</span>
+          <span class="text-xs text-amber-100">แต้ม (1 กล่อง = 1 แต้ม)</span>
+        </div>
+      </div>
+      <div class="text-right">
+        <span class="inline-block bg-white/20 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-medium border border-white/30">
+          🎁 สะสมครบ 10 แต้ม ฟรี 1 กล่อง!
+        </span>
+      </div>
+    </section>
+
+    <!-- TAB 1: ORDER SANDWICH VIEW -->
+    <div id="tabOrderView" class="space-y-4">
+
+      <!-- STORE STATUS / CUTOFF BANNER -->
+      <div id="storeStatusCard" class="bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm flex items-center justify-between text-xs">
+        <div class="flex items-center space-x-2">
+          <span id="storeStatusDot" class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+          <span id="storeStatusText" class="font-medium text-gray-700">เปิดรับออเดอร์ (ปิดรับ 20:00 น.)</span>
+        </div>
+        <div id="quotaRemainingBadge" class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
+          เหลือ 30 กล่อง
+        </div>
+      </div>
+
+      <!-- STORE CLOSED NOTICE (Hidden by default) -->
+      <div id="storeClosedBanner" class="hidden bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-700 space-y-2">
+        <i class="fa-solid fa-door-closed text-4xl text-red-500 mb-1"></i>
+        <h3 class="font-bold text-base" id="closedReasonTitle">ร้านปิดรับออเดอร์แล้ว</h3>
+        <p class="text-xs text-red-600" id="closedReasonDesc">ขณะนี้เลยเวลาปิดรับออเดอร์ หรือโควตาประจำวันเต็มแล้ว ขออภัยในความไม่สะดวกครับ</p>
+      </div>
+
+      <!-- MENU SELECTION LIST -->
+      <div id="menuSection" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="font-bold text-gray-900 text-sm flex items-center space-x-1.5">
+            <i class="fa-solid fa-utensils text-brand-500"></i>
+            <span>เลือกเมนูแซนวิช</span>
+          </h2>
+          <span class="text-xs text-gray-400">เลือกจำนวนกล่องที่ต้องการ</span>
+        </div>
+
+        <div id="menuListContainer" class="space-y-2.5">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- LOYALTY REDEMPTION BOX (If customer has >= 10 points) -->
+      <div id="loyaltyRedemptionBox" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2.5">
+        <div class="flex items-start space-x-3">
+          <input type="checkbox" id="chkRedeemPoints" class="mt-1 w-4 h-4 text-amber-600 rounded focus:ring-amber-500 cursor-pointer">
+          <div class="flex-1">
+            <label for="chkRedeemPoints" class="font-bold text-xs text-amber-900 cursor-pointer flex items-center justify-between">
+              <span>🎁 ใช้ 10 แต้ม แลกรับแซนวิชฟรี 1 กล่อง</span>
+              <span class="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">Buy 1 Get 1 Free</span>
+            </label>
+            <p class="text-[11px] text-amber-700 mt-0.5">เงื่อนไข: สั่งซื้ออย่างน้อย 1 กล่อง สามารถเลือกเมนูใดก็ได้ฟรี 1 กล่อง</p>
+          </div>
+        </div>
+
+        <!-- Free Menu Selector -->
+        <div id="freeMenuSelectContainer" class="hidden pt-2 border-t border-amber-200/60">
+          <label class="block text-xs font-semibold text-amber-900 mb-1">
+            เลือกเมนูที่คุณต้องการรับฟรี:
+          </label>
+          <select id="freeMenuSelect" class="w-full text-xs bg-white border border-amber-300 rounded-lg p-2 focus:ring-amber-500 focus:border-amber-500 font-medium text-gray-800">
+          </select>
+        </div>
+      </div>
+
+      <!-- PAYMENT METHOD & DETAILS -->
+      <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-xs text-gray-900 uppercase tracking-wide flex items-center space-x-1.5">
+          <i class="fa-solid fa-credit-card text-brand-500"></i>
+          <span>วิธีชำระเงิน</span>
+        </h3>
+
+        <div class="grid grid-cols-2 gap-2">
+          <label id="paymentLabelTransfer" class="payment-option-label relative border-2 border-brand-500 bg-brand-50/40 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition">
+            <input type="radio" name="paymentMethod" value="Transfer" checked class="sr-only">
+            <i class="fa-solid fa-qrcode text-brand-600 text-lg mb-1"></i>
+            <span class="text-xs font-bold text-gray-800">โอนเงิน (PromptPay)</span>
+            <span class="text-[10px] text-gray-500">แนบสลิปเพื่อยืนยัน</span>
+          </label>
+
+          <label id="paymentLabelCOD" class="payment-option-label relative border-2 border-gray-200 bg-white rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition">
+            <input type="radio" name="paymentMethod" value="COD" class="sr-only">
+            <i class="fa-solid fa-hand-holding-dollar text-gray-500 text-lg mb-1"></i>
+            <span class="text-xs font-bold text-gray-800">เก็บเงินปลายทาง (COD)</span>
+            <span class="text-[10px] text-gray-500">ชำระตอนรับสินค้า</span>
+          </label>
+        </div>
+
+        <!-- Transfer Slip Upload Section -->
+        <div id="transferDetailsSection" class="space-y-3 pt-2">
+          <div class="bg-gray-50 rounded-xl p-3 border border-gray-200 flex flex-col items-center text-center space-y-2">
+            <div class="bg-white p-2 rounded-lg border border-gray-200 shadow-sm inline-block">
+              <img id="promptPayQrImg" src="https://via.placeholder.com/150x150.png?text=PromptPay+QR" alt="PromptPay QR" class="w-36 h-36 object-contain">
+            </div>
+            <div class="text-xs text-gray-700">
+              <p class="font-bold text-gray-900" id="promptPayAccName">Sandwich Shop</p>
+              <p class="font-mono text-gray-600" id="promptPayNumber">PromptPay: 0812345678</p>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-gray-700">แนบหลักฐานการโอนเงิน (สลิป) <span class="text-red-500">*</span></label>
+            <div class="flex items-center space-x-2">
+              <label class="flex-1 cursor-pointer bg-white border border-dashed border-gray-300 rounded-xl p-3 text-center hover:bg-gray-50 transition">
+                <input type="file" id="slipFileInput" accept="image/*" class="sr-only">
+                <div id="slipUploadPlaceholder" class="flex items-center justify-center space-x-2 text-xs text-gray-500">
+                  <i class="fa-solid fa-cloud-arrow-up text-brand-500 text-base"></i>
+                  <span>แตะเพื่อเลือกรูปสลิป</span>
+                </div>
+                <div id="slipUploadPreview" class="hidden flex items-center justify-center space-x-2 text-xs text-green-700 font-medium">
+                  <i class="fa-solid fa-circle-check text-green-600 text-base"></i>
+                  <span id="slipFileNameText">เลือกสลิปเรียบร้อยแล้ว</span>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDER SUMMARY & SUBMIT BUTTON -->
+      <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm space-y-2.5">
+        <h3 class="font-bold text-xs text-gray-900 uppercase tracking-wide">สรุปรายการสั่งซื้อ</h3>
+        
+        <div id="orderItemsSummary" class="text-xs space-y-1 text-gray-600">
+          <p class="text-gray-400 italic">ยังไม่มีรายการที่เลือก</p>
+        </div>
+
+        <div class="border-t border-gray-100 pt-2 space-y-1 text-xs">
+          <div class="flex justify-between text-gray-600">
+            <span>จำนวนกล่องทั้งหมด:</span>
+            <span id="summaryTotalQty" class="font-bold text-gray-900">0 กล่อง</span>
+          </div>
+          <div id="discountRow" class="hidden flex justify-between text-amber-600 font-medium">
+            <span>🎁 สิทธิ์ฟรี 1 กล่อง (10 แต้ม):</span>
+            <span id="summaryDiscount">- 0 ฿</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold text-gray-900 pt-1 border-t border-gray-100">
+            <span>ยอดสุทธิที่ต้องชำระ:</span>
+            <span id="summaryTotalPrice" class="text-base text-brand-600">0 ฿</span>
+          </div>
+        </div>
+
+        <button id="btnSubmitOrder" type="button" class="w-full mt-2 bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>ยืนยันการสั่งซื้อพรีออเดอร์</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: ORDER HISTORY VIEW -->
+    <div id="tabHistoryView" class="hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 text-sm flex items-center space-x-1.5">
+          <i class="fa-solid fa-clock-rotate-left text-brand-500"></i>
+          <span>ประวัติการสั่งซื้อของคุณ</span>
+        </h2>
+        <button id="btnRefreshHistory" type="button" class="text-xs text-brand-600 hover:text-brand-700 flex items-center space-x-1 font-medium bg-brand-50 px-2.5 py-1 rounded-lg cursor-pointer">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>รีเฟรช</span>
+        </button>
+      </div>
+
+      <div id="historyListContainer" class="space-y-3">
+        <div class="bg-white rounded-xl p-8 text-center text-gray-400 text-xs border border-gray-200">
+          <i class="fa-solid fa-receipt text-3xl mb-2 text-gray-300"></i>
+          <p>กำลังโหลดประวัติการสั่งซื้อ...</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR (2 TABS) -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 z-40 shadow-lg">
+    <div class="max-w-md mx-auto grid grid-cols-2 gap-1 px-4">
+      <button id="navBtnOrder" data-tab="order" type="button" class="flex flex-col items-center justify-center py-1 rounded-xl text-brand-600 font-bold transition cursor-pointer">
+        <i class="fa-solid fa-sandwich text-lg"></i>
+        <span class="text-[11px] mt-0.5">สั่งแซนวิช</span>
+      </button>
+
+      <button id="navBtnHistory" data-tab="history" type="button" class="flex flex-col items-center justify-center py-1 rounded-xl text-gray-400 font-medium transition cursor-pointer">
+        <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+        <span class="text-[11px] mt-0.5">ประวัติสั่งซื้อ</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- SUCCESS MODAL POPUP -->
+  <div id="successModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
+      <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div class="space-y-1">
+        <h3 class="font-bold text-lg text-gray-900">สั่งซื้อสำเร็จแล้ว!</h3>
+        <p class="text-xs text-gray-500">รหัสออเดอร์: <span id="modalOrderId" class="font-mono font-bold text-brand-600">--</span></p>
+        <p class="text-xs text-gray-600 pt-2">ร้านค้าได้รับคำสั่งซื้อของคุณเรียบร้อยแล้ว เตรียมรับความอร่อยในวันพรุ่งนี้ได้เลยครับ 🥪</p>
+      </div>
+      <button id="btnCloseSuccessModal" type="button" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition cursor-pointer">
+        ดูรายการในประวัติสั่งซื้อ
+      </button>
+    </div>
+  </div>
+
+  <!-- FULLSCREEN LOADING SPINNER -->
+  <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-5 flex items-center space-x-3 shadow-xl">
+      <i class="fa-solid fa-circle-notch fa-spin text-brand-500 text-2xl"></i>
+      <span class="text-xs font-bold text-gray-700" id="loadingText">กำลังดำเนินการ...</span>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC (GitHub Pages + Headless GAS API) -->
+  <script>
+    // ============================================================
+    // ⚙️ CONFIGURATION (Decoupled Architecture)
+    // ============================================================
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz1By_wElT1mGYkatyJxlBsaSGdP2gkVGaciG40i4OenK3AMxj8MfMvvFuTRBWWyRqR/exec";
+    const LIFF_ID = "2011369262-LFQQa3SO";
+
+    // --- API HELPER (Fetch without custom headers to prevent GAS CORS Preflight OPTIONS) ---
+    async function apiCall(action, payload) {
+      try {
+        const bodyObj = Object.assign({ action: action }, payload || {});
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify(bodyObj)
+          // DO NOT send headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        return data;
+      } catch (err) {
+        console.error("API Call error (" + action + "):", err);
+        throw err;
+      }
+    }
+
+    function getValidPromptPayNumber(num) {
+      let clean = String(num || '').replace(/[^0-9]/g, '');
+      if (clean.length === 9 && (clean.startsWith('8') || clean.startsWith('6') || clean.startsWith('9'))) {
+        clean = '0' + clean;
+      }
+      return clean;
+    }
+
+    const DEFAULT_MENUS = [
+      { id: 'M01', name: 'Sandwich Egg-Sausage (แซนวิชไข่ดาว-ไส้กรอก)', price: 35, status: 'OPEN' },
+      { id: 'M02', name: 'Sandwich Crabstick-Mayo (แซนวิชปูอัด-ไข่กุ้ง)', price: 35, status: 'OPEN' },
+      { id: 'M03', name: 'Sandwich Double Sausage & Cheese (แซนวิชไส้กรอกคู่ชีส)', price: 45, status: 'OPEN' },
+      { id: 'M04', name: 'Sandwich Egg Salad (แซนวิชสลัดไข่ต้ม)', price: 35, status: 'OPEN' },
+      { id: 'M05', name: 'Sandwich Ham-Cheese (แซนวิชแฮมชีส)', price: 45, status: 'OPEN' }
+    ];
+
+    const state = {
+      lineUid: 'MOCK_USER_001',
+      displayName: 'คุณลูกค้า',
+      pictureUrl: '',
+      config: null,
+      availableMenus: DEFAULT_MENUS,
+      userPoints: { totalPoints: 0, usedPoints: 0, availablePoints: 0 },
+      cart: {},
+      isRedeemingPoints: false,
+      freeMenuId: 'M01',
+      paymentMethod: 'Transfer',
+      slipBase64: ''
+    };
+
+    // 2. HELPER GAS REST API BRIDGE
+    function gasCall(fn, args, onSuccess, onFail) {
+      let payload = {};
+      if (fn === 'submitOrder' && args && args[0]) payload = { payload: args[0] };
+      else if (fn === 'getCustomerOrders' && args) payload = { lineUid: args[0] };
+      else if (fn === 'cancelOrder' && args) payload = { orderId: args[0], lineUid: args[1] };
+      else if (fn === 'getCustomerPoints' && args) payload = { lineUid: args[0], customerName: args[1] };
+      
+      apiCall(fn, payload)
+        .then(function(res) { if (onSuccess) onSuccess(res); })
+        .catch(function(err) { if (onFail) onFail(err.message || String(err)); });
+    }
+
+    // 3. UI RENDERING & SYNCHRONIZATION
+    function updateStoreStatusUI(config) {
+      if (!config) return;
+
+      const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el && text !== undefined && text !== null) el.textContent = text;
+      };
+
+      const title = config.storeTitle || config.Store_Title || 'Fresh Sandwiches';
+      const subtitle = config.storeSubtitle || config.Store_Subtitle || 'พรีออเดอร์ แซนวิชสดใหม่ทุกวัน';
+      const icon = config.storeIcon || config.Store_Icon || '🥪';
+      const announcement = config.storeAnnouncement || config.Store_Announcement || '';
+      const cutoff = config.cutoffTime || config.Cutoff_Time || '20:00';
+      const maxQ = Number(config.maxQuota || config.Max_Quota_Per_Day || 30);
+      const remainingQ = config.remainingQuota !== undefined ? Number(config.remainingQuota) : maxQ;
+      const accName = config.promptPayAccountName || config.PromptPay_Account_Name || 'Sandwich Shop';
+      const rawNum = config.promptPayNumber || config.PromptPay_Number || '';
+      const cleanNum = getValidPromptPayNumber(rawNum) || rawNum;
+      const qrUrl = config.promptPayQrUrl || config.PromptPay_QR_URL || '';
+
+      setText('storeTitleDisplay', title);
+      const titleEl = document.getElementById('pageTitle');
+      if (titleEl) titleEl.textContent = `${icon} ${title}`;
+      setText('storeSubtitleDisplay', subtitle);
+      setText('storeIconDisplay', icon);
+
+      const announceBanner = document.getElementById('storeAnnouncementBanner');
+      if (announceBanner) {
+        if (announcement) {
+          setText('storeAnnouncementText', `📢 ${announcement}`);
+          announceBanner.classList.remove('hidden');
+        } else {
+          announceBanner.classList.add('hidden');
+        }
+      }
+
+      const statusText = document.getElementById('storeStatusText');
+      const statusDot = document.getElementById('storeStatusDot');
+      const quotaBadge = document.getElementById('quotaRemainingBadge');
+      const closedBanner = document.getElementById('storeClosedBanner');
+      const submitBtn = document.getElementById('btnSubmitOrder');
+
+      if (quotaBadge) {
+        quotaBadge.textContent = `เหลือ ${remainingQ} / ${maxQ} กล่อง`;
+      }
+
+      const isOpen = config.isStoreOpen !== false && remainingQ > 0;
+      if (isOpen) {
+        if (statusDot) statusDot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
+        if (statusText) statusText.textContent = `เปิดรับออเดอร์ (ปิดรับ ${cutoff} น.)`;
+        if (closedBanner) closedBanner.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = false;
+      } else {
+        if (statusDot) statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+        if (statusText) statusText.textContent = `ปิดรับออเดอร์`;
+        if (closedBanner) closedBanner.classList.remove('hidden');
+        if (submitBtn) submitBtn.disabled = true;
+      }
+
+      if (accName) setText('promptPayAccName', accName);
+      if (cleanNum) setText('promptPayNumber', `PromptPay: ${cleanNum}`);
+
+      const qrImg = document.getElementById('promptPayQrImg');
+      if (qrImg) {
+        qrImg.onerror = function() {
+          this.onerror = null;
+          if (cleanNum) {
+            this.src = `https://promptpay.io/${cleanNum}.png`;
+          } else {
+            this.src = 'https://ui-avatars.com/api/?name=QR&background=e07a5f&color=fff';
+          }
+        };
+
+        if (qrUrl && qrUrl.trim().length > 5) {
+          let directSrc = qrUrl.trim();
+          if (directSrc.indexOf('drive.google.com') > -1) {
+            const match = directSrc.match(/\/d\/([a-zA-Z0-9_-]+)/) || directSrc.match(/id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) directSrc = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+          }
+          qrImg.src = directSrc;
+        } else if (cleanNum) {
+          qrImg.src = `https://promptpay.io/${cleanNum}.png`;
+        }
+      }
+    }
+
+    function onMenusLoaded(menus) {
+      const list = (menus && Array.isArray(menus) && menus.length > 0) ? menus : (state.availableMenus || DEFAULT_MENUS);
+      state.availableMenus = list;
+      const container = document.getElementById('menuListContainer');
+      const freeMenuSelect = document.getElementById('freeMenuSelect');
+      if (!container || !freeMenuSelect) return;
+      
+      container.innerHTML = '';
+      freeMenuSelect.innerHTML = '';
+
+      list.forEach(menu => {
+        if (state.cart[menu.id] === undefined) {
+          state.cart[menu.id] = 0;
+        }
+
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl p-3.5 border border-gray-200 shadow-sm flex items-center justify-between";
+        card.innerHTML = `
+          <div class="flex-1 pr-2">
+            <h4 class="font-bold text-xs text-gray-800">${menu.name}</h4>
+            <div class="text-brand-600 font-extrabold text-xs mt-0.5">${menu.price} ฿</div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button data-qty-btn="-1" data-menu-id="${menu.id}" type="button" class="qty-btn w-8 h-8 rounded-lg bg-gray-100 active:bg-gray-300 text-gray-700 font-bold flex items-center justify-center text-sm transition cursor-pointer">
+              <i class="fa-solid fa-minus pointer-events-none"></i>
+            </button>
+            <span id="qty-${menu.id}" class="w-6 text-center font-bold text-xs text-gray-900">${state.cart[menu.id] || 0}</span>
+            <button data-qty-btn="1" data-menu-id="${menu.id}" type="button" class="qty-btn w-8 h-8 rounded-lg bg-brand-500 active:bg-brand-700 text-white font-bold flex items-center justify-center text-sm transition shadow-sm cursor-pointer">
+              <i class="fa-solid fa-plus pointer-events-none"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+
+        const opt = document.createElement('option');
+        opt.value = menu.id;
+        opt.textContent = `${menu.name} (ปกติ ${menu.price} ฿ -> ฟรี)`;
+        freeMenuSelect.appendChild(opt);
+      });
+
+      if (list.length > 0) {
+        state.freeMenuId = list[0].id;
+      }
+    }
+
+    function onPointsLoaded(pts) {
+      if (!pts) return;
+      state.userPoints = pts;
+      const ptsDisplay = document.getElementById('userPointsDisplay');
+      if (ptsDisplay) ptsDisplay.textContent = pts.availablePoints || 0;
+
+      const loyaltyBox = document.getElementById('loyaltyRedemptionBox');
+      const chkRedeem = document.getElementById('chkRedeemPoints');
+
+      if (loyaltyBox && chkRedeem) {
+        if (pts.availablePoints >= 10) {
+          loyaltyBox.classList.remove('hidden');
+        } else {
+          loyaltyBox.classList.add('hidden');
+        }
+      }
+    }
+
+    function changeQty(menuId, delta) {
+      const current = state.cart[menuId] || 0;
+      const next = Math.max(0, current + delta);
+      state.cart[menuId] = next;
+      
+      const qtyEl = document.getElementById(`qty-${menuId}`);
+      if (qtyEl) qtyEl.textContent = next;
+
+      calculateSummary();
+    }
+
+    function calculateSummary() {
+      let totalQty = 0;
+      let rawPrice = 0;
+      const items = [];
+
+      for (let menuId in state.cart) {
+        const qty = state.cart[menuId];
+        if (qty > 0) {
+          const menu = (state.availableMenus || []).find(m => m.id === menuId);
+          if (menu) {
+            totalQty += qty;
+            rawPrice += (menu.price * qty);
+            items.push({
+              id: menu.id,
+              name: menu.name,
+              price: menu.price,
+              qty: qty
+            });
+          }
+        }
+      }
+
+      let discount = 0;
+      const discountRow = document.getElementById('discountRow');
+
+      if (state.isRedeemingPoints && totalQty >= 1) {
+        const freeItem = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
+        if (freeItem) {
+          discount = freeItem.price;
+        }
+        if (discountRow) {
+          discountRow.classList.remove('hidden');
+          const discText = document.getElementById('summaryDiscount');
+          if (discText) discText.textContent = `- ${discount} ฿ (${freeItem ? freeItem.name : 'ฟรี 1 กล่อง'})`;
+        }
+      } else {
+        if (discountRow) discountRow.classList.add('hidden');
+      }
+
+      let finalTotalPrice = Math.max(0, rawPrice - discount);
+
+      const summaryContainer = document.getElementById('orderItemsSummary');
+      if (summaryContainer) {
+        if (items.length === 0) {
+          summaryContainer.innerHTML = '<p class="text-gray-400 italic">ยังไม่มีรายการที่เลือก</p>';
+        } else {
+          summaryContainer.innerHTML = items.map(item => `
+            <div class="flex justify-between text-gray-700">
+              <span>${item.name} x ${item.qty}</span>
+              <span>${item.price * item.qty} ฿</span>
+            </div>
+          `).join('');
+        }
+      }
+
+      const totalQtyEl = document.getElementById('summaryTotalQty');
+      if (totalQtyEl) totalQtyEl.textContent = `${totalQty} กล่อง`;
+      const totalPriceEl = document.getElementById('summaryTotalPrice');
+      if (totalPriceEl) totalPriceEl.textContent = `${finalTotalPrice} ฿`;
+    }
+
+    function selectPaymentMethod(method) {
+      state.paymentMethod = method;
+      const labelTransfer = document.getElementById('paymentLabelTransfer');
+      const labelCOD = document.getElementById('paymentLabelCOD');
+      const transferSection = document.getElementById('transferDetailsSection');
+
+      if (method === 'Transfer') {
+        if (labelTransfer) {
+          labelTransfer.className = "payment-option-label relative border-2 border-brand-500 bg-brand-50/40 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition";
+        }
+        if (labelCOD) {
+          labelCOD.className = "payment-option-label relative border-2 border-gray-200 bg-white rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition";
+        }
+        if (transferSection) transferSection.classList.remove('hidden');
+      } else {
+        if (labelTransfer) {
+          labelTransfer.className = "payment-option-label relative border-2 border-gray-200 bg-white rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition";
+        }
+        if (labelCOD) {
+          labelCOD.className = "payment-option-label relative border-2 border-brand-500 bg-brand-50/40 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition";
+        }
+        if (transferSection) transferSection.classList.add('hidden');
+      }
+    }
+
+    function handleSlipFileSelect(event) {
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if (!file) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        alert("ขนาดไฟล์รูปใหญ่เกินไป กรุณาเลือกไฟล์ขนาดไม่เกิน 5MB");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        state.slipBase64 = e.target.result;
+        const placeholder = document.getElementById('slipUploadPlaceholder');
+        const preview = document.getElementById('slipUploadPreview');
+        const fileNameEl = document.getElementById('slipFileNameText');
+        if (placeholder) placeholder.classList.add('hidden');
+        if (preview) preview.classList.remove('hidden');
+        if (fileNameEl) fileNameEl.textContent = file.name;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitOrderHandler() {
+      const items = [];
+      let totalQty = 0;
+      let rawPrice = 0;
+
+      for (let menuId in state.cart) {
+        const qty = state.cart[menuId];
+        if (qty > 0) {
+          const menu = (state.availableMenus || []).find(m => m.id === menuId);
+          if (menu) {
+            totalQty += qty;
+            rawPrice += (menu.price * qty);
+            items.push({
+              id: menu.id,
+              name: menu.name,
+              price: menu.price,
+              qty: qty
+            });
+          }
+        }
+      }
+
+      if (totalQty <= 0) {
+        alert("กรุณาเลือกแซนวิชอย่างน้อย 1 กล่อง");
+        return;
+      }
+
+      if (state.isRedeemingPoints) {
+        if (state.userPoints.availablePoints < 10) {
+          alert("แต้มสะสมไม่เพียงพอสำหรับแลกรับฟรี");
+          return;
+        }
+        if (totalQty < 1) {
+          alert("ต้องสั่งซื้ออย่างน้อย 1 กล่องเพื่อใช้สิทธิ์แลกฟรี 1 กล่อง");
+          return;
+        }
+      }
+
+      if (state.paymentMethod === 'Transfer' && !state.slipBase64) {
+        alert("กรุณาแนบรูปสลิปการโอนเงินเพื่อยืนยันออเดอร์");
+        return;
+      }
+
+      let discount = 0;
+      if (state.isRedeemingPoints) {
+        const freeItem = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
+        discount = freeItem ? freeItem.price : 0;
+      }
+
+      const totalPrice = Math.max(0, rawPrice - discount);
+
+      const payload = {
+        lineUid: state.lineUid,
+        customerName: state.displayName,
+        items: items,
+        totalQty: totalQty,
+        totalPrice: totalPrice,
+        paymentMethod: state.paymentMethod,
+        isRedeemingPoints: state.isRedeemingPoints,
+        freeMenuId: state.freeMenuId,
+        slipBase64: state.paymentMethod === 'Transfer' ? state.slipBase64 : ''
+      };
+
+      showLoading(true, "กำลังส่งออเดอร์...");
+
+      gasCall('submitOrder', [payload], onOrderSubmitted, function(err) {
+        showLoading(false);
+        alert("ไม่สามารถบันทึกออเดอร์ได้: " + err);
+      });
+    }
+
+    function onOrderSubmitted(res) {
+      showLoading(false);
+      if (res && res.success) {
+        const modalOrderId = document.getElementById('modalOrderId');
+        if (modalOrderId) modalOrderId.textContent = res.orderId;
+        const modal = document.getElementById('successModal');
+        if (modal) modal.classList.remove('hidden');
+
+        for (let k in state.cart) state.cart[k] = 0;
+        document.querySelectorAll('[id^="qty-"]').forEach(el => el.textContent = '0');
+        state.slipBase64 = '';
+        state.isRedeemingPoints = false;
+        
+        const chk = document.getElementById('chkRedeemPoints');
+        if (chk) chk.checked = false;
+        const freeCont = document.getElementById('freeMenuSelectContainer');
+        if (freeCont) freeCont.classList.add('hidden');
+        const placeholder = document.getElementById('slipUploadPlaceholder');
+        if (placeholder) placeholder.classList.remove('hidden');
+        const preview = document.getElementById('slipUploadPreview');
+        if (preview) preview.classList.add('hidden');
+        const fileInput = document.getElementById('slipFileInput');
+        if (fileInput) fileInput.value = '';
+        
+        calculateSummary();
+        loadStoreData();
+        if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
+          gasCall('getCustomerPoints', [state.lineUid, state.displayName], onPointsLoaded, function(err) {
+            console.warn("Points reload notice:", err);
+          });
+        }
+      } else {
+        alert("เกิดข้อผิดพลาด: " + (res ? res.message : "ไม่สามารถทำรายการได้"));
+      }
+    }
+
+    function closeSuccessModal() {
+      const modal = document.getElementById('successModal');
+      if (modal) modal.classList.add('hidden');
+      switchTab('history');
+    }
+
+    function switchTab(tab) {
+      const tabOrder = document.getElementById('tabOrderView');
+      const tabHistory = document.getElementById('tabHistoryView');
+      const navOrder = document.getElementById('navBtnOrder');
+      const navHistory = document.getElementById('navBtnHistory');
+
+      if (tab === 'order') {
+        if (tabOrder) {
+          tabOrder.classList.remove('hidden');
+          tabOrder.style.display = 'block';
+        }
+        if (tabHistory) {
+          tabHistory.classList.add('hidden');
+          tabHistory.style.display = 'none';
+        }
+        if (navOrder) navOrder.className = "flex flex-col items-center justify-center py-1 rounded-xl text-brand-600 font-bold transition cursor-pointer";
+        if (navHistory) navHistory.className = "flex flex-col items-center justify-center py-1 rounded-xl text-gray-400 font-medium transition cursor-pointer";
+      } else {
+        if (tabOrder) {
+          tabOrder.classList.add('hidden');
+          tabOrder.style.display = 'none';
+        }
+        if (tabHistory) {
+          tabHistory.classList.remove('hidden');
+          tabHistory.style.display = 'block';
+        }
+        if (navOrder) navOrder.className = "flex flex-col items-center justify-center py-1 rounded-xl text-gray-400 font-medium transition cursor-pointer";
+        if (navHistory) navHistory.className = "flex flex-col items-center justify-center py-1 rounded-xl text-brand-600 font-bold transition cursor-pointer";
+        loadCustomerHistory();
+      }
+    }
+
+    function loadCustomerHistory() {
+      const container = document.getElementById('historyListContainer');
+      if (!container) return;
+      container.innerHTML = `
+        <div class="bg-white rounded-xl p-8 text-center text-gray-400 text-xs border border-gray-200">
+          <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-500 mb-2"></i>
+          <p>กำลังโหลดรายการสั่งซื้อ...</p>
+        </div>
+      `;
+
+      gasCall('getCustomerOrders', [state.lineUid], renderHistoryList, function(err) {
+        container.innerHTML = `<p class="text-red-500 text-xs text-center py-4">เกิดข้อผิดพลาด: ${err}</p>`;
+      });
+    }
+
+    function renderHistoryList(orders) {
+      const container = document.getElementById('historyListContainer');
+      if (!container) return;
+      
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl p-8 text-center text-gray-400 text-xs border border-gray-200 space-y-2">
+            <i class="fa-solid fa-bag-shopping text-3xl text-gray-300"></i>
+            <p class="font-medium text-gray-600">ยังไม่มีประวัติการสั่งซื้อ</p>
+            <p class="text-[11px] text-gray-400">เมื่อสั่งซื้อสำเร็จ รายการจะปรากฏที่นี่</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = orders.map(ord => {
+        let statusBadge = '';
+        switch (ord.status) {
+          case 'Pending':
+            statusBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">รอตรวจสอบ / Pending</span>';
+            break;
+          case 'Paid':
+            statusBadge = '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ชำระแล้ว / Paid</span>';
+            break;
+          case 'COD':
+            statusBadge = '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold">เก็บเงินปลายทาง / COD</span>';
+            break;
+          case 'Delivered':
+            statusBadge = '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-[10px] font-bold">จัดส่งแล้ว / Delivered</span>';
+            break;
+          case 'Cancelled':
+            statusBadge = '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ยกเลิกแล้ว / Cancelled</span>';
+            break;
+          default:
+            statusBadge = `<span class="bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full text-[10px] font-bold">${ord.status}</span>`;
+        }
+
+        const canCancel = (ord.status !== 'Delivered' && ord.status !== 'Cancelled');
+        const itemsHtml = Array.isArray(ord.items) 
+          ? ord.items.map(i => `<div class="flex justify-between text-gray-600"><span>• ${i.name || i.id || 'Item'}</span><span>x ${i.qty || 1}</span></div>`).join('')
+          : `<div class="text-gray-600">• ${ord.items || '-'}</div>`;
+
+        return `
+          <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm space-y-2.5">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+              <div>
+                <span class="font-mono font-bold text-xs text-gray-900">${ord.orderId}</span>
+                <span class="text-[10px] text-gray-400 block">${ord.timestamp}</span>
+              </div>
+              <div>${statusBadge}</div>
+            </div>
+
+            <div class="text-xs space-y-1">
+              ${itemsHtml}
+              ${ord.redeemedPoints > 0 ? '<div class="text-[11px] text-amber-600 font-semibold">🎁 ใช้สิทธิ์แลกฟรี 10 แต้ม</div>' : ''}
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs font-bold text-gray-900">
+              <span>ยอดรวม: <span class="text-brand-600">${ord.totalPrice} ฿</span> (${ord.totalQty} กล่อง)</span>
+              ${canCancel ? `
+                <button data-cancel-order-id="${ord.orderId}" type="button" class="btn-cancel-order text-[11px] text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition cursor-pointer">
+                  <i class="fa-solid fa-xmark"></i> ขอยกเลิก
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function cancelOrderHandler(orderId) {
+      if (!confirm(`คุณต้องการยกเลิกคำสั่งซื้อ ${orderId} ใช่หรือไม่?`)) return;
+
+      showLoading(true, "กำลังยกเลิกคำสั่งซื้อ...");
+
+      gasCall('cancelOrder', [orderId, state.lineUid], function(res) {
+        showLoading(false);
+        if (res.success) {
+          alert("ยกเลิกออเดอร์เรียบร้อยแล้ว");
+          loadCustomerHistory();
+          loadStoreData();
+          if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
+            gasCall('getCustomerPoints', [state.lineUid, state.displayName], onPointsLoaded, function(err) {
+              console.warn("Points reload notice:", err);
+            });
+          }
+        } else {
+          alert("ไม่สามารถยกเลิกได้: " + res.message);
+        }
+      }, function(err) {
+        showLoading(false);
+        alert("เกิดข้อผิดพลาด: " + err);
+      });
+    }
+
+    function showLoading(show, text) {
+      const overlay = document.getElementById('loadingOverlay');
+      const submitBtn = document.getElementById('btnSubmitOrder');
+      if (submitBtn) submitBtn.disabled = show;
+      if (!overlay) return;
+      if (show) {
+        const txtEl = document.getElementById('loadingText');
+        if (txtEl) txtEl.textContent = text || "กำลังดำเนินการ...";
+        overlay.classList.remove('hidden');
+      } else {
+        overlay.classList.add('hidden');
+      }
+    }
+
+    function loadStoreData() {
+      gasCall('getStoreConfig', [], function(res) {
+        if (!res || !res.success) return;
+        state.config = res;
+        updateStoreStatusUI(res);
+      }, function(err) { console.warn("Config notice:", err); });
+
+      gasCall('getAvailableMenus', [], function(menus) {
+        onMenusLoaded(menus);
+      }, function(err) { console.warn("Menu notice:", err); });
+    }
+
+    async function initLiff() {
+      const LIFF_ID = "2011369262-LFQQa3SO";
+
+      // Helper: show debug toast visible on screen
+      function liffDebug(msg, isError) {
+        console.log('[LIFF]', msg);
+        const el = document.getElementById('liffDebugToast');
+        if (el) {
+          el.textContent = msg;
+          el.style.display = 'block';
+          el.style.background = isError ? '#ef4444' : '#22c55e';
+          clearTimeout(el._timer);
+          el._timer = setTimeout(() => { el.style.display = 'none'; }, 15000);
+        }
+      }
+
+      // *** DEBUG: ยืนยันว่า initLiff ถูกเรียก ***
+      liffDebug('[v4.0.0] initLiff เริ่มทำงาน...');
+
+      // รอ LIFF SDK โหลด (เพราะโหลดแบบ async อาจยังไม่พร้อม)
+      let waitCount = 0;
+      while (typeof liff === 'undefined' && waitCount < 30) {
+        await new Promise(r => setTimeout(r, 200));
+        waitCount++;
+      }
+
+      if (typeof liff === 'undefined') {
+        liffDebug('❌ LIFF SDK ไม่โหลด (' + (waitCount * 200) + 'ms)', true);
+        state.displayName = 'คุณลูกค้า';
+        updateProfileUI();
+        return;
+      }
+
+      liffDebug('SDK โหลดแล้ว รอ ' + (waitCount * 200) + 'ms');
+
+      try {
+        // Timeout 8 วินาที
+        const liffInitPromise = liff.init({
+          liffId: LIFF_ID,
+          withLoginOnExternalBrowser: true
+        });
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('liff.init timeout 8s')), 8000)
+        );
+
+        await Promise.race([liffInitPromise, timeoutPromise]);
+
+        liffDebug('init OK | inClient=' + liff.isInClient() + ' | loggedIn=' + liff.isLoggedIn());
+
+        if (!liff.isLoggedIn()) {
+          if (liff.isInClient()) {
+            liffDebug('Not logged in → liff.login()');
+            liff.login();
+            return;
+          } else {
+            liffDebug('⚠️ Not in LINE client — guest mode', true);
+            state.displayName = 'คุณลูกค้า';
+          }
+        } else {
+          liffDebug('Logged in! Getting profile...');
+          const profile = await liff.getProfile();
+          if (profile) {
+            state.lineUid = profile.userId || state.lineUid;
+            state.displayName = profile.displayName || 'คุณลูกค้า';
+            state.pictureUrl = profile.pictureUrl || '';
+            liffDebug('✅ ' + profile.displayName);
+          }
+        }
+      } catch (err) {
+        const errMsg = err && err.message ? err.message : String(err);
+        liffDebug('❌ ' + errMsg, true);
+        console.error('[LIFF] error:', err);
+        state.displayName = state.displayName || 'คุณลูกค้า';
+      } finally {
+        updateProfileUI();
+        if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
+          gasCall('getCustomerPoints', [state.lineUid, state.displayName], onPointsLoaded, function(err) {
+            console.warn("Points load notice:", err);
+          });
+        }
+      }
+    }
+
+
+
+    function updateProfileUI() {
+      const nameEl = document.getElementById('userName');
+      if (nameEl) {
+        nameEl.textContent = state.displayName || 'คุณลูกค้า';
+      }
+      const avatarEl = document.getElementById('userAvatar');
+      if (avatarEl) {
+        if (state.pictureUrl && state.pictureUrl.startsWith('http')) {
+          avatarEl.src = state.pictureUrl;
+          avatarEl.onerror = function() {
+            this.onerror = null;
+            this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(state.displayName || 'User') + '&background=e07a5f&color=fff';
+          };
+        } else {
+          avatarEl.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(state.displayName || 'User') + '&background=e07a5f&color=fff';
+        }
+      }
+    }
+
+    // 4. MAIN INITIALIZATION & EVENT BINDINGS
+    function initCustomerApp() {
+      // Immediate render from injected server data (0ms)
+      if (serverMenus && Array.isArray(serverMenus) && serverMenus.length > 0) {
+        onMenusLoaded(serverMenus);
+      } else {
+        onMenusLoaded(DEFAULT_MENUS);
+      }
+
+      if (serverConfig && (serverConfig.success || serverConfig.storeTitle || serverConfig.Store_Title)) {
+        updateStoreStatusUI(serverConfig);
+      }
+
+      // Event Delegation for Qty + and - buttons
+      const menuContainer = document.getElementById('menuListContainer');
+      if (menuContainer) {
+        menuContainer.addEventListener('click', function(e) {
+          const btn = e.target.closest('.qty-btn');
+          if (!btn) return;
+          const delta = parseInt(btn.getAttribute('data-qty-btn'), 10) || 0;
+          const menuId = btn.getAttribute('data-menu-id');
+          if (menuId && delta !== 0) {
+            changeQty(menuId, delta);
+          }
+        });
+      }
+
+      // Event Delegation for Cancel order in history
+      const historyContainer = document.getElementById('historyListContainer');
+      if (historyContainer) {
+        historyContainer.addEventListener('click', function(e) {
+          const btn = e.target.closest('.btn-cancel-order');
+          if (!btn) return;
+          const orderId = btn.getAttribute('data-cancel-order-id');
+          if (orderId) {
+            cancelOrderHandler(orderId);
+          }
+        });
+      }
+
+      // Payment Method Options
+      const labelTransfer = document.getElementById('paymentLabelTransfer');
+      if (labelTransfer) {
+        labelTransfer.addEventListener('click', function() {
+          selectPaymentMethod('Transfer');
+        });
+      }
+
+      const labelCOD = document.getElementById('paymentLabelCOD');
+      if (labelCOD) {
+        labelCOD.addEventListener('click', function() {
+          selectPaymentMethod('COD');
+        });
+      }
+
+      // Slip File Selection
+      const slipInput = document.getElementById('slipFileInput');
+      if (slipInput) {
+        slipInput.addEventListener('change', handleSlipFileSelect);
+      }
+
+      // Loyalty Redeem Checkbox
+      const chkRedeem = document.getElementById('chkRedeemPoints');
+      if (chkRedeem) {
+        chkRedeem.addEventListener('change', function(e) {
+          state.isRedeemingPoints = e.target.checked;
+          const freeSelect = document.getElementById('freeMenuSelectContainer');
+          if (freeSelect) {
+            if (e.target.checked) {
+              freeSelect.classList.remove('hidden');
+            } else {
+              freeSelect.classList.add('hidden');
+            }
+          }
+          calculateSummary();
+        });
+      }
+
+      // Free Menu Selector
+      const freeMenuEl = document.getElementById('freeMenuSelect');
+      if (freeMenuEl) {
+        freeMenuEl.addEventListener('change', function(e) {
+          state.freeMenuId = e.target.value;
+          calculateSummary();
+        });
+      }
+
+      // Submit Order Button
+      const btnSubmit = document.getElementById('btnSubmitOrder');
+      if (btnSubmit) {
+        btnSubmit.addEventListener('click', submitOrderHandler);
+      }
+
+      // Refresh History Button
+      const btnRefreshHist = document.getElementById('btnRefreshHistory');
+      if (btnRefreshHist) {
+        btnRefreshHist.addEventListener('click', loadCustomerHistory);
+      }
+
+      // Bottom Nav Tab Buttons
+      const tabBtns = document.querySelectorAll('[data-tab]');
+      tabBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const targetTab = btn.getAttribute('data-tab');
+          if (targetTab) switchTab(targetTab);
+        });
+      });
+
+      // Close Success Modal Button
+      const btnCloseModal = document.getElementById('btnCloseSuccessModal');
+      if (btnCloseModal) {
+        btnCloseModal.addEventListener('click', closeSuccessModal);
+      }
+
+      // Background Live updates
+      loadStoreData();
+
+      // Init LIFF
+      initLiff();
+    }
+
+    // ⚡ Error catcher — แสดง error ที่ทำให้ initCustomerApp ไม่ทำงาน
+    window.onerror = function(msg, src, line, col, err) {
+      var t = document.getElementById('liffDebugToast');
+      if (t) {
+        t.textContent = '❌ JS Error: ' + msg + ' L' + line;
+        t.style.display = 'block';
+        t.style.background = '#ef4444';
+      }
+      return false;
+    };
+
+    // ⚡ Critical for GAS Sandbox: ใช้ทั้ง DOMContentLoaded + direct call
+    function _bootApp() {
+      try {
+        initCustomerApp();
+      } catch(e) {
+        var t = document.getElementById('liffDebugToast');
+        if (t) {
+          t.textContent = '❌ initCustomerApp Error: ' + (e && e.message ? e.message : String(e));
+          t.style.display = 'block';
+          t.style.background = '#ef4444';
+        }
+        console.error('initCustomerApp failed:', e);
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', _bootApp);
+    } else {
+      _bootApp();
+    }
+  </script>
+</body>
+</html>
+
+

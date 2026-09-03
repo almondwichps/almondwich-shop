@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlmondWich Admin Portal - ระบบจัดการร้านแซนวิช</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf8f6',
+              100: '#f2e8e5',
+              500: '#e07a5f',
+              600: '#d1664b',
+              700: '#b84c32',
+              900: '#3d405b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Prompt", "Segoe UI", Roboto, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-20">
+
+  <!-- ===================================================================== -->
+  <!-- 🔒 LAYER 1 SECURITY: 6-DIGIT PIN GATE SCREEN -->
+  <!-- ===================================================================== -->
+  <div id="pinScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl space-y-6 text-center">
+      <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <div>
+        <h2 class="font-black text-xl text-slate-900">Merchant Admin</h2>
+        <p class="text-xs text-slate-500 mt-1">กรุณากรอกรหัส PIN 6 หลัก เพื่อเข้าสู่ระบบ</p>
+      </div>
+      <form id="pinForm" class="space-y-4">
+        <div>
+          <input type="password" id="inputAdminPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autofocus required
+            class="w-full text-center text-3xl tracking-[0.4em] font-mono font-bold bg-slate-50 border-2 border-slate-200 focus:border-brand-500 focus:bg-white rounded-2xl py-3 px-4 outline-none transition">
+          <p id="pinErrorMsg" class="hidden text-xs text-red-500 font-bold mt-2"></p>
+        </div>
+        <button type="submit" id="btnSubmitPin" class="w-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
+          <span id="btnSubmitPinText">เข้าสู่ระบบ</span>
+          <i id="btnSubmitPinSpinner" class="hidden fa-solid fa-circle-notch fa-spin text-sm"></i>
+        </button>
+      </form>
+      <div class="text-[11px] text-slate-400">
+        🔒 AlmondWich Security System v4.0.0
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- 📱 MAIN DASHBOARD WRAPPER (Hidden until authenticated) -->
+  <!-- ===================================================================== -->
+  <div id="adminMainWrapper" style="display: none;">
+
+    <!-- TOP APP HEADER -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+      <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <span class="text-2xl">🥪</span>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="font-black text-base tracking-tight leading-tight">SANDWICH MERCHANT</h1>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.0.0</span>
+            </div>
+            <p class="text-[11px] text-slate-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex items-center space-x-2">
+          <button id="btn-refresh" type="button" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 transition flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-rotate"></i>
+            <span class="hidden sm:inline">รีเฟรช</span>
+          </button>
+
+          <button id="btn-finish-all" type="button" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-truck-fast"></i>
+            <span class="hidden sm:inline">จัดส่งเสร็จสิ้นทั้งหมด</span>
+          </button>
+
+          <button id="btn-logout" type="button" title="ออกจากระบบ" class="bg-red-900/80 hover:bg-red-800 text-red-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-red-700/50 transition flex items-center space-x-1 cursor-pointer">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span class="hidden sm:inline">ออก</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- NAVIGATION TABS (DESKTOP) -->
+      <div class="border-t border-slate-800 bg-slate-900/90 backdrop-blur px-4">
+        <div class="max-w-7xl mx-auto flex space-x-2 text-xs font-bold overflow-x-auto py-2">
+          <button type="button" id="dtab-orders" data-tab="orders" class="tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-list-check"></i>
+            <span>1. จัดการคำสั่งซื้อ</span>
+          </button>
+
+          <button type="button" id="dtab-prep" data-tab="prep" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-kitchen-set"></i>
+            <span>2. สรุปยอดครัว / BOM</span>
+          </button>
+
+          <button type="button" id="dtab-menu" data-tab="menu" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-burger"></i>
+            <span>3. จัดการเมนู & สูตร</span>
+          </button>
+
+          <button type="button" id="dtab-settings" data-tab="settings" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-sliders"></i>
+            <span>4. ตั้งค่าร้านค้า & รหัสผ่าน</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="max-w-7xl mx-auto px-4 pt-4 pb-24 space-y-6">
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 1: ORDER MANAGEMENT (TAB 1) -->
+      <!-- ===================================================================== -->
+      <section id="section-orders" style="display: block;" class="space-y-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <h2 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-receipt text-brand-500"></i>
+              <span>รายการคำสั่งซื้อ</span>
+            </h2>
+            <select id="orderStatusFilter" class="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 outline-none">
+              <option value="ACTIVE">⚡ ออเดอร์ปัจจุบัน (Active)</option>
+              <option value="ALL">📋 ทั้งหมด (All)</option>
+              <option value="Pending">⏳ รอตรวจสอบ (Pending)</option>
+              <option value="Paid">💳 ชำระแล้ว (Paid)</option>
+              <option value="COD">📦 เก็บเงินปลายทาง (COD)</option>
+              <option value="Delivered">✅ จัดส่งแล้ว (Delivered)</option>
+              <option value="Cancelled">❌ ยกเลิกแล้ว (Cancelled)</option>
+            </select>
+          </div>
+
+          <div class="text-xs text-slate-500 flex items-center space-x-2">
+            <span class="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            <span>อัปเดตสถานะแบบ Real-time</span>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+                <tr>
+                  <th class="py-3 px-4">รหัสออเดอร์ / เวลา</th>
+                  <th class="py-3 px-4">ลูกค้า / แชต LINE</th>
+                  <th class="py-3 px-4">รายการที่สั่ง</th>
+                  <th class="py-3 px-4 text-center">กล่อง</th>
+                  <th class="py-3 px-4 text-right">ยอดเงิน</th>
+                  <th class="py-3 px-4 text-center">วิธีชำระ</th>
+                  <th class="py-3 px-4 text-center">สลิป</th>
+                  <th class="py-3 px-4 text-center">สถานะ</th>
+                  <th class="py-3 px-4 text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="9" class="py-8 text-center text-slate-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-500 mb-2"></i>
+                    <p class="font-medium">กำลังโหลดรายการออเดอร์...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 2: KITCHEN PREP & BOM SUMMARY (TAB 2) -->
+      <!-- ===================================================================== -->
+      <section id="section-prep" style="display: none;" class="space-y-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+          <h2 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+            <i class="fa-solid fa-kitchen-set text-brand-500"></i>
+            <span>สรุปยอดผลิตในครัว (2-Layer BOM Calculator)</span>
+          </h2>
+          <div class="text-xs bg-brand-50 text-brand-600 font-bold px-3 py-1 rounded-xl border border-brand-200" id="prepTotalBoxesBadge">
+            0 กล่อง
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Layer 1: By Menu -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+              <i class="fa-solid fa-layer-group text-blue-500"></i>
+              <span>Layer 1: ยอดรวมตามประเภทเมนู</span>
+            </h3>
+            <div id="prepMenuSummaryList" class="space-y-2">
+              <p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการที่ต้องผลิต</p>
+            </div>
+          </div>
+
+          <!-- Layer 2: Ingredients BOM -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+            <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+              <i class="fa-solid fa-egg text-amber-500"></i>
+              <span>Layer 2: วัตถุดิบรวมที่ต้องเตรียม (BOM)</span>
+            </h3>
+            <div id="prepIngredientsSummaryList" class="space-y-2">
+              <p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการวัตถุดิบ</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 3: MENU & BOM MANAGEMENT (TAB 3) -->
+      <!-- ===================================================================== -->
+      <section id="section-menu" style="display: none;" class="space-y-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+          <h2 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+            <i class="fa-solid fa-burger text-brand-500"></i>
+            <span>จัดการรายการเมนูแซนวิช & สูตร BOM</span>
+          </h2>
+          <button id="btn-add-menu" type="button" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl shadow transition text-xs flex items-center space-x-1 cursor-pointer">
+            <i class="fa-solid fa-plus"></i>
+            <span>เพิ่มเมนูใหม่</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+                <tr>
+                  <th class="py-3 px-4">รหัส</th>
+                  <th class="py-3 px-4">ชื่อเมนู</th>
+                  <th class="py-3 px-4 text-right">ราคา</th>
+                  <th class="py-3 px-4 text-center">สถานะ</th>
+                  <th class="py-3 px-4 text-center">ขนมปัง</th>
+                  <th class="py-3 px-4 text-center">ไข่</th>
+                  <th class="py-3 px-4 text-center">ไส้กรอก</th>
+                  <th class="py-3 px-4 text-center">ปูอัด</th>
+                  <th class="py-3 px-4 text-center">กล่อง</th>
+                  <th class="py-3 px-4 text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="menuTableBody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="10" class="py-8 text-center text-slate-400">
+                    กำลังโหลดเมนู...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 4: STORE SETTINGS & SECURITY (TAB 4) -->
+      <!-- ===================================================================== -->
+      <section id="section-settings" style="display: none;" class="space-y-4">
+        
+        <!-- Database Connector Card -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h2 class="font-bold text-slate-800 text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-database text-brand-500"></i>
+              <span>ฐานข้อมูล Google Sheets</span>
+            </h2>
+            <span id="connectedSheetNameBadge" class="text-xs font-bold bg-green-100 text-green-800 px-3 py-1 rounded-lg border border-green-200">
+              🟢 กำลังตรวจสอบ...
+            </span>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="cfg_Spreadsheet_Binding" placeholder="Google Sheet ID หรือ URL" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs font-mono">
+            <button id="btn-bind-sheet" type="button" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition cursor-pointer">
+              เชื่อมต่อชีต
+            </button>
+          </div>
+          <div id="diagnosticsDetails" class="text-xs text-slate-500"></div>
+        </div>
+
+        <!-- Store Controls Form -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-5">
+          <form id="storeSettingsForm" class="space-y-4 text-xs">
+
+            <!-- 1. Store Open / Close -->
+            <div class="space-y-3">
+              <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-power-off text-brand-500"></i>
+                <span>สถานะเปิด/ปิดร้าน</span>
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">เปิดรับคำสั่งซื้อ:</label>
+                  <select id="cfg_Store_Status" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold">
+                    <option value="OPEN">🟢 OPEN (เปิดรับออเดอร์ตามปกติ)</option>
+                    <option value="CLOSED">🔴 CLOSED (ปิดรับออเดอร์ชั่วคราว)</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">ไอคอนหน้าร้าน (Emoji):</label>
+                  <input type="text" id="cfg_Store_Icon" value="🥪" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Store Display Content -->
+            <div class="border-t border-slate-200 pt-4 space-y-3">
+              <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-store text-brand-500"></i>
+                <span>ข้อความและการสื่อสารลูกค้า</span>
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">ชื่อร้าน (Store Title):</label>
+                  <input type="text" id="cfg_Store_Title" value="Fresh Sandwiches" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">คำโปรยหน้าร้าน (Subtitle):</label>
+                  <input type="text" id="cfg_Store_Subtitle" value="พรีออเดอร์ แซนวิชสดใหม่ทุกวัน" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="font-semibold text-slate-700 block">ข้อความประกาศพิเศษ (Announcement):</label>
+                <input type="text" id="cfg_Store_Announcement" placeholder="เช่น ออเดอร์เต็มสำหรับวันพรุ่งนี้แล้ว" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+              </div>
+
+              <!-- LINE OA Basic ID for 1:1 Chat -->
+              <div class="space-y-1 bg-green-50 p-3 rounded-xl border border-green-200">
+                <label class="font-bold text-green-900 block flex items-center space-x-1.5">
+                  <i class="fa-brands fa-line text-green-600 text-base"></i>
+                  <span>LINE Official Account Basic ID (สำหรับปุ่มทักแชต 1:1):</span>
+                </label>
+                <input type="text" id="cfg_Line_Bot_Basic_ID" placeholder="เช่น @almondwich หรือ basic ID ของ LINE OA" class="w-full bg-white border border-green-300 rounded-lg p-2 font-mono text-xs text-green-800">
+                <p class="text-[10px] text-green-700">ใช้สร้างลิงก์เปิดห้องแชตกับลูกค้าโดยตรงผ่าน LINE Official Account Manager (chat.line.biz)</p>
+              </div>
+            </div>
+
+            <!-- 3. Quota & Cutoff -->
+            <div class="border-t border-slate-200 pt-4 space-y-3">
+              <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-clock text-brand-500"></i>
+                <span>รอบเวลาและโควตาประจำวัน</span>
+              </h3>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">เวลาปิดรับออเดอร์ (Cutoff):</label>
+                  <input type="time" id="cfg_Cutoff_Time" value="20:00" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono text-sm">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">โควตาสูงสุดต่อวัน (กล่อง):</label>
+                  <input type="number" id="cfg_Max_Quota_Per_Day" value="30" min="1" required class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-sm">
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. PromptPay & QR Code -->
+            <div class="border-t border-slate-200 pt-4 space-y-3">
+              <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-qrcode text-brand-500"></i>
+                <span>บัญชีรับชำระเงิน & QR Code</span>
+              </h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">ชื่อบัญชีรับเงิน:</label>
+                  <input type="text" id="cfg_PromptPay_Account_Name" value="Sandwich Merchant" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-semibold">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="font-semibold text-slate-700 block">เบอร์พร้อมเพย์ / เลขบัตร:</label>
+                  <input type="text" id="cfg_PromptPay_Number" value="0801898692" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-mono">
+                </div>
+              </div>
+
+              <!-- Upload QR Code File Box -->
+              <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                <label class="font-bold text-slate-800 block">รูปภาพ QR Code พร้อมเพย์ร้านค้า:</label>
+                
+                <div class="flex items-center space-x-4">
+                  <div class="bg-white p-2 border border-slate-200 rounded-xl w-24 h-24 flex items-center justify-center shrink-0">
+                    <img id="adminQrPreviewImg" src="https://promptpay.io/0801898692.png" class="w-full h-full object-contain" alt="QR Preview">
+                  </div>
+
+                  <div class="flex-1 space-y-2">
+                    <label class="cursor-pointer inline-flex items-center space-x-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold px-3 py-2 rounded-xl text-xs transition shadow-sm">
+                      <input type="file" id="qrFileInput" accept="image/*" class="sr-only">
+                      <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i>
+                      <span>อัปโหลดรูป QR Code ใหม่</span>
+                    </label>
+                    <p class="text-[10px] text-slate-400">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 5MB</p>
+                    <input type="hidden" id="cfg_PromptPay_QR_URL">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-save-settings" class="w-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-xs cursor-pointer">
+              <i class="fa-solid fa-floppy-disk text-sm"></i>
+              <span>บันทึกการตั้งค่าร้านค้าทั้งหมด</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- 🔒 Security Card: Change Admin PIN -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center space-x-1.5">
+            <i class="fa-solid fa-shield-halved text-brand-500"></i>
+            <span>ความปลอดภัย: เปลี่ยนรหัส PIN เข้า Admin (6 หลัก)</span>
+          </h3>
+          <p class="text-xs text-slate-500">รหัส PIN นี้จะถูกบันทึกลงในแท็บ <code>Security</code> ของ Google Sheets โดยตรง</p>
+          
+          <form id="changePinForm" class="flex flex-col sm:flex-row gap-2 items-center">
+            <input type="password" id="inputNewPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="กรอก PIN 6 หลักใหม่" required
+              class="w-full sm:w-64 bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-center font-mono font-bold tracking-widest text-sm">
+            <button type="submit" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition cursor-pointer">
+              บันทึก PIN ใหม่
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+  </div> <!-- End adminMainWrapper -->
+
+  <!-- SLIP PREVIEW MODAL -->
+  <div id="slipModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-4 max-w-sm w-full shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800">หลักฐานการโอนเงิน (สลิป)</h3>
+        <button id="btn-close-slip" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="max-h-[70vh] overflow-y-auto flex items-center justify-center bg-slate-50 rounded-2xl p-2">
+        <img id="modalSlipImg" src="" class="max-w-full h-auto rounded-xl object-contain shadow-sm" alt="Slip Preview">
+      </div>
+      <div class="flex items-center justify-end space-x-2 pt-1 text-xs">
+        <a id="modalSlipDirectLink" href="#" target="_blank" class="text-brand-600 font-bold hover:underline flex items-center space-x-1">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>เปิดรูปขนาดเต็ม</span>
+        </a>
+        <button id="btn-close-slip2" type="button" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold cursor-pointer">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU ADD/EDIT MODAL -->
+  <div id="menuModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800" id="menuModalTitle">แก้ไขเมนู / BOM</h3>
+        <button id="btn-close-menu" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="menuForm" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div class="space-y-1">
+            <label class="font-semibold text-slate-600 block">รหัสเมนู (Menu_ID):</label>
+            <input type="text" id="form_Menu_ID" required placeholder="M01" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-mono uppercase">
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-slate-600 block">สถานะขาย:</label>
+            <select id="form_Status" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-semibold">
+              <option value="OPEN">OPEN (เปิดขาย)</option>
+              <option value="CLOSED">CLOSED (ปิด)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-600 block">ชื่อเมนูแซนวิช:</label>
+          <input type="text" id="form_Menu_Name" required placeholder="Sandwich Egg-Sausage" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium">
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-600 block">ราคาขาย (บาท):</label>
+          <input type="number" id="form_Price" required min="0" placeholder="35" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-bold">
+        </div>
+
+        <!-- BOM INGREDIENTS SECTION -->
+        <div class="border-t border-slate-100 pt-2 space-y-2">
+          <p class="font-bold text-slate-700 text-xs">สูตรวัตถุดิบต่อ 1 กล่อง (BOM):</p>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <label class="text-slate-500 block">ขนมปัง (แผ่น):</label>
+              <input type="number" id="form_Bread_slice" value="2" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+            </div>
+            <div>
+              <label class="text-slate-500 block">ไข่ (ฟอง):</label>
+              <input type="number" id="form_Egg_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+            </div>
+            <div>
+              <label class="text-slate-500 block">ไส้กรอก (ชิ้น):</label>
+              <input type="number" id="form_Sausage_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+            </div>
+            <div>
+              <label class="text-slate-500 block">ปูอัด (ชิ้น):</label>
+              <input type="number" id="form_Crabstick_ea" value="0" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+            </div>
+            <div class="col-span-2">
+              <label class="text-slate-500 block">กล่องบรรจุ (ใบ):</label>
+              <input type="number" id="form_Box_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-2">
+          <button id="btn-cancel-menu" type="button" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl cursor-pointer">
+            ยกเลิก
+          </button>
+          <button type="submit" class="w-2/3 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl shadow-md cursor-pointer">
+            บันทึกเมนู
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION FOR MOBILE -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 z-40 shadow-lg">
+    <div class="grid grid-cols-4 gap-1 px-2 text-center">
+      <button data-tab="orders" type="button" id="mtab-orders" class="mobile-tab active flex flex-col items-center justify-center py-1">
+        <i class="fa-solid fa-receipt text-base"></i>
+        <span class="text-[10px] mt-0.5">ออเดอร์</span>
+      </button>
+      <button data-tab="prep" type="button" id="mtab-prep" class="mobile-tab flex flex-col items-center justify-center py-1">
+        <i class="fa-solid fa-kitchen-set text-base"></i>
+        <span class="text-[10px] mt-0.5">ครัว/BOM</span>
+      </button>
+      <button data-tab="menu" type="button" id="mtab-menu" class="mobile-tab flex flex-col items-center justify-center py-1">
+        <i class="fa-solid fa-burger text-base"></i>
+        <span class="text-[10px] mt-0.5">เมนู</span>
+      </button>
+      <button data-tab="settings" type="button" id="mtab-settings" class="mobile-tab flex flex-col items-center justify-center py-1">
+        <i class="fa-solid fa-sliders text-base"></i>
+        <span class="text-[10px] mt-0.5">ตั้งค่าร้าน</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================ -->
+  <!-- APPLICATION SCRIPT (GitHub Pages + Headless GAS API) -->
+  <!-- ============================================================ -->
+  <script>
+    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz1By_wElT1mGYkatyJxlBsaSGdP2gkVGaciG40i4OenK3AMxj8MfMvvFuTRBWWyRqR/exec";
+
+    var DEFAULT_MENUS = [
+      { Menu_ID:'M01', Menu_Name:'Sandwich Egg-Sausage (แซนวิชไข่ดาว-ไส้กรอก)', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:1, Sausage_ea:1, Crabstick_ea:0, Box_ea:1 },
+      { Menu_ID:'M02', Menu_Name:'Sandwich Crabstick-Mayo (แซนวิชปูอัด-ไข่กุ้ง)', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:0, Crabstick_ea:3, Box_ea:1 },
+      { Menu_ID:'M03', Menu_Name:'Sandwich Double Sausage & Cheese', Price:45, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:2, Crabstick_ea:0, Box_ea:1 }
+    ];
+
+    var st = {
+      config: { storeStatus:'OPEN', cutoffTime:'20:00', maxQuota:30, promptPayNumber:'0801898692', promptPayAccountName:'Sandwich Merchant', lineBotBasicId:'' },
+      menuItems: DEFAULT_MENUS,
+      orders: [],
+      prepSummary: { layer1Menu:{}, layer2Ingredients:{}, totalBoxes:0 }
+    };
+
+    // --- 1. REST API Helper (No Content-Type Header to prevent CORS Preflight) ---
+    async function adminApi(action, payload) {
+      const pin = sessionStorage.getItem('admin_pin') || '';
+      const bodyObj = Object.assign({ action: action, pin: pin }, payload || {});
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify(bodyObj)
+          // NO headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        if (data && data.error === 'unauthorized') {
+          sessionStorage.removeItem('admin_pin');
+          showPinGate(true, 'รหัส PIN ไม่ถูกต้องหรือเซสชันหมดอายุ กรุณากรอกรหัสใหม่อีกครั้ง');
+          throw new Error('Unauthorized');
+        }
+        return data;
+      } catch (err) {
+        console.error('Admin API error (' + action + '):', err);
+        throw err;
+      }
+    }
+
+    // --- 2. PIN Gate Screen Management ---
+    function showPinGate(show, errorMsg) {
+      const pinScreen = document.getElementById('pinScreen');
+      const mainWrapper = document.getElementById('adminMainWrapper');
+      const errEl = document.getElementById('pinErrorMsg');
+      const inputPin = document.getElementById('inputAdminPin');
+
+      if (show) {
+        if (pinScreen) pinScreen.style.display = 'flex';
+        if (mainWrapper) mainWrapper.style.display = 'none';
+        if (errEl) {
+          if (errorMsg) {
+            errEl.textContent = errorMsg;
+            errEl.classList.remove('hidden');
+          } else {
+            errEl.classList.add('hidden');
+          }
+        }
+        if (inputPin) {
+          inputPin.value = '';
+          inputPin.focus();
+        }
+      } else {
+        if (pinScreen) pinScreen.style.display = 'none';
+        if (mainWrapper) mainWrapper.style.display = 'block';
+      }
+    }
+
+    async function handlePinLogin(pin) {
+      const btnText = document.getElementById('btnSubmitPinText');
+      const btnSpinner = document.getElementById('btnSubmitPinSpinner');
+      const btn = document.getElementById('btnSubmitPin');
+      const errEl = document.getElementById('pinErrorMsg');
+
+      if (btn) btn.disabled = true;
+      if (btnText) btnText.textContent = "กำลังตรวจสอบ...";
+      if (btnSpinner) btnSpinner.classList.remove('hidden');
+      if (errEl) errEl.classList.add('hidden');
+
+      try {
+        const res = await fetch(GAS_API_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "adminVerifyPin", pin: pin })
+        });
+        const data = await res.json();
+
+        if (data && data.success) {
+          sessionStorage.setItem('admin_pin', pin);
+          showPinGate(false);
+          loadAllAdminData();
+          runDiagnostics();
+        } else {
+          showPinGate(true, data.message || "รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
+        }
+      } catch (err) {
+        showPinGate(true, "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: " + (err.message || err));
+      } finally {
+        if (btn) btn.disabled = false;
+        if (btnText) btnText.textContent = "เข้าสู่ระบบ";
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+      }
+    }
+
+    // --- 3. Tab Navigation ---
+    function switchTab(tabId) {
+      var tabs = ['orders','prep','menu','settings'];
+      for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var sec = document.getElementById('section-' + t);
+        var dtab = document.getElementById('dtab-' + t);
+        var mtab = document.getElementById('mtab-' + t);
+        if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
+        if (dtab) {
+          dtab.className = (t === tabId)
+            ? 'tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer'
+            : 'tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer';
+        }
+        if (mtab) {
+          mtab.className = (t === tabId)
+            ? 'mobile-tab active text-brand-500 font-bold flex flex-col items-center justify-center py-1 cursor-pointer'
+            : 'mobile-tab text-slate-400 font-normal flex flex-col items-center justify-center py-1 cursor-pointer';
+        }
+      }
+    }
+
+    // --- 4. Render: Orders Table + 1:1 LINE Chat Deep Link ---
+    function renderOrdersTable() {
+      var tbody = document.getElementById('ordersTableBody');
+      if (!tbody) return;
+      var filterEl = document.getElementById('orderStatusFilter');
+      var filter = filterEl ? filterEl.value : 'ACTIVE';
+      var list = st.orders || [];
+      if (filter === 'ACTIVE') list = list.filter(function(o){ return o.status === 'Pending' || o.status === 'Paid' || o.status === 'COD'; });
+      else if (filter !== 'ALL') list = list.filter(function(o){ return o.status === filter; });
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400"><i class="fa-solid fa-box-open text-2xl text-slate-300 mb-1"></i><p class="font-medium">ไม่พบรายการออเดอร์ในขณะนี้</p></td></tr>';
+        return;
+      }
+
+      var statusMap = {
+        Pending: '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">รอตรวจสอบ</span>',
+        Paid: '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ชำระแล้ว</span>',
+        COD: '<span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ปลายทาง</span>',
+        Delivered: '<span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-[10px] font-bold">จัดส่งแล้ว</span>',
+        Cancelled: '<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded-full text-[10px] font-bold">ยกเลิกแล้ว</span>'
+      };
+
+      var botBasicId = (st.config && (st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID)) ? String(st.config.lineBotBasicId || st.config.Line_Bot_Basic_ID).trim() : '';
+
+      tbody.innerHTML = list.map(function(o) {
+        var items = Array.isArray(o.items) ? o.items.map(function(i){ return (i.name||i.id)+' (x'+i.qty+')'; }).join(', ') : (o.items||'');
+        var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
+        
+        // 💬 1:1 LINE Chat Deep Link (UpgradeContext.md #4)
+        var chatLink = '';
+        if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
+          if (botBasicId) {
+            var chatUrl = 'https://chat.line.biz/' + encodeURIComponent(botBasicId) + '/chat/' + encodeURIComponent(o.lineUid);
+            chatLink = '<a href="' + chatUrl + '" target="_blank" class="inline-flex items-center space-x-1 bg-green-50 hover:bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold border border-green-200 transition"><i class="fa-brands fa-line text-green-600"></i><span>ทักแชต</span></a>';
+          } else {
+            chatLink = '<button type="button" class="btn-prompt-bot-id inline-flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-400 px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200"><i class="fa-brands fa-line"></i><span>ทักแชต</span></button>';
+          }
+        }
+
+        var confirm_btn = o.status === 'Pending' ? '<button class="order-status-btn bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[10px] font-bold" data-order-id="'+o.orderId+'" data-status="Paid">ยืนยัน</button>' : '';
+        var deliver_btn = (o.status === 'Paid' || o.status === 'COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
+        var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
+        
+        return '<tr class="hover:bg-slate-50 transition">' +
+          '<td class="py-3 px-4 font-mono font-bold">' + (o.orderId||'') + '<br><span class="text-[10px] text-slate-400 font-normal">' + (o.timestamp||'') + '</span></td>' +
+          '<td class="py-3 px-4 font-medium">' + (o.customerName||'ลูกค้า') + '<div class="mt-1">' + chatLink + '</div></td>' +
+          '<td class="py-3 px-4 text-slate-600">' + items + '</td>' +
+          '<td class="py-3 px-4 text-center font-bold">' + (o.totalQty||0) + '</td>' +
+          '<td class="py-3 px-4 text-right font-bold text-brand-600">' + (o.totalPrice||0) + ' ฿</td>' +
+          '<td class="py-3 px-4 text-center font-medium">' + (o.paymentMethod||'') + '</td>' +
+          '<td class="py-3 px-4 text-center">' + slip + '</td>' +
+          '<td class="py-3 px-4 text-center">' + (statusMap[o.status]||o.status) + '</td>' +
+          '<td class="py-3 px-4 text-center space-x-1">' + confirm_btn + ' ' + deliver_btn + ' ' + cancel_btn + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // --- 5. Render: Prep BOM ---
+    function renderPrepSummary() {
+      var p = st.prepSummary || { layer1Menu:{}, layer2Ingredients:{}, totalBoxes:0 };
+      var badge = document.getElementById('prepTotalBoxesBadge');
+      if (badge) badge.textContent = (p.totalBoxes||0) + ' กล่อง';
+      
+      var l1 = document.getElementById('prepMenuSummaryList');
+      if (l1) {
+        var mKeys = Object.keys(p.layer1Menu || {});
+        if (!mKeys.length) {
+          l1.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการที่ต้องผลิต</p>';
+        } else {
+          l1.innerHTML = mKeys.map(function(k){
+            return '<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">' +
+              '<span class="font-bold text-slate-700 text-xs">' + k + '</span>' +
+              '<span class="bg-blue-100 text-blue-800 font-black px-2.5 py-0.5 rounded-lg text-xs">' + p.layer1Menu[k] + ' กล่อง</span>' +
+            '</div>';
+          }).join('');
+        }
+      }
+
+      var l2 = document.getElementById('prepIngredientsSummaryList');
+      if (l2) {
+        var iKeys = Object.keys(p.layer2Ingredients || {});
+        if (!iKeys.length) {
+          l2.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการวัตถุดิบ</p>';
+        } else {
+          var labelMap = { bread:'ขนมปัง (แผ่น)', eggs:'ไข่ไก่ (ฟอง)', sausages:'ไส้กรอก (ชิ้น)', crabsticks:'ปูอัด (ชิ้น)', boxes:'กล่องบรรจุ (ใบ)' };
+          l2.innerHTML = iKeys.map(function(k){
+            return '<div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-100">' +
+              '<span class="font-bold text-slate-700 text-xs">' + (labelMap[k]||k) + '</span>' +
+              '<span class="bg-amber-100 text-amber-800 font-black px-2.5 py-0.5 rounded-lg text-xs">' + p.layer2Ingredients[k] + '</span>' +
+            '</div>';
+          }).join('');
+        }
+      }
+    }
+
+    // --- 6. Render: Menu Table ---
+    function renderMenuTable() {
+      var tbody = document.getElementById('menuTableBody');
+      if (!tbody) return;
+      var list = st.menuItems || [];
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-slate-400">ไม่พบเมนูในระบบ</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(function(m) {
+        var isOpen = m.Status === 'OPEN';
+        var statusBtn = '<button class="toggle-menu-btn '+(isOpen ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300')+' px-2.5 py-0.5 rounded-full text-[10px] font-bold border" data-menu-id="'+m.Menu_ID+'" data-current-status="'+m.Status+'">'+(isOpen ? '🟢 OPEN' : '🔴 CLOSED')+'</button>';
+        return '<tr class="hover:bg-slate-50 transition">' +
+          '<td class="py-3 px-4 font-mono font-bold">' + m.Menu_ID + '</td>' +
+          '<td class="py-3 px-4 font-medium">' + m.Menu_Name + '</td>' +
+          '<td class="py-3 px-4 text-right font-bold text-brand-600">' + m.Price + ' ฿</td>' +
+          '<td class="py-3 px-4 text-center">' + statusBtn + '</td>' +
+          '<td class="py-3 px-4 text-center">' + (m.Bread_slice||0) + '</td>' +
+          '<td class="py-3 px-4 text-center">' + (m.Egg_ea||0) + '</td>' +
+          '<td class="py-3 px-4 text-center">' + (m.Sausage_ea||0) + '</td>' +
+          '<td class="py-3 px-4 text-center">' + (m.Crabstick_ea||0) + '</td>' +
+          '<td class="py-3 px-4 text-center">' + (m.Box_ea||1) + '</td>' +
+          '<td class="py-3 px-4 text-center"><button class="edit-menu-btn text-brand-600 hover:text-brand-800 font-bold" data-menu-id="'+m.Menu_ID+'"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // --- 7. Settings Form Population ---
+    function populateSettingsForm() {
+      var c = st.config || {};
+      var setVal = function(id, v) { var el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+      setVal('cfg_Store_Status', c.storeStatus || 'OPEN');
+      setVal('cfg_Store_Icon', c.storeIcon || '🥪');
+      setVal('cfg_Store_Title', c.storeTitle || 'Fresh Sandwiches');
+      setVal('cfg_Store_Subtitle', c.storeSubtitle || 'พรีออเดอร์ แซนวิชสดใหม่ทุกวัน');
+      setVal('cfg_Store_Announcement', c.storeAnnouncement || '');
+      setVal('cfg_Cutoff_Time', c.cutoffTime || '20:00');
+      setVal('cfg_Max_Quota_Per_Day', c.maxQuota || 30);
+      setVal('cfg_PromptPay_Account_Name', c.promptPayAccountName || '');
+      setVal('cfg_PromptPay_Number', c.promptPayNumber || '');
+      setVal('cfg_PromptPay_QR_URL', c.promptPayQrUrl || '');
+      setVal('cfg_Line_Bot_Basic_ID', c.lineBotBasicId || c.Line_Bot_Basic_ID || '');
+
+      var img = document.getElementById('adminQrPreviewImg');
+      if (img) {
+        if (c.promptPayQrUrl) img.src = c.promptPayQrUrl;
+        else if (c.promptPayNumber) img.src = 'https://promptpay.io/' + c.promptPayNumber + '.png';
+      }
+    }
+
+    // --- 8. Diagnostics Rendering ---
+    function renderDiagnostics(res) {
+      var badge = document.getElementById('connectedSheetNameBadge');
+      var diagEl = document.getElementById('diagnosticsDetails');
+      if (res && res.connected) {
+        if (badge) { badge.textContent = '🟢 ' + (res.spreadsheetName || 'เชื่อมต่อสำเร็จ'); badge.className = 'font-bold text-green-700 bg-green-100 px-3 py-1 rounded-lg border border-green-300 text-xs'; }
+        if (diagEl) diagEl.innerHTML = '<p class="text-green-700 font-semibold"><i class="fa-solid fa-check"></i> เชื่อมต่อ Google Sheet สำเร็จ (ID: ' + (res.spreadsheetId || '') + ')</p>';
+      } else {
+        if (badge) { badge.textContent = 'ยังไม่เชื่อมต่อ'; badge.className = 'font-bold text-red-700 bg-red-100 px-3 py-1 rounded-lg border border-red-300 text-xs'; }
+        if (diagEl) diagEl.innerHTML = '<div class="p-3 bg-red-50 rounded-xl border border-red-200 text-red-700"><p class="font-bold"><i class="fa-solid fa-circle-xmark text-red-600"></i> ' + (res ? res.message : 'ไม่สามารถเชื่อมต่อ Google Sheet ได้') + '</p></div>';
+      }
+    }
+
+    // --- 9. Data Loading & Operations ---
+    async function loadAllAdminData() {
+      try {
+        const data = await adminApi('getAdminData');
+        if (!data || !data.success) return;
+        st.config = data.config || st.config;
+        st.menuItems = (data.menuItems && data.menuItems.length > 0) ? data.menuItems : st.menuItems;
+        st.orders = data.orders || [];
+        st.prepSummary = data.prepSummary || st.prepSummary;
+        renderOrdersTable();
+        renderPrepSummary();
+        renderMenuTable();
+        populateSettingsForm();
+      } catch (err) {
+        console.warn("loadAllAdminData error:", err);
+      }
+    }
+
+    async function runDiagnostics() {
+      try {
+        const res = await adminApi('getSystemDiagnostics');
+        renderDiagnostics(res);
+      } catch (err) {
+        var badge = document.getElementById('connectedSheetNameBadge');
+        if (badge) { badge.textContent = 'ข้อผิดพลาด'; badge.className = 'font-bold text-red-700 bg-red-100 px-3 py-1 rounded-lg border border-red-300 text-xs'; }
+      }
+    }
+
+    // --- 10. Initialization & Event Listeners ---
+    document.addEventListener('DOMContentLoaded', function() {
+
+      // PIN Gate Form Submit
+      const pinForm = document.getElementById('pinForm');
+      if (pinForm) {
+        pinForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const pin = document.getElementById('inputAdminPin').value.trim();
+          if (pin.length !== 6) {
+            document.getElementById('pinErrorMsg').textContent = "รหัส PIN ต้องเป็นตัวเลข 6 หลัก";
+            document.getElementById('pinErrorMsg').classList.remove('hidden');
+            return;
+          }
+          handlePinLogin(pin);
+        });
+      }
+
+      // Check existing session
+      const savedPin = sessionStorage.getItem('admin_pin');
+      if (savedPin) {
+        handlePinLogin(savedPin);
+      } else {
+        showPinGate(true);
+      }
+
+      // Logout Button
+      const logoutBtn = document.getElementById('btn-logout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+            sessionStorage.removeItem('admin_pin');
+            showPinGate(true);
+          }
+        });
+      }
+
+      // Tab Navigation (Desktop)
+      document.querySelectorAll('[data-tab]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      // Refresh Button
+      const refreshBtn = document.getElementById('btn-refresh');
+      if (refreshBtn) refreshBtn.addEventListener('click', function() { loadAllAdminData(); });
+
+      // Finish All Orders Button
+      const finishBtn = document.getElementById('btn-finish-all');
+      if (finishBtn) finishBtn.addEventListener('click', async function() {
+        if (!confirm('ยืนยันปิดจบยอดและบันทึก "จัดส่งแล้ว (Delivered)" ทั้งหมด? (ระบบจะแจกแต้มสะสมให้ลูกค้าทุกคนอัตโนมัติ)')) return;
+        try {
+          await adminApi('batchCompleteAllOrders');
+          loadAllAdminData();
+          alert('บันทึกส่งมอบทั้งหมดและแจกแต้มสะสมเรียบร้อยแล้ว!');
+        } catch(e) { alert('เกิดข้อผิดพลาด: ' + e); }
+      });
+
+      // Order Filter
+      const filterEl = document.getElementById('orderStatusFilter');
+      if (filterEl) filterEl.addEventListener('change', renderOrdersTable);
+
+      // Event Delegation: Orders Table Buttons (Slip, Status, Prompt Bot ID)
+      const ordersTbody = document.getElementById('ordersTableBody');
+      if (ordersTbody) {
+        ordersTbody.addEventListener('click', async function(e) {
+          var slipBtn = e.target.closest('.slip-btn');
+          if (slipBtn) {
+            var url = slipBtn.getAttribute('data-slip');
+            var modal = document.getElementById('slipModal');
+            var img = document.getElementById('modalSlipImg');
+            var link = document.getElementById('modalSlipDirectLink');
+            if (img) img.src = url;
+            if (link) link.href = url;
+            if (modal) modal.classList.remove('hidden');
+            return;
+          }
+
+          var statusBtn = e.target.closest('.order-status-btn');
+          if (statusBtn) {
+            var oId = statusBtn.getAttribute('data-order-id');
+            var newSt = statusBtn.getAttribute('data-status');
+            if (confirm('ต้องการเปลี่ยนสถานะออเดอร์ ' + oId + ' เป็น "' + newSt + '"?')) {
+              try {
+                await adminApi('updateOrderStatus', { orderId: oId, status: newSt });
+                loadAllAdminData();
+              } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+            }
+            return;
+          }
+
+          var botBtn = e.target.closest('.btn-prompt-bot-id');
+          if (botBtn) {
+            alert('กรุณาระบุ LINE OA Basic ID ในแท็บ "4. ตั้งค่าร้านค้า" ก่อนใช้งานปุ่มทักแชต 1:1');
+            switchTab('settings');
+            var el = document.getElementById('cfg_Line_Bot_Basic_ID');
+            if (el) el.focus();
+            return;
+          }
+        });
+      }
+
+      // Close Slip Modal
+      var closeSlip = function() { document.getElementById('slipModal').classList.add('hidden'); };
+      var bcs1 = document.getElementById('btn-close-slip');
+      var bcs2 = document.getElementById('btn-close-slip2');
+      if (bcs1) bcs1.addEventListener('click', closeSlip);
+      if (bcs2) bcs2.addEventListener('click', closeSlip);
+
+      // Menu Modal: Open Add
+      var addMenuBtn = document.getElementById('btn-add-menu');
+      if (addMenuBtn) {
+        addMenuBtn.addEventListener('click', function() {
+          document.getElementById('menuModalTitle').textContent = 'เพิ่มเมนูใหม่';
+          document.getElementById('form_Menu_ID').value = 'M0' + ((st.menuItems||[]).length + 1);
+          document.getElementById('form_Menu_ID').readOnly = false;
+          document.getElementById('form_Menu_Name').value = '';
+          document.getElementById('form_Price').value = 35;
+          document.getElementById('form_Status').value = 'OPEN';
+          document.getElementById('form_Bread_slice').value = 2;
+          document.getElementById('form_Egg_ea').value = 1;
+          document.getElementById('form_Sausage_ea').value = 1;
+          document.getElementById('form_Crabstick_ea').value = 0;
+          document.getElementById('form_Box_ea').value = 1;
+          document.getElementById('menuModal').classList.remove('hidden');
+        });
+      }
+
+      // Menu Modal: Close
+      var closeMenu = function() { document.getElementById('menuModal').classList.add('hidden'); };
+      var bcm1 = document.getElementById('btn-close-menu');
+      var bcm2 = document.getElementById('btn-cancel-menu');
+      if (bcm1) bcm1.addEventListener('click', closeMenu);
+      if (bcm2) bcm2.addEventListener('click', closeMenu);
+
+      // Menu Table Event Delegation (Toggle & Edit)
+      var menuTbody = document.getElementById('menuTableBody');
+      if (menuTbody) {
+        menuTbody.addEventListener('click', async function(e) {
+          var toggleBtn = e.target.closest('.toggle-menu-btn');
+          if (toggleBtn) {
+            var mId = toggleBtn.getAttribute('data-menu-id');
+            var cur = toggleBtn.getAttribute('data-current-status');
+            var next = (cur === 'OPEN') ? 'CLOSED' : 'OPEN';
+            try {
+              await adminApi('toggleMenuStatus', { menuId: mId, status: next });
+              loadAllAdminData();
+            } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+            return;
+          }
+
+          var editBtn = e.target.closest('.edit-menu-btn');
+          if (editBtn) {
+            var editId = editBtn.getAttribute('data-menu-id');
+            var m = (st.menuItems||[]).find(function(x){ return x.Menu_ID === editId; });
+            if (!m) return;
+            document.getElementById('menuModalTitle').textContent = 'แก้ไขเมนู ' + m.Menu_ID;
+            document.getElementById('form_Menu_ID').value = m.Menu_ID;
+            document.getElementById('form_Menu_ID').readOnly = true;
+            document.getElementById('form_Menu_Name').value = m.Menu_Name;
+            document.getElementById('form_Price').value = m.Price;
+            document.getElementById('form_Status').value = m.Status;
+            document.getElementById('form_Bread_slice').value = m.Bread_slice || 0;
+            document.getElementById('form_Egg_ea').value = m.Egg_ea || 0;
+            document.getElementById('form_Sausage_ea').value = m.Sausage_ea || 0;
+            document.getElementById('form_Crabstick_ea').value = m.Crabstick_ea || 0;
+            document.getElementById('form_Box_ea').value = m.Box_ea || 1;
+            document.getElementById('menuModal').classList.remove('hidden');
+            return;
+          }
+        });
+      }
+
+      // Menu Form Submit
+      var menuForm = document.getElementById('menuForm');
+      if (menuForm) {
+        menuForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var p = {
+            Menu_ID: document.getElementById('form_Menu_ID').value.trim().toUpperCase(),
+            Menu_Name: document.getElementById('form_Menu_Name').value.trim(),
+            Price: Number(document.getElementById('form_Price').value),
+            Status: document.getElementById('form_Status').value,
+            Bread_slice: Number(document.getElementById('form_Bread_slice').value),
+            Egg_ea: Number(document.getElementById('form_Egg_ea').value),
+            Sausage_ea: Number(document.getElementById('form_Sausage_ea').value),
+            Crabstick_ea: Number(document.getElementById('form_Crabstick_ea').value),
+            Box_ea: Number(document.getElementById('form_Box_ea').value)
+          };
+          try {
+            await adminApi('saveMenuItem', { payload: p });
+            document.getElementById('menuModal').classList.add('hidden');
+            loadAllAdminData();
+            alert('บันทึกเมนูสำเร็จ!');
+          } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+        });
+      }
+
+      // Store Settings Form Submit
+      var setForm = document.getElementById('storeSettingsForm');
+      if (setForm) {
+        setForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var payload = {
+            Store_Status: document.getElementById('cfg_Store_Status').value,
+            Store_Icon: document.getElementById('cfg_Store_Icon').value.trim(),
+            Store_Title: document.getElementById('cfg_Store_Title').value.trim(),
+            Store_Subtitle: document.getElementById('cfg_Store_Subtitle').value.trim(),
+            Store_Announcement: document.getElementById('cfg_Store_Announcement').value.trim(),
+            Cutoff_Time: document.getElementById('cfg_Cutoff_Time').value,
+            Max_Quota_Per_Day: Number(document.getElementById('cfg_Max_Quota_Per_Day').value),
+            PromptPay_Account_Name: document.getElementById('cfg_PromptPay_Account_Name').value.trim(),
+            PromptPay_Number: document.getElementById('cfg_PromptPay_Number').value.trim(),
+            PromptPay_QR_URL: document.getElementById('cfg_PromptPay_QR_URL').value.trim(),
+            Line_Bot_Basic_ID: document.getElementById('cfg_Line_Bot_Basic_ID').value.trim()
+          };
+          try {
+            await adminApi('updateConfig', { payload: payload });
+            alert('บันทึกการตั้งค่าร้านค้าเรียบร้อยแล้ว!');
+            loadAllAdminData();
+          } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+        });
+      }
+
+      // Change PIN Form Submit
+      var changePinForm = document.getElementById('changePinForm');
+      if (changePinForm) {
+        changePinForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var newPin = document.getElementById('inputNewPin').value.trim();
+          if (!/^\d{6}$/.test(newPin)) {
+            alert('รหัส PIN ต้องเป็นตัวเลข 6 หลักเท่านั้น');
+            return;
+          }
+          if (confirm('คุณต้องการเปลี่ยนรหัส PIN เข้า Admin เป็น "' + newPin + '" ใช่หรือไม่?')) {
+            try {
+              var res = await adminApi('changeAdminPin', { newPin: newPin });
+              if (res && res.success) {
+                sessionStorage.setItem('admin_pin', newPin);
+                document.getElementById('inputNewPin').value = '';
+                alert('เปลี่ยนรหัส PIN สำเร็จแล้ว! บันทึกลง Google Sheet เรียบร้อย');
+              } else {
+                alert('ไม่สามารถเปลี่ยนรหัสได้: ' + (res ? res.message : 'Error'));
+              }
+            } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
+          }
+        });
+      }
+
+      // Bind Spreadsheet Button
+      var bindBtn = document.getElementById('btn-bind-sheet');
+      if (bindBtn) {
+        bindBtn.addEventListener('click', async function() {
+          var val = document.getElementById('cfg_Spreadsheet_Binding').value.trim();
+          if (!val) { alert('กรุณาระบุ Google Sheet ID หรือ URL'); return; }
+          try {
+            var res = await adminApi('bindSpreadsheet', { spreadsheetId: val });
+            alert(res.message || 'เชื่อมต่อเรียบร้อย');
+            runDiagnostics();
+            loadAllAdminData();
+          } catch(err) { alert('ข้อผิดพลาด: ' + err); }
+        });
+      }
+
+      // QR Code File Upload
+      var qrInput = document.getElementById('qrFileInput');
+      if (qrInput) {
+        qrInput.addEventListener('change', function(e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = async function(evt) {
+            var b64 = evt.target.result;
+            var preview = document.getElementById('adminQrPreviewImg');
+            if (preview) preview.src = b64;
+            try {
+              var res = await adminApi('uploadQrImage', { base64Data: b64 });
+              if (res && res.qrUrl) {
+                var el = document.getElementById('cfg_PromptPay_QR_URL');
+                if (el) el.value = res.qrUrl;
+                alert('อัปโหลด QR Code สำเร็จแล้ว!');
+              }
+            } catch(err) { alert('อัปโหลดไม่สำเร็จ: ' + err); }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+    });
+  </script>
+</body>
+</html>
