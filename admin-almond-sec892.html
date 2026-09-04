@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.6.1</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.7.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -306,17 +306,13 @@
                   <th class="py-3 px-4">ชื่อเมนู</th>
                   <th class="py-3 px-4 text-right">ราคา</th>
                   <th class="py-3 px-4 text-center">สถานะ</th>
-                  <th class="py-3 px-4 text-center">ขนมปัง</th>
-                  <th class="py-3 px-4 text-center">ไข่</th>
-                  <th class="py-3 px-4 text-center">ไส้กรอก</th>
-                  <th class="py-3 px-4 text-center">ปูอัด</th>
-                  <th class="py-3 px-4 text-center">กล่อง</th>
+                  <th class="py-3 px-4">สูตรวัตถุดิบ (BOM)</th>
                   <th class="py-3 px-4 text-center">จัดการ</th>
                 </tr>
               </thead>
               <tbody id="menuTableBody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="11" class="py-8 text-center text-slate-400">
+                  <td colspan="7" class="py-8 text-center text-slate-400">
                     กำลังโหลดเมนู...
                   </td>
                 </tr>
@@ -743,31 +739,41 @@
           <textarea id="form_Description" rows="2" placeholder="เช่น แซนวิชโบราณน้ำสลัดเข้มข้น ไส้แน่นเต็มแผ่น อิ่มคุ้ม" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium"></textarea>
         </div>
 
-        <!-- BOM INGREDIENTS SECTION -->
-        <div class="border-t border-slate-100 pt-2 space-y-2">
-          <p class="font-bold text-slate-700 text-xs">สูตรวัตถุดิบต่อ 1 กล่อง (BOM):</p>
-          <div class="grid grid-cols-2 gap-2 text-xs">
+        <!-- DYNAMIC BOM INGREDIENTS SECTION -->
+        <div class="border-t border-slate-100 pt-2.5 space-y-2">
+          <div class="flex items-center justify-between">
             <div>
-              <label class="text-slate-500 block">ขนมปัง (แผ่น):</label>
-              <input type="number" id="form_Bread_slice" value="2" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
+              <p class="font-bold text-slate-800 text-xs flex items-center space-x-1.5">
+                <i class="fa-solid fa-kitchen-set text-brand-600"></i>
+                <span>สูตรวัตถุดิบต่อ 1 กล่อง (BOM):</span>
+              </p>
+              <p class="text-[10px] text-slate-400">กำหนดวัตถุดิบที่ใช้ในเมนูนี้ ระบบจะนำไปคำนวณยอดเตรียมของในครัว</p>
             </div>
-            <div>
-              <label class="text-slate-500 block">ไข่ (ฟอง):</label>
-              <input type="number" id="form_Egg_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
-            </div>
-            <div>
-              <label class="text-slate-500 block">ไส้กรอก (ชิ้น):</label>
-              <input type="number" id="form_Sausage_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
-            </div>
-            <div>
-              <label class="text-slate-500 block">ปูอัด (ชิ้น):</label>
-              <input type="number" id="form_Crabstick_ea" value="0" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
-            </div>
-            <div class="col-span-2">
-              <label class="text-slate-500 block">กล่องบรรจุ (ใบ):</label>
-              <input type="number" id="form_Box_ea" value="1" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-1.5">
-            </div>
+            <button type="button" id="btnAddIngredientRow" class="text-xs bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-2.5 py-1 rounded-lg border border-brand-200 transition flex items-center space-x-1 cursor-pointer shadow-sm">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>เพิ่มวัตถุดิบ</span>
+            </button>
           </div>
+
+          <!-- Dynamic Ingredient Rows Container -->
+          <div id="bomIngredientsContainer" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <!-- Dynamically populated rows -->
+          </div>
+
+          <!-- Datalist for Quick Ingredient Auto-complete -->
+          <datalist id="commonIngredientsList">
+            <option value="ขนมปัง (แผ่น)">
+            <option value="ไข่ไก่ (ฟอง)">
+            <option value="ไส้กรอก (ชิ้น)">
+            <option value="ปูอัด (ชิ้น)">
+            <option value="โบโลน่า (แผ่น)">
+            <option value="ไข่กุ้ง (ช้อน)">
+            <option value="ทูน่า (ช้อน/กรัม)">
+            <option value="ชีส (แผ่น)">
+            <option value="หมูหยอง (กรัม)">
+            <option value="น้ำพริกเผา (ช้อน)">
+            <option value="กล่องบรรจุ (ใบ)">
+          </datalist>
         </div>
 
         <!-- MENU IMAGE SECTION -->
@@ -1287,7 +1293,13 @@
             'crabsticks': 'ปูอัด (ชิ้น)',
             'Box_ea': 'กล่องบรรจุ (ใบ)',
             'box_ea': 'กล่องบรรจุ (ใบ)',
-            'boxes': 'กล่องบรรจุ (ใบ)'
+            'boxes': 'กล่องบรรจุ (ใบ)',
+            'Bologna_ea': 'โบโลน่า (แผ่น)',
+            'bologna_ea': 'โบโลน่า (แผ่น)',
+            'Shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)',
+            'shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)',
+            'Tuna_ea': 'ทูน่า (ช้อน/กรัม)',
+            'tuna_ea': 'ทูน่า (ช้อน/กรัม)'
           };
 
           l2.innerHTML = iKeys.map(function(k){
@@ -1307,26 +1319,53 @@
       if (!tbody) return;
       var list = st.menuItems || [];
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="11" class="py-8 text-center text-slate-400">ไม่พบเมนูในระบบ</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">ไม่พบเมนูในระบบ</td></tr>';
         return;
       }
+
+      var nonIngredientKeys = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description'];
+      var labelMapShort = {
+        'Bread_slice': 'ขนมปัง',
+        'bread_slice': 'ขนมปัง',
+        'Egg_ea': 'ไข่',
+        'egg_ea': 'ไข่',
+        'Sausage_ea': 'ไส้กรอก',
+        'sausage_ea': 'ไส้กรอก',
+        'Crabstick_ea': 'ปูอัด',
+        'crabstick_ea': 'ปูอัด',
+        'Box_ea': 'กล่อง',
+        'box_ea': 'กล่อง'
+      };
+
       tbody.innerHTML = list.map(function(m) {
         var isOpen = m.Status === 'OPEN';
         var statusBtn = '<button class="toggle-menu-btn '+(isOpen ? 'bg-green-100 text-green-700 border-green-300' : 'bg-red-100 text-red-700 border-red-300')+' px-2.5 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer" data-menu-id="'+m.Menu_ID+'" data-current-status="'+m.Status+'">'+(isOpen ? '🟢 OPEN' : '🔴 CLOSED')+'</button>';
         var imgThumb = (m.Image_URL && m.Image_URL.trim().length > 5)
           ? '<img src="' + m.Image_URL + '" class="w-10 h-10 rounded-lg object-cover border border-slate-200 mx-auto shadow-sm" alt="thumb" onerror="this.onerror=null; this.parentElement.innerHTML=\'<span class=\\\'text-lg text-slate-300\\\'>🥪</span>\';">'
           : '<span class="text-lg text-slate-300">🥪</span>';
+
+        // Extract ingredients used in this menu
+        var ings = [];
+        for (var k in m) {
+          if (!nonIngredientKeys.includes(k.toLowerCase())) {
+            var val = Number(m[k]) || 0;
+            if (val > 0) {
+              var shortName = labelMapShort[k] || k.replace(/\s*\(.*\)$/, '');
+              ings.push(shortName + ': ' + val);
+            }
+          }
+        }
+        var ingsHtml = ings.length > 0 
+          ? ('<div class="flex flex-wrap gap-1 max-w-xs">' + ings.map(function(item){ return '<span class="bg-amber-50 text-amber-900 border border-amber-200/80 text-[10px] font-semibold px-2 py-0.5 rounded-lg">' + item + '</span>'; }).join('') + '</div>')
+          : '<span class="text-slate-400 text-[11px] italic">ไม่มีข้อมูลสูตร</span>';
+
         return '<tr class="hover:bg-slate-50 transition">' +
           '<td class="py-3 px-4 font-mono font-bold">' + m.Menu_ID + '</td>' +
           '<td class="py-3 px-4 text-center">' + imgThumb + '</td>' +
           '<td class="py-3 px-4 font-medium">' + m.Menu_Name + '</td>' +
           '<td class="py-3 px-4 text-right font-bold text-brand-600">' + m.Price + ' ฿</td>' +
           '<td class="py-3 px-4 text-center">' + statusBtn + '</td>' +
-          '<td class="py-3 px-4 text-center">' + (m.Bread_slice||0) + '</td>' +
-          '<td class="py-3 px-4 text-center">' + (m.Egg_ea||0) + '</td>' +
-          '<td class="py-3 px-4 text-center">' + (m.Sausage_ea||0) + '</td>' +
-          '<td class="py-3 px-4 text-center">' + (m.Crabstick_ea||0) + '</td>' +
-          '<td class="py-3 px-4 text-center">' + (m.Box_ea||1) + '</td>' +
+          '<td class="py-3 px-4">' + ingsHtml + '</td>' +
           '<td class="py-3 px-4 text-center"><button class="edit-menu-btn text-brand-600 hover:text-brand-800 font-bold cursor-pointer" data-menu-id="'+m.Menu_ID+'"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button></td>' +
         '</tr>';
       }).join('');
@@ -1689,6 +1728,81 @@
       if (bcs1) bcs1.addEventListener('click', closeSlip);
       if (bcs2) bcs2.addEventListener('click', closeSlip);
 
+      // -------------------------------------------------------------
+      // 🥗 DYNAMIC BOM INGREDIENTS LOGIC
+      // -------------------------------------------------------------
+      var bomContainer = document.getElementById('bomIngredientsContainer');
+      var btnAddIngRow = document.getElementById('btnAddIngredientRow');
+
+      function createIngredientRow(name, qty) {
+        var row = document.createElement('div');
+        row.className = 'ingredient-row flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200';
+        row.innerHTML = 
+          '<div class="flex-1">' +
+            '<input type="text" list="commonIngredientsList" placeholder="ชื่อวัตถุดิบ (เช่น โบโลน่า, ไข่กุ้ง)" value="' + (name || '') + '" ' +
+              'class="ing-name-input w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-brand-500" required>' +
+          '</div>' +
+          '<div class="w-20">' +
+            '<input type="number" min="0" step="any" placeholder="จำนวน" value="' + (qty !== undefined ? qty : 1) + '" ' +
+              'class="ing-qty-input w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-center text-slate-800 focus:ring-1 focus:ring-brand-500" required>' +
+          '</div>' +
+          '<button type="button" class="btn-remove-ing text-red-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition cursor-pointer text-xs" title="ลบวัตถุดิบนี้">' +
+            '<i class="fa-solid fa-trash-can"></i>' +
+          '</button>';
+        
+        row.querySelector('.btn-remove-ing').addEventListener('click', function() {
+          row.remove();
+        });
+        return row;
+      }
+
+      if (btnAddIngRow) {
+        btnAddIngRow.addEventListener('click', function() {
+          if (bomContainer) {
+            var newRow = createIngredientRow('', 1);
+            bomContainer.appendChild(newRow);
+            var inp = newRow.querySelector('.ing-name-input');
+            if (inp) inp.focus();
+          }
+        });
+      }
+
+      function populateBomRows(ingredientsObj) {
+        if (!bomContainer) return;
+        bomContainer.innerHTML = '';
+        var keys = Object.keys(ingredientsObj || {});
+        if (keys.length === 0) {
+          // Default sensible recipe template for new menu
+          bomContainer.appendChild(createIngredientRow('ขนมปัง (แผ่น)', 2));
+          bomContainer.appendChild(createIngredientRow('กล่องบรรจุ (ใบ)', 1));
+        } else {
+          keys.forEach(function(k) {
+            var val = ingredientsObj[k];
+            if (val !== undefined && val !== null && val > 0) {
+              bomContainer.appendChild(createIngredientRow(k, val));
+            }
+          });
+        }
+      }
+
+      function getBomFromRows() {
+        var ings = {};
+        if (!bomContainer) return ings;
+        var rows = bomContainer.querySelectorAll('.ingredient-row');
+        rows.forEach(function(r) {
+          var nameInput = r.querySelector('.ing-name-input');
+          var qtyInput = r.querySelector('.ing-qty-input');
+          if (nameInput && qtyInput) {
+            var n = nameInput.value.trim();
+            var q = Number(qtyInput.value) || 0;
+            if (n) {
+              ings[n] = q;
+            }
+          }
+        });
+        return ings;
+      }
+
       // Menu Modal: Open Add
       var addMenuBtn = document.getElementById('btn-add-menu');
       if (addMenuBtn) {
@@ -1700,12 +1814,11 @@
           document.getElementById('form_Price').value = 35;
           document.getElementById('form_Description').value = '';
           document.getElementById('form_Status').value = 'OPEN';
-          document.getElementById('form_Bread_slice').value = 2;
-          document.getElementById('form_Egg_ea').value = 1;
-          document.getElementById('form_Sausage_ea').value = 1;
-          document.getElementById('form_Crabstick_ea').value = 0;
-          document.getElementById('form_Box_ea').value = 1;
           document.getElementById('form_Image_URL').value = '';
+          
+          // Populate default dynamic BOM
+          populateBomRows({});
+
           var imgPrev = document.getElementById('form_Menu_Image_Preview');
           var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
           if (imgPrev) { imgPrev.src = ''; imgPrev.classList.add('hidden'); }
@@ -1749,12 +1862,21 @@
             document.getElementById('form_Price').value = m.Price;
             document.getElementById('form_Description').value = m.Description || m.description || '';
             document.getElementById('form_Status').value = m.Status;
-            document.getElementById('form_Bread_slice').value = m.Bread_slice || 0;
-            document.getElementById('form_Egg_ea').value = m.Egg_ea || 0;
-            document.getElementById('form_Sausage_ea').value = m.Sausage_ea || 0;
-            document.getElementById('form_Crabstick_ea').value = m.Crabstick_ea || 0;
-            document.getElementById('form_Box_ea').value = m.Box_ea || 1;
             document.getElementById('form_Image_URL').value = m.Image_URL || '';
+
+            // Extract existing ingredients (skip non-ingredient columns)
+            var nonIngredientCols = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description'];
+            var itemIngredients = {};
+            for (var k in m) {
+              if (!nonIngredientCols.includes(k.toLowerCase())) {
+                var val = Number(m[k]);
+                if (!isNaN(val) && val > 0) {
+                  itemIngredients[k] = val;
+                }
+              }
+            }
+            populateBomRows(itemIngredients);
+
             var imgPrev = document.getElementById('form_Menu_Image_Preview');
             var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
             if (m.Image_URL && m.Image_URL.trim().length > 5) {
@@ -2058,24 +2180,21 @@
       if (menuForm) {
         menuForm.addEventListener('submit', async function(e) {
           e.preventDefault();
+          var customBom = getBomFromRows();
           var p = {
             Menu_ID: document.getElementById('form_Menu_ID').value.trim().toUpperCase(),
             Menu_Name: document.getElementById('form_Menu_Name').value.trim(),
             Price: Number(document.getElementById('form_Price').value),
             Description: (document.getElementById('form_Description')?.value || '').trim(),
             Status: document.getElementById('form_Status').value,
-            Bread_slice: Number(document.getElementById('form_Bread_slice').value),
-            Egg_ea: Number(document.getElementById('form_Egg_ea').value),
-            Sausage_ea: Number(document.getElementById('form_Sausage_ea').value),
-            Crabstick_ea: Number(document.getElementById('form_Crabstick_ea').value),
-            Box_ea: Number(document.getElementById('form_Box_ea').value),
-            Image_URL: (document.getElementById('form_Image_URL')?.value || '').trim()
+            Image_URL: (document.getElementById('form_Image_URL')?.value || '').trim(),
+            ingredients: customBom
           };
           try {
             await adminApi('saveMenuItem', { payload: p });
             document.getElementById('menuModal').classList.add('hidden');
             loadAllAdminData();
-            alert('บันทึกเมนูสำเร็จ!');
+            alert('บันทึกเมนูและสูตรวัตถุดิบสำเร็จแล้ว!');
           } catch(err) { alert('เกิดข้อผิดพลาด: ' + err); }
         });
       }
