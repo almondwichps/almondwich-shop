@@ -24,12 +24,16 @@
         extend: {
           colors: {
             brand: {
-              50: '#fdf8f6',
-              100: '#f2e8e5',
-              500: '#e07a5f',
-              600: '#d1664b',
-              700: '#b84c32',
-              900: '#3d405b'
+              50: '#fdfbf7',
+              100: '#f6ede0',
+              200: '#edd8be',
+              300: '#dfbc96',
+              400: '#c89569',
+              500: '#b06f41',
+              600: '#945532',
+              700: '#754024',
+              800: '#582f1b',
+              900: '#3d1f11'
             }
           }
         }
@@ -41,40 +45,47 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Prompt", "Segoe UI", Roboto, sans-serif;
     }
+    .glass-admin-card {
+      background: rgba(255, 255, 255, 0.8) !important;
+      backdrop-filter: blur(14px) saturate(180%);
+      -webkit-backdrop-filter: blur(14px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.7) !important;
+      box-shadow: 0 8px 30px -6px rgba(107, 63, 35, 0.08);
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen pb-20">
+<body class="bg-stone-100 text-stone-800 min-h-screen pb-20">
 
   <!-- ===================================================================== -->
-  <!-- 🔒 LAYER 1 SECURITY: 6-DIGIT PIN GATE SCREEN -->
+  <!-- 🔒 LAYER 1 SECURITY: 6-DIGIT PIN GATE SCREEN (Dark Frosted Glass) -->
   <!-- ===================================================================== -->
-  <div id="pinScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl space-y-6 text-center">
-      <div class="w-16 h-16 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
-        <i class="fa-solid fa-lock"></i>
+  <div id="pinScreen" class="fixed inset-0 bg-stone-950/80 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+    <div class="bg-white/90 backdrop-blur-2xl rounded-3xl p-8 max-w-sm w-full shadow-2xl space-y-6 text-center border border-white/60">
+      <div class="w-16 h-16 bg-brand-50 text-brand-700 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner border border-brand-200">
+        <i class="fa-solid fa-shield-halved"></i>
       </div>
       <div>
-        <h2 class="font-black text-xl text-slate-900">Merchant Admin</h2>
-        <p class="text-xs text-slate-500 mt-1">กรุณากรอกรหัส PIN 6 หลัก เพื่อเข้าสู่ระบบ</p>
+        <h2 class="font-black text-xl text-brand-900">AlmondWich Admin</h2>
+        <p class="text-xs text-stone-500 mt-1">กรุณากรอกรหัส PIN 6 หลัก เพื่อเข้าสู่ระบบ</p>
       </div>
       <form id="pinForm" class="space-y-4">
         <div>
           <div class="relative flex items-center">
             <input type="password" id="inputAdminPin" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" autofocus required
-              class="w-full text-center text-3xl tracking-[0.4em] font-mono font-bold bg-slate-50 border-2 border-slate-200 focus:border-brand-500 focus:bg-white rounded-2xl py-3 pl-10 pr-10 outline-none transition">
-            <button type="button" id="btnTogglePin" class="absolute right-3 text-slate-400 hover:text-slate-600 p-2 text-base focus:outline-none cursor-pointer" title="แสดง/ซ่อนรหัส PIN">
+              class="w-full text-center text-3xl tracking-[0.4em] font-mono font-bold bg-white border-2 border-stone-200 focus:border-brand-500 focus:bg-white rounded-2xl py-3 pl-10 pr-10 outline-none transition shadow-sm">
+            <button type="button" id="btnTogglePin" class="absolute right-3 text-stone-400 hover:text-stone-600 p-2 text-base focus:outline-none cursor-pointer" title="แสดง/ซ่อนรหัส PIN">
               <i id="eyeIcon" class="fa-solid fa-eye"></i>
             </button>
           </div>
           <p id="pinErrorMsg" class="hidden text-xs text-red-500 font-bold mt-2"></p>
         </div>
-        <button type="submit" id="btnSubmitPin" class="w-full bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
+        <button type="submit" id="btnSubmitPin" class="w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm cursor-pointer">
           <span id="btnSubmitPinText">เข้าสู่ระบบ</span>
           <i id="btnSubmitPinSpinner" class="hidden fa-solid fa-circle-notch fa-spin text-sm"></i>
         </button>
       </form>
-      <div class="text-[11px] text-slate-400">
-        🔒 AlmondWich Security System v4.0.0
+      <div class="text-[11px] text-stone-400 font-medium">
+        🔒 AlmondWich Security System v4.6.0
       </div>
     </div>
   </div>
@@ -85,16 +96,16 @@
   <div id="adminMainWrapper" style="display: none;">
 
     <!-- TOP APP HEADER -->
-    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <header class="bg-stone-900 text-white sticky top-0 z-30 shadow-md border-b border-stone-800">
       <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <span class="text-2xl">🥪</span>
           <div>
             <div class="flex items-center space-x-2">
-              <h1 class="font-black text-base tracking-tight leading-tight">SANDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.0.0</span>
+              <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.6.0</span>
             </div>
-            <p class="text-[11px] text-slate-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
+            <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
         </div>
 
@@ -363,6 +374,55 @@
                 <div class="space-y-1">
                   <label class="font-semibold text-slate-700 block">ไอคอนหน้าร้าน (Emoji):</label>
                   <input type="text" id="cfg_Store_Icon" value="🥪" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5">
+                </div>
+              </div>
+
+              <!-- Logo & Brand Image Settings (Circular Logo & Positioning) -->
+              <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200/80 space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="font-bold text-slate-800 text-xs flex items-center space-x-1.5">
+                    <i class="fa-solid fa-circle-user text-brand-600"></i>
+                    <span>รูปโลโก้ร้านค้า (ทรงกลม / Round Logo):</span>
+                  </label>
+                  <span class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Fix ทรงกลม</span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <!-- Circular Preview Box -->
+                  <div class="relative shrink-0 flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-full border-2 border-brand-400 p-0.5 shadow-md bg-white overflow-hidden flex items-center justify-center">
+                      <img id="adminLogoPreviewImg" src="https://img.icons8.com/color/96/sandwich.png" class="w-full h-full object-cover rounded-full" alt="Logo Preview">
+                    </div>
+                    <span class="text-[10px] text-slate-400 mt-1 font-medium">ตัวอย่างแสดงผล</span>
+                  </div>
+
+                  <!-- Upload Input & Position Dropdown -->
+                  <div class="flex-1 space-y-2.5 w-full">
+                    <div class="flex items-center gap-2">
+                      <label class="cursor-pointer inline-flex items-center space-x-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold px-3 py-2 rounded-xl text-xs transition shadow-sm">
+                        <input type="file" id="logoFileInput" accept="image/*" class="sr-only">
+                        <i class="fa-solid fa-cloud-arrow-up text-brand-600"></i>
+                        <span>อัปโหลดรูปโลโก้ใหม่</span>
+                      </label>
+                      <button type="button" id="btnClearLogo" class="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition cursor-pointer">
+                        <i class="fa-solid fa-trash-can"></i> ลบโลโก้
+                      </button>
+                    </div>
+                    <input type="hidden" id="cfg_Logo_URL">
+
+                    <!-- Free Position Control -->
+                    <div class="space-y-1">
+                      <label class="text-xs font-semibold text-slate-700 flex items-center space-x-1">
+                        <i class="fa-solid fa-arrows-left-right-to-line text-brand-500"></i>
+                        <span>ตำแหน่งแสดงผลโลโก้บน Header หน้าร้าน:</span>
+                      </label>
+                      <select id="cfg_Logo_Position" class="w-full bg-white border border-slate-300 rounded-xl p-2 text-xs font-bold text-slate-800">
+                        <option value="left">📍 ด้านซ้าย (มาตรฐาน - ก่อนชื่อร้าน)</option>
+                        <option value="right">📍 ด้านขวา (หลังชื่อร้าน)</option>
+                        <option value="center">📍 ตรงกลาง (โลโก้เด่นตรงกลาง)</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1283,7 +1343,18 @@
       setVal('cfg_PromptPay_Account_Name', c.promptPayAccountName || '');
       setVal('cfg_PromptPay_Number', c.promptPayNumber || '');
       setVal('cfg_PromptPay_QR_URL', c.promptPayQrUrl || '');
+      setVal('cfg_Logo_URL', c.logoUrl || c.Logo_URL || '');
+      setVal('cfg_Logo_Position', c.logoPosition || c.Logo_Position || 'left');
       setVal('cfg_Line_Bot_Basic_ID', c.lineBotBasicId || c.Line_Bot_Basic_ID || '');
+
+      var logoImg = document.getElementById('adminLogoPreviewImg');
+      if (logoImg) {
+        if (c.logoUrl || c.Logo_URL) {
+          logoImg.src = c.logoUrl || c.Logo_URL;
+        } else {
+          logoImg.src = 'https://img.icons8.com/color/96/sandwich.png';
+        }
+      }
 
       var enableCutoff = c.enableCutoffTime !== false;
       var enableQuota = c.enableMaxQuota !== false;
@@ -1971,6 +2042,8 @@
             PromptPay_Account_Name: document.getElementById('cfg_PromptPay_Account_Name').value.trim(),
             PromptPay_Number: document.getElementById('cfg_PromptPay_Number').value.trim(),
             PromptPay_QR_URL: document.getElementById('cfg_PromptPay_QR_URL').value.trim(),
+            Logo_URL: document.getElementById('cfg_Logo_URL').value.trim(),
+            Logo_Position: document.getElementById('cfg_Logo_Position').value,
             Line_Bot_Basic_ID: document.getElementById('cfg_Line_Bot_Basic_ID').value.trim()
           };
           try {
@@ -2019,6 +2092,44 @@
             runDiagnostics();
             loadAllAdminData();
           } catch(err) { alert('ข้อผิดพลาด: ' + err); }
+        });
+      }
+
+      // Logo File Upload (Fixed Circular Logo)
+      var logoInput = document.getElementById('logoFileInput');
+      if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = async function(evt) {
+            var b64 = evt.target.result;
+            var preview = document.getElementById('adminLogoPreviewImg');
+            if (preview) preview.src = b64;
+            try {
+              var res = await adminApi('uploadLogoImage', { base64Data: b64 });
+              if (res && res.logoUrl) {
+                var el = document.getElementById('cfg_Logo_URL');
+                if (el) el.value = res.logoUrl;
+                alert('อัปโหลดโลโก้ร้านค้าทรงกลมสำเร็จแล้ว!');
+              }
+            } catch(err) { alert('อัปโหลดโลโก้ไม่สำเร็จ: ' + err); }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Clear Logo Button
+      var clearLogoBtn = document.getElementById('btnClearLogo');
+      if (clearLogoBtn) {
+        clearLogoBtn.addEventListener('click', function() {
+          if (confirm('คุณต้องการลบโลโก้และกลับไปใช้อีโมจิร้านค้าแบบเดิมใช่หรือไม่?')) {
+            var el = document.getElementById('cfg_Logo_URL');
+            if (el) el.value = '';
+            var preview = document.getElementById('adminLogoPreviewImg');
+            if (preview) preview.src = 'https://img.icons8.com/color/96/sandwich.png';
+            alert('ลบโลโก้ชั่วคราวแล้ว กรุณากด "บันทึกการตั้งค่าร้านค้าทั้งหมด" เพื่อยืนยัน');
+          }
         });
       }
 
