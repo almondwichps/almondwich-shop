@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.6.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.6.1</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -398,13 +398,16 @@
 
                   <!-- Upload Input & Position Dropdown -->
                   <div class="flex-1 space-y-2.5 w-full">
-                    <div class="flex items-center gap-2">
-                      <label class="cursor-pointer inline-flex items-center space-x-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-semibold px-3 py-2 rounded-xl text-xs transition shadow-sm">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <label class="cursor-pointer inline-flex items-center space-x-2 bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-2 rounded-xl text-xs transition shadow-sm">
                         <input type="file" id="logoFileInput" accept="image/*" class="sr-only">
-                        <i class="fa-solid fa-cloud-arrow-up text-brand-600"></i>
-                        <span>อัปโหลดรูปโลโก้ใหม่</span>
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>อัปโหลด & ครอบตัดวงกลม</span>
                       </label>
-                      <button type="button" id="btnClearLogo" class="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1.5 rounded-lg border border-red-200 bg-white hover:bg-red-50 transition cursor-pointer">
+                      <button type="button" id="btnRecropLogo" class="hidden text-xs text-brand-700 hover:text-brand-800 font-bold px-3 py-2 rounded-xl border border-brand-300 bg-amber-50 hover:bg-amber-100 transition cursor-pointer shadow-sm">
+                        <i class="fa-solid fa-crop-simple"></i> ปรับจุดครอบตัด
+                      </button>
+                      <button type="button" id="btnClearLogo" class="text-xs text-red-500 hover:text-red-700 font-semibold px-2.5 py-2 rounded-xl border border-red-200 bg-white hover:bg-red-50 transition cursor-pointer">
                         <i class="fa-solid fa-trash-can"></i> ลบโลโก้
                       </button>
                     </div>
@@ -798,20 +801,20 @@
     </div>
   </div>
 
-  <!-- SQUARE (1:1) CROPPER MODAL -->
+  <!-- UNIVERSAL 1:1 & CIRCLE CROPPER MODAL -->
   <div id="squareCropModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3">
       <div class="flex items-center justify-between border-b border-slate-100 pb-2">
         <h3 class="font-bold text-xs text-slate-800 flex items-center space-x-1.5">
-          <i class="fa-solid fa-crop-simple text-brand-500"></i>
-          <span>เลือกพื้นที่แสดงผลรูปภาพ (1:1)</span>
+          <i id="cropModalIcon" class="fa-solid fa-crop-simple text-brand-600"></i>
+          <span id="cropModalTitle">เลือกพื้นที่แสดงผลรูปภาพ</span>
         </h3>
         <button id="btnCancelCrop" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
 
-      <p class="text-[11px] text-slate-500 text-center">
+      <p id="cropModalDesc" class="text-[11px] text-slate-500 text-center">
         ลากเลื่อนรูปเพื่อเลือกตำแหน่ง หรือปรับซูมตามต้องการ
       </p>
 
@@ -835,7 +838,7 @@
         </button>
         <button id="btnConfirmCrop" type="button" class="w-2/3 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer">
           <i class="fa-solid fa-check"></i>
-          <span id="confirmCropBtnText">ใช้รูปสี่เหลี่ยมนี้</span>
+          <span id="confirmCropBtnText">ใช้รูปนี้</span>
         </button>
       </div>
     </div>
@@ -1348,11 +1351,14 @@
       setVal('cfg_Line_Bot_Basic_ID', c.lineBotBasicId || c.Line_Bot_Basic_ID || '');
 
       var logoImg = document.getElementById('adminLogoPreviewImg');
+      var recropBtn = document.getElementById('btnRecropLogo');
       if (logoImg) {
         if (c.logoUrl || c.Logo_URL) {
           logoImg.src = c.logoUrl || c.Logo_URL;
+          if (recropBtn) recropBtn.classList.remove('hidden');
         } else {
           logoImg.src = 'https://img.icons8.com/color/96/sandwich.png';
+          if (recropBtn) recropBtn.classList.add('hidden');
         }
       }
 
@@ -1795,6 +1801,8 @@
       var isDraggingCrop = false;
       var dragStartX = 0, dragStartY = 0;
       var dragOrigX = 0, dragOrigY = 0;
+      var cropMode = 'menu'; // 'menu' (1:1 square) or 'logo' (circular with circle mask)
+      var currentLogoRawData = ''; // cached original image for re-cropping
 
       function renderCrop() {
         if (!cropLoaded || !cropCtx) return;
@@ -1807,7 +1815,7 @@
         var dw = cropImg.width * currentScale;
         var dh = cropImg.height * currentScale;
 
-        // Constrain offset so image always covers the square canvas
+        // Constrain offset so image always covers the canvas
         var minX = cw - dw;
         var minY = ch - dh;
         if (cropX > 0) cropX = 0;
@@ -1817,18 +1825,61 @@
 
         cropCtx.drawImage(cropImg, cropX, cropY, dw, dh);
 
-        // Draw 3x3 rule of thirds guidelines overlay
-        cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-        cropCtx.lineWidth = 1;
-        cropCtx.beginPath();
-        cropCtx.moveTo(cw / 3, 0); cropCtx.lineTo(cw / 3, ch);
-        cropCtx.moveTo((cw * 2) / 3, 0); cropCtx.lineTo((cw * 2) / 3, ch);
-        cropCtx.moveTo(0, ch / 3); cropCtx.lineTo(cw, ch / 3);
-        cropCtx.moveTo(0, (ch * 2) / 3); cropCtx.lineTo(cw, (ch * 2) / 3);
-        cropCtx.stroke();
+        if (cropMode === 'logo') {
+          // Circular mask overlay: dim outside circle
+          cropCtx.save();
+          cropCtx.fillStyle = 'rgba(15, 23, 42, 0.65)';
+          cropCtx.beginPath();
+          cropCtx.rect(0, 0, cw, ch);
+          cropCtx.arc(cw / 2, ch / 2, (cw / 2) - 4, 0, Math.PI * 2, true);
+          cropCtx.fill();
+
+          // Circle boundary & crosshair
+          cropCtx.strokeStyle = '#c87a3e';
+          cropCtx.lineWidth = 3;
+          cropCtx.beginPath();
+          cropCtx.arc(cw / 2, ch / 2, (cw / 2) - 4, 0, Math.PI * 2);
+          cropCtx.stroke();
+
+          cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          cropCtx.lineWidth = 1;
+          cropCtx.beginPath();
+          cropCtx.moveTo(cw / 2, 8); cropCtx.lineTo(cw / 2, ch - 8);
+          cropCtx.moveTo(8, ch / 2); cropCtx.lineTo(cw - 8, ch / 2);
+          cropCtx.stroke();
+          cropCtx.restore();
+        } else {
+          // Draw 3x3 rule of thirds guidelines overlay for square menu
+          cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          cropCtx.lineWidth = 1;
+          cropCtx.beginPath();
+          cropCtx.moveTo(cw / 3, 0); cropCtx.lineTo(cw / 3, ch);
+          cropCtx.moveTo((cw * 2) / 3, 0); cropCtx.lineTo((cw * 2) / 3, ch);
+          cropCtx.moveTo(0, ch / 3); cropCtx.lineTo(cw, ch / 3);
+          cropCtx.moveTo(0, (ch * 2) / 3); cropCtx.lineTo(cw, (ch * 2) / 3);
+          cropCtx.stroke();
+        }
       }
 
-      function initCropWithImage(dataUrl) {
+      function initCropWithImage(dataUrl, mode) {
+        cropMode = mode || 'menu';
+        var titleEl = document.getElementById('cropModalTitle');
+        var descEl = document.getElementById('cropModalDesc');
+        var btnText = document.getElementById('confirmCropBtnText');
+        var iconEl = document.getElementById('cropModalIcon');
+
+        if (cropMode === 'logo') {
+          if (titleEl) titleEl.textContent = 'เลือกตำแหน่งแสดงผลโลโก้ร้าน (ทรงกลม)';
+          if (descEl) descEl.textContent = 'ลากเลื่อนรูปและซูม เพื่อเล็งจุดกึ่งกลางของโลโก้ให้อยู่ในวงกลม';
+          if (btnText) btnText.textContent = 'ใช้รูปโลโก้ทรงกลมนี้';
+          if (iconEl) iconEl.className = 'fa-solid fa-circle-dot text-brand-600';
+        } else {
+          if (titleEl) titleEl.textContent = 'เลือกพื้นที่แสดงผลรูปภาพเมนู (1:1)';
+          if (descEl) descEl.textContent = 'ลากเลื่อนรูปเพื่อเลือกตำแหน่ง หรือปรับซูมตามต้องการ';
+          if (btnText) btnText.textContent = 'ใช้รูปสี่เหลี่ยมนี้';
+          if (iconEl) iconEl.className = 'fa-solid fa-crop-simple text-brand-600';
+        }
+
         cropImg.onload = function() {
           cropLoaded = true;
           cropScale = 1;
@@ -1905,8 +1956,10 @@
       // Close / Cancel Crop Modal
       var closeCrop = function() {
         if (cropModal) cropModal.classList.add('hidden');
-        var input = document.getElementById('menuImageFileInput');
-        if (input) input.value = '';
+        var inputMenu = document.getElementById('menuImageFileInput');
+        if (inputMenu) inputMenu.value = '';
+        var inputLogo = document.getElementById('logoFileInput');
+        if (inputLogo) inputLogo.value = '';
       };
       var btnCC1 = document.getElementById('btnCancelCrop');
       var btnCC2 = document.getElementById('btnCancelCrop2');
@@ -1937,25 +1990,50 @@
             var dh = cropImg.height * currentScale;
 
             var mult = 600 / 260;
-            eCtx.drawImage(cropImg, cropX * mult, cropY * mult, dw * mult, dh * mult);
 
-            var croppedB64 = exportCanvas.toDataURL('image/jpeg', 0.88);
-            var res = await adminApi('uploadMenuImage', { base64Data: croppedB64, fileName: 'menu_' + Date.now() + '.jpg' });
-            if (res && res.imageUrl) {
-              document.getElementById('form_Image_URL').value = res.imageUrl;
-              var imgPrev = document.getElementById('form_Menu_Image_Preview');
-              var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
-              if (imgPrev) { imgPrev.src = res.imageUrl; imgPrev.classList.remove('hidden'); }
-              if (imgPlace) imgPlace.classList.add('hidden');
-              closeCrop();
-              alert('ครอบตัดและอัปโหลดรูปภาพ 1:1 เรียบร้อยแล้ว!');
+            if (cropMode === 'logo') {
+              // Circular clip for logo export
+              eCtx.save();
+              eCtx.beginPath();
+              eCtx.arc(300, 300, 298, 0, Math.PI * 2);
+              eCtx.clip();
+              eCtx.drawImage(cropImg, cropX * mult, cropY * mult, dw * mult, dh * mult);
+              eCtx.restore();
+
+              var croppedPng = exportCanvas.toDataURL('image/png');
+              var res = await adminApi('uploadLogoImage', { base64Data: croppedPng });
+              if (res && res.logoUrl) {
+                document.getElementById('cfg_Logo_URL').value = res.logoUrl;
+                var preview = document.getElementById('adminLogoPreviewImg');
+                if (preview) preview.src = res.logoUrl;
+                var recropBtn = document.getElementById('btnRecropLogo');
+                if (recropBtn) recropBtn.classList.remove('hidden');
+                closeCrop();
+                alert('ครอบตัดและอัปโหลดโลโก้ร้านค้าทรงกลมสำเร็จแล้ว!');
+              } else {
+                alert('อัปโหลดโลโก้ไม่สำเร็จ: ' + (res ? res.message : 'Unknown error'));
+              }
             } else {
-              alert('อัปโหลดไม่สำเร็จ: ' + (res ? res.message : 'Unknown error'));
+              // Square export for menu items
+              eCtx.drawImage(cropImg, cropX * mult, cropY * mult, dw * mult, dh * mult);
+              var croppedB64 = exportCanvas.toDataURL('image/jpeg', 0.88);
+              var res = await adminApi('uploadMenuImage', { base64Data: croppedB64, fileName: 'menu_' + Date.now() + '.jpg' });
+              if (res && res.imageUrl) {
+                document.getElementById('form_Image_URL').value = res.imageUrl;
+                var imgPrev = document.getElementById('form_Menu_Image_Preview');
+                var imgPlace = document.getElementById('form_Menu_Image_Placeholder');
+                if (imgPrev) { imgPrev.src = res.imageUrl; imgPrev.classList.remove('hidden'); }
+                if (imgPlace) imgPlace.classList.add('hidden');
+                closeCrop();
+                alert('ครอบตัดและอัปโหลดรูปภาพ 1:1 เรียบร้อยแล้ว!');
+              } else {
+                alert('อัปโหลดไม่สำเร็จ: ' + (res ? res.message : 'Unknown error'));
+              }
             }
           } catch(err) {
             alert('เกิดข้อผิดพลาด: ' + err);
           } finally {
-            if (btnText) btnText.textContent = 'ใช้รูปสี่เหลี่ยมนี้';
+            if (btnText) btnText.textContent = (cropMode === 'logo' ? 'ใช้รูปโลโก้ทรงกลมนี้' : 'ใช้รูปสี่เหลี่ยมนี้');
             btnConfirmCrop.disabled = false;
           }
         });
@@ -1969,7 +2047,7 @@
           if (!file) return;
           var reader = new FileReader();
           reader.onload = function(evt) {
-            initCropWithImage(evt.target.result);
+            initCropWithImage(evt.target.result, 'menu');
           };
           reader.readAsDataURL(file);
         });
@@ -2095,27 +2173,58 @@
         });
       }
 
-      // Logo File Upload (Fixed Circular Logo)
+      // Logo File Upload (Interactive Circular Cropper)
       var logoInput = document.getElementById('logoFileInput');
       if (logoInput) {
         logoInput.addEventListener('change', function(e) {
           var file = e.target.files[0];
           if (!file) return;
           var reader = new FileReader();
-          reader.onload = async function(evt) {
-            var b64 = evt.target.result;
-            var preview = document.getElementById('adminLogoPreviewImg');
-            if (preview) preview.src = b64;
-            try {
-              var res = await adminApi('uploadLogoImage', { base64Data: b64 });
-              if (res && res.logoUrl) {
-                var el = document.getElementById('cfg_Logo_URL');
-                if (el) el.value = res.logoUrl;
-                alert('อัปโหลดโลโก้ร้านค้าทรงกลมสำเร็จแล้ว!');
-              }
-            } catch(err) { alert('อัปโหลดโลโก้ไม่สำเร็จ: ' + err); }
+          reader.onload = function(evt) {
+            currentLogoRawData = evt.target.result;
+            initCropWithImage(currentLogoRawData, 'logo');
           };
           reader.readAsDataURL(file);
+        });
+      }
+
+      // Re-crop Existing Logo Button
+      var btnRecropLogo = document.getElementById('btnRecropLogo');
+      if (btnRecropLogo) {
+        btnRecropLogo.addEventListener('click', function() {
+          if (currentLogoRawData) {
+            initCropWithImage(currentLogoRawData, 'logo');
+          } else {
+            var curUrl = document.getElementById('cfg_Logo_URL')?.value;
+            if (curUrl) {
+              // Convert existing image to base64 via temporary image or re-crop
+              var tempImg = new Image();
+              tempImg.crossOrigin = 'Anonymous';
+              tempImg.onload = function() {
+                var c = document.createElement('canvas');
+                c.width = tempImg.naturalWidth;
+                c.height = tempImg.naturalHeight;
+                var ctx = c.getContext('2d');
+                ctx.drawImage(tempImg, 0, 0);
+                try {
+                  currentLogoRawData = c.toDataURL('image/png');
+                  initCropWithImage(currentLogoRawData, 'logo');
+                } catch(e) {
+                  // If CORS blocks canvas export, prompt user to select image
+                  var input = document.getElementById('logoFileInput');
+                  if (input) input.click();
+                }
+              };
+              tempImg.onerror = function() {
+                var input = document.getElementById('logoFileInput');
+                if (input) input.click();
+              };
+              tempImg.src = curUrl;
+            } else {
+              var input = document.getElementById('logoFileInput');
+              if (input) input.click();
+            }
+          }
         });
       }
 
@@ -2126,8 +2235,11 @@
           if (confirm('คุณต้องการลบโลโก้และกลับไปใช้อีโมจิร้านค้าแบบเดิมใช่หรือไม่?')) {
             var el = document.getElementById('cfg_Logo_URL');
             if (el) el.value = '';
+            currentLogoRawData = '';
             var preview = document.getElementById('adminLogoPreviewImg');
             if (preview) preview.src = 'https://img.icons8.com/color/96/sandwich.png';
+            var recropBtn = document.getElementById('btnRecropLogo');
+            if (recropBtn) recropBtn.classList.add('hidden');
             alert('ลบโลโก้ชั่วคราวแล้ว กรุณากด "บันทึกการตั้งค่าร้านค้าทั้งหมด" เพื่อยืนยัน');
           }
         });
