@@ -111,7 +111,7 @@
         <div id="headerTextGroup">
           <div class="flex items-center space-x-1.5">
             <h1 id="storeTitleDisplay" class="font-black text-brand-900 text-base leading-tight">AlmondWich</h1>
-            <span class="text-[10px] bg-gradient-to-r from-brand-700 to-brand-600 text-white font-mono px-1.5 py-0.5 rounded-full font-bold shadow-sm">v4.7.0</span>
+            <span class="text-[10px] bg-gradient-to-r from-brand-700 to-brand-600 text-white font-mono px-1.5 py-0.5 rounded-full font-bold shadow-sm">v4.8.0</span>
           </div>
           <p id="storeSubtitleDisplay" class="text-xs text-brand-800 font-medium truncate">แซนวิชอุ่นพุง อิ่ม อร่อยเต็มคำ</p>
         </div>
@@ -323,7 +323,7 @@
                 <span>🎁 ใช้ 10 แต้ม แลกรับฟรี 1 กล่อง</span>
                 <span class="text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">10 Pts</span>
               </label>
-              <p class="text-[11px] text-amber-700 mt-0.5">สั่งอย่างน้อย 1 กล่อง เลือกเมนูใดก็ได้ฟรี 1 กล่อง</p>
+              <p id="loyaltyRedemptionDesc" class="text-[11px] text-amber-700 mt-0.5">สั่งอย่างน้อย 1 กล่อง เลือกเมนูใดก็ได้ฟรี 1 กล่อง</p>
             </div>
           </div>
           <div id="freeMenuSelectContainer" class="hidden pt-2 border-t border-amber-200/60">
@@ -427,7 +427,7 @@
         </div>
 
         <!-- Payment Method Options -->
-        <div class="space-y-2">
+        <div id="paymentMethodSection" class="space-y-2">
           <label class="block text-xs font-bold text-gray-800">เลือกวิธีชำระเงิน:</label>
           <div class="grid grid-cols-2 gap-2">
             <label id="paymentLabelTransfer" class="payment-option-label relative border-2 border-brand-500 bg-brand-50/50 rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition">
@@ -444,6 +444,15 @@
               <span class="text-[10px] text-gray-500">ชำระตอนรับของ</span>
             </label>
           </div>
+        </div>
+
+        <!-- 0-Baht Free Order Notice (Visible when final price is 0) -->
+        <div id="freeOrderNotice" class="hidden bg-emerald-50 border border-emerald-300 rounded-2xl p-3.5 text-center space-y-1">
+          <div class="text-emerald-800 font-extrabold text-xs flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-gift text-emerald-600 text-sm"></i>
+            <span>ออเดอร์นี้ใช้สิทธิ์แลกฟรี ยอดสุทธิ 0 บาท</span>
+          </div>
+          <p class="text-[11px] text-emerald-700">ไม่ต้องชำระเงินและไม่ต้องแนบสลิป สามารถกดยืนยันออเดอร์ได้ทันที!</p>
         </div>
 
         <!-- Transfer Slip Section -->
@@ -784,6 +793,17 @@
         if (modalDl) modalDl.href = activeQrSrc;
         if (zoomImg) zoomImg.src = activeQrSrc;
       }
+
+      // Update Loyalty Redemption Policy Description
+      const redeemPolicy = String(config.redemptionPolicy || config.Redemption_Policy || 'MIN_1').trim().toUpperCase();
+      const loyaltyDesc = document.getElementById('loyaltyRedemptionDesc');
+      if (loyaltyDesc) {
+        if (redeemPolicy === 'FREE_0') {
+          loyaltyDesc.textContent = '🎁 แลกรับฟรี 1 กล่องได้ทันที ไม่มีเงื่อนไขขั้นต่ำ (ยอดชำระ 0 ฿)';
+        } else {
+          loyaltyDesc.textContent = 'สั่งอย่างน้อย 1 กล่อง เลือกเมนูใดก็ได้ฟรี 1 กล่อง';
+        }
+      }
     }
 
     function onMenusLoaded(menus) {
@@ -943,21 +963,30 @@
         rawPrice += (item.price * item.qty);
       });
 
+      const redeemPolicy = String((state.config && (state.config.redemptionPolicy || state.config.Redemption_Policy)) || 'MIN_1').trim().toUpperCase();
+      const isStandaloneFreeAllowed = (redeemPolicy === 'FREE_0');
+
       let discount = 0;
-      if (state.isRedeemingPoints && totalQty >= 1) {
-        const freeItem = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
-        if (freeItem) discount = freeItem.price;
+      let freeItemObj = null;
+      if (state.isRedeemingPoints) {
+        freeItemObj = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
+        if (freeItemObj) {
+          discount = freeItemObj.price;
+        }
       }
-      const finalPrice = Math.max(0, rawPrice - discount);
+
+      // Total boxes delivered = purchased boxes + free box (if redeeming)
+      const totalBoxesToDeliver = totalQty + (state.isRedeemingPoints ? 1 : 0);
+      const finalPrice = Math.max(0, rawPrice); // Note: free box is extra free item or 0-baht standalone
 
       // 1. Floating Cart Bar
       const floatBar = document.getElementById('floatingCartBar');
       const floatQty = document.getElementById('floatingCartQty');
       const floatPrice = document.getElementById('floatingCartPrice');
       if (floatBar) {
-        if (totalQty > 0) {
+        if (totalBoxesToDeliver > 0) {
           floatBar.classList.remove('hidden');
-          if (floatQty) floatQty.textContent = `${totalQty} กล่อง`;
+          if (floatQty) floatQty.textContent = `${totalBoxesToDeliver} กล่อง`;
           if (floatPrice) floatPrice.textContent = `${finalPrice} ฿`;
         } else {
           floatBar.classList.add('hidden');
@@ -970,14 +999,14 @@
       const cartList = document.getElementById('cartItemsList');
       const drawerQty = document.getElementById('cartDrawerTotalQty');
       const drawerPrice = document.getElementById('cartDrawerTotalPrice');
-      if (drawerQty) drawerQty.textContent = totalQty;
+      if (drawerQty) drawerQty.textContent = totalBoxesToDeliver;
       if (drawerPrice) drawerPrice.textContent = `${finalPrice} ฿`;
 
       if (cartList) {
-        if (state.cartItems.length === 0) {
+        if (state.cartItems.length === 0 && !state.isRedeemingPoints) {
           cartList.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs italic"><i class="fa-solid fa-basket-shopping text-2xl mb-1 text-gray-300"></i><p>ยังไม่มีแซนวิชในตะกร้า</p></div>';
         } else {
-          cartList.innerHTML = state.cartItems.map((item, idx) => `
+          let itemsHtml = state.cartItems.map((item, idx) => `
             <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex items-center justify-between gap-2">
               <div class="flex-1 min-w-0 pr-1">
                 <h5 class="font-bold text-xs text-gray-900 line-clamp-1">${item.name}</h5>
@@ -998,6 +1027,22 @@
               </div>
             </div>
           `).join('');
+
+          if (state.isRedeemingPoints && freeItemObj) {
+            itemsHtml += `
+              <div class="bg-amber-50/80 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-2 shadow-sm">
+                <div class="flex-1 min-w-0 pr-1">
+                  <span class="text-[10px] font-black text-amber-800 bg-amber-200 px-1.5 py-0.5 rounded uppercase">ฟรี (ใช้ 10 แต้ม)</span>
+                  <h5 class="font-bold text-xs text-amber-950 mt-1 line-clamp-1">${freeItemObj.name}</h5>
+                  <div class="text-amber-700 font-extrabold text-xs mt-0.5">0 ฿ <span class="text-gray-400 line-through font-normal text-[11px]">(${freeItemObj.price} ฿)</span></div>
+                </div>
+                <div class="shrink-0 text-xs font-black text-amber-800 bg-white border border-amber-200 px-2.5 py-1 rounded-xl shadow-xs">
+                  x1 กล่องฟรี
+                </div>
+              </div>
+            `;
+          }
+          cartList.innerHTML = itemsHtml;
         }
       }
 
@@ -1008,20 +1053,20 @@
       const payDisc = document.getElementById('paymentSummaryDiscount');
       const payList = document.getElementById('paymentItemsList');
 
-      if (payQty) payQty.textContent = `${totalQty} กล่อง`;
+      if (payQty) payQty.textContent = `${totalBoxesToDeliver} กล่อง`;
       if (payPrice) payPrice.textContent = `${finalPrice} ฿`;
 
       if (payDiscRow) {
-        if (discount > 0) {
+        if (state.isRedeemingPoints && freeItemObj) {
           payDiscRow.classList.remove('hidden');
-          if (payDisc) payDisc.textContent = `- ${discount} ฿`;
+          if (payDisc) payDisc.textContent = `ฟรี 1 กล่อง (${freeItemObj.name})`;
         } else {
           payDiscRow.classList.add('hidden');
         }
       }
 
       if (payList) {
-        payList.innerHTML = state.cartItems.map(item => `
+        let payListHtml = state.cartItems.map(item => `
           <div class="flex justify-between items-baseline py-0.5">
             <div class="truncate pr-2">
               <span class="font-medium text-gray-800">${item.name}</span>
@@ -1031,6 +1076,36 @@
             <span class="font-semibold text-gray-900 shrink-0">${item.price * item.qty} ฿</span>
           </div>
         `).join('');
+
+        if (state.isRedeemingPoints && freeItemObj) {
+          payListHtml += `
+            <div class="flex justify-between items-baseline py-0.5 text-amber-800 font-semibold border-t border-dashed border-amber-200 mt-1 pt-1">
+              <div class="truncate pr-2">
+                <i class="fa-solid fa-gift mr-1 text-amber-600"></i>
+                <span>${freeItemObj.name} (ใช้ 10 แต้ม)</span>
+                <span class="text-amber-700 font-bold">x1</span>
+              </div>
+              <span class="font-bold text-emerald-600 shrink-0">0 ฿ <span class="line-through text-gray-400 font-normal text-[10px]">${freeItemObj.price} ฿</span></span>
+            </div>
+          `;
+        }
+        payList.innerHTML = payListHtml;
+      }
+
+      // Handle 0-Baht Free Order vs Normal Payment Options UI
+      const payMethodSection = document.getElementById('paymentMethodSection');
+      const freeOrderNotice = document.getElementById('freeOrderNotice');
+      const transferSection = document.getElementById('transferDetailsSection');
+
+      if (finalPrice <= 0 && state.isRedeemingPoints) {
+        // 0-Baht standalone free order
+        if (payMethodSection) payMethodSection.classList.add('hidden');
+        if (freeOrderNotice) freeOrderNotice.classList.remove('hidden');
+        if (transferSection) transferSection.classList.add('hidden');
+      } else {
+        if (payMethodSection) payMethodSection.classList.remove('hidden');
+        if (freeOrderNotice) freeOrderNotice.classList.add('hidden');
+        selectPaymentMethod(state.paymentMethod);
       }
 
       // 4. Update count badges in Menu List
@@ -1134,7 +1209,10 @@
     }
 
     function submitOrderHandler() {
-      if (state.cartItems.length === 0) {
+      const redeemPolicy = String((state.config && (state.config.redemptionPolicy || state.config.Redemption_Policy)) || 'MIN_1').trim().toUpperCase();
+      const isStandaloneAllowed = (redeemPolicy === 'FREE_0');
+
+      if (state.cartItems.length === 0 && (!state.isRedeemingPoints || !isStandaloneAllowed)) {
         alert("กรุณาเลือกแซนวิชอย่างน้อย 1 กล่อง");
         return;
       }
@@ -1147,13 +1225,22 @@
           alert("แต้มสะสมไม่เพียงพอสำหรับแลกรับฟรี");
           return;
         }
-        if (totalQty < 1) {
+        if (!isStandaloneAllowed && totalQty < 1) {
           alert("ต้องสั่งซื้ออย่างน้อย 1 กล่องเพื่อใช้สิทธิ์แลกฟรี 1 กล่อง");
           return;
         }
       }
 
-      if (state.paymentMethod === 'Transfer' && !state.slipBase64) {
+      let discount = 0;
+      let freeItem = null;
+      if (state.isRedeemingPoints) {
+        freeItem = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
+        discount = freeItem ? freeItem.price : 0;
+      }
+
+      const totalPrice = Math.max(0, rawPrice); // Purchased items price, free item is 0 Baht
+
+      if (totalPrice > 0 && state.paymentMethod === 'Transfer' && !state.slipBase64) {
         alert("กรุณาแนบรูปสลิปการโอนเงินเพื่อยืนยันออเดอร์");
         return;
       }
@@ -1187,14 +1274,6 @@
         if (phone) localStorage.setItem('almondwich_phone', phone);
       } catch (e) {}
 
-      let discount = 0;
-      if (state.isRedeemingPoints) {
-        const freeItem = (state.availableMenus || []).find(m => m.id === state.freeMenuId);
-        discount = freeItem ? freeItem.price : 0;
-      }
-
-      const totalPrice = Math.max(0, rawPrice - discount);
-
       const items = state.cartItems.map(item => ({
         id: item.menuId,
         name: item.name,
@@ -1202,6 +1281,17 @@
         qty: item.qty,
         note: item.note || ''
       }));
+
+      // If redeeming points and free item selected, append the free item into order details
+      if (state.isRedeemingPoints && freeItem) {
+        items.push({
+          id: freeItem.id,
+          name: freeItem.name,
+          price: 0,
+          qty: 1,
+          note: '🎁 ใช้ 10 แต้มแลกฟรี'
+        });
+      }
 
       const payload = {
         lineUid: state.lineUid,
@@ -1213,10 +1303,10 @@
         items: items,
         totalQty: totalQty,
         totalPrice: totalPrice,
-        paymentMethod: state.paymentMethod,
+        paymentMethod: totalPrice <= 0 && state.isRedeemingPoints ? 'Points_Free' : state.paymentMethod,
         isRedeemingPoints: state.isRedeemingPoints,
         freeMenuId: state.freeMenuId,
-        slipBase64: state.paymentMethod === 'Transfer' ? state.slipBase64 : ''
+        slipBase64: (totalPrice > 0 && state.paymentMethod === 'Transfer') ? state.slipBase64 : ''
       };
 
       showLoading(true, "กำลังส่งออเดอร์...");
@@ -1224,9 +1314,12 @@
       gasCall('submitOrder', [payload], function(res) {
         showLoading(false);
         if (res && res.success) {
+          const submittedItems = [...items];
+          const submittedPrice = totalPrice;
+          const submittedMethod = payload.paymentMethod;
           clearCart();
           closePaymentModal();
-          onOrderSubmitted(res);
+          onOrderSubmitted(res, submittedItems, submittedPrice, submittedMethod);
         } else {
           alert("ไม่สามารถบันทึกออเดอร์ได้: " + (res ? res.message : "ไม่ทราบสาเหตุ"));
         }
@@ -1236,7 +1329,7 @@
       });
     }
 
-    function onOrderSubmitted(res) {
+    function onOrderSubmitted(res, submittedItems, submittedPrice, submittedMethod) {
       if (res && res.success) {
         const modalOrderId = document.getElementById('modalOrderId');
         if (modalOrderId) modalOrderId.textContent = res.orderId;
@@ -1252,15 +1345,23 @@
           const cleanBotId = '@' + botId.replace(/^@/, '');
           const custNick = (document.getElementById('custNicknameInput') ? document.getElementById('custNicknameInput').value.trim() : '') || state.displayName || 'ลูกค้า';
           const loc = (document.getElementById('deliveryLocationInput') ? document.getElementById('deliveryLocationInput').value.trim() : '') || '-';
-          const method = state.selectedPaymentMethod === 'COD' ? 'เก็บเงินปลายทาง (COD)' : 'โอนเงินแล้ว';
+          
+          let method = 'โอนเงินแล้ว';
+          if (submittedMethod === 'Points_Free') {
+            method = '🎁 แลกฟรีด้วย 10 แต้ม (0 ฿)';
+          } else if (submittedMethod === 'COD') {
+            method = 'เก็บเงินปลายทาง (COD)';
+          }
 
-          const itemsText = (state.cartItems || []).map(i => {
+          const itemsToFormat = submittedItems || state.cartItems || [];
+          const itemsText = itemsToFormat.map(i => {
             let n = i.name;
             if (i.note) n += ` (${i.note})`;
             return `• ${n} x${i.qty}`;
           }).join('\n');
 
-          const orderMsg = `สั่งแซนวิชเรียบร้อยแล้วค่ะ 🥪\nรหัสออเดอร์: ${res.orderId}\nผู้รับ: ${custNick}\nสถานที่ส่ง: ${loc}\n${itemsText}\nยอดรวม: ${state.totalPrice || 0} บาท (${method})`;
+          const finalAmount = submittedPrice !== undefined ? submittedPrice : (state.totalPrice || 0);
+          const orderMsg = `สั่งแซนวิชเรียบร้อยแล้วค่ะ 🥪\nรหัสออเดอร์: ${res.orderId}\nผู้รับ: ${custNick}\nสถานที่ส่ง: ${loc}\n${itemsText}\nยอดรวม: ${finalAmount} บาท (${method})`;
 
           const lineUrl = `https://line.me/R/oaMessage/${encodeURIComponent(cleanBotId)}/?${encodeURIComponent(orderMsg)}`;
           btnSendLine.href = lineUrl;
@@ -1640,7 +1741,10 @@
       const btnProceed = document.getElementById('btnProceedToPayment');
       if (btnProceed) {
         btnProceed.addEventListener('click', function() {
-          if (state.cartItems.length === 0) {
+          const redeemPolicy = String((state.config && (state.config.redemptionPolicy || state.config.Redemption_Policy)) || 'MIN_1').trim().toUpperCase();
+          const isStandaloneAllowed = (redeemPolicy === 'FREE_0');
+
+          if (state.cartItems.length === 0 && (!state.isRedeemingPoints || !isStandaloneAllowed)) {
             alert("กรุณาเลือกแซนวิชอย่างน้อย 1 กล่อง");
             return;
           }

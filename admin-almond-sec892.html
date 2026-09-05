@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.7.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.8.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -500,6 +500,27 @@
                   </div>
                   <p class="text-[10px] text-slate-400">หากปิดใช้งาน ร้านจะรับออเดอร์ได้ไม่อั้น ไม่จำกัดจำนวน</p>
                 </div>
+              </div>
+
+              <!-- Loyalty Redemption Policy -->
+              <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 space-y-2 mt-3">
+                <div class="flex items-center justify-between">
+                  <label class="font-bold text-amber-900 text-xs flex items-center space-x-1.5">
+                    <i class="fa-solid fa-gift text-brand-600"></i>
+                    <span>นโยบายการแลกแต้มสะสม (Loyalty Redemption Policy):</span>
+                  </label>
+                  <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">10 แต้มฟรี 1 กล่อง</span>
+                </div>
+                <div class="space-y-1">
+                  <select id="cfg_Redemption_Policy" class="w-full bg-white border border-amber-300 rounded-xl p-2.5 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-brand-500">
+                    <option value="MIN_1">📦 ต้องสั่งซื้อแซนวิชอย่างน้อย 1 กล่องขึ้นไป (แบบมาตรฐาน - แนะนำ)</option>
+                    <option value="FREE_0">🎁 แลกฟรีได้ทันที ไม่มีเงื่อนไขขั้นต่ำ (ออเดอร์ 0 บาทได้เลย)</option>
+                  </select>
+                </div>
+                <p class="text-[10px] text-amber-800/80 leading-relaxed">
+                  • <strong>แบบต้องสั่ง 1 กล่อง:</strong> ลูกค้าต้องมีรายการซื้ออย่างน้อย 1 กล่อง จึงจะสามารถใช้ 10 แต้มรับกล่องฟรีพ่วงไปด้วยได้ (แม่ค้าไม่เสียเที่ยวส่ง)<br>
+                  • <strong>แบบแลกฟรีได้ทันที:</strong> ลูกค้าที่มีครบ 10 แต้มสามารถกดแลกรับแซนวิชฟรี 1 กล่องเดี่ยวๆ ได้เลยโดยไม่ต้องซื้อเพิ่ม (ยอดชำระ 0 บาท ไม่ต้องแนบสลิป)
+                </p>
               </div>
             </div>
 
@@ -1387,6 +1408,7 @@
       setVal('cfg_PromptPay_QR_URL', c.promptPayQrUrl || '');
       setVal('cfg_Logo_URL', c.logoUrl || c.Logo_URL || '');
       setVal('cfg_Logo_Position', c.logoPosition || c.Logo_Position || 'left');
+      setVal('cfg_Redemption_Policy', c.redemptionPolicy || c.Redemption_Policy || 'MIN_1');
       setVal('cfg_Line_Bot_Basic_ID', c.lineBotBasicId || c.Line_Bot_Basic_ID || '');
 
       var logoImg = document.getElementById('adminLogoPreviewImg');
@@ -2241,6 +2263,7 @@
             PromptPay_QR_URL: document.getElementById('cfg_PromptPay_QR_URL').value.trim(),
             Logo_URL: document.getElementById('cfg_Logo_URL').value.trim(),
             Logo_Position: document.getElementById('cfg_Logo_Position').value,
+            Redemption_Policy: document.getElementById('cfg_Redemption_Policy').value,
             Line_Bot_Basic_ID: document.getElementById('cfg_Line_Bot_Basic_ID').value.trim()
           };
           try {
