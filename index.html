@@ -96,9 +96,6 @@
 </head>
 <body class="text-stone-800 min-h-screen pb-24">
 
-  <!-- LIFF Debug Toast -->
-  <div id="liffDebugToast" style="display:none;position:fixed;top:4px;left:50%;transform:translateX(-50%);z-index:9999;padding:6px 14px;border-radius:20px;color:#fff;font-size:12px;max-width:90%;text-align:center;word-break:break-all;pointer-events:none;"></div>
-
   <!-- TOP HEADER (Glassmorphic) -->
   <header class="glass-header sticky top-0 z-30 px-4 py-2.5 shadow-sm">
     <div id="headerContainer" class="max-w-md mx-auto flex items-center justify-between transition-all">
@@ -111,7 +108,7 @@
         <div id="headerTextGroup">
           <div class="flex items-center space-x-1.5">
             <h1 id="storeTitleDisplay" class="font-black text-brand-900 text-base leading-tight">AlmondWich</h1>
-            <span class="text-[10px] bg-gradient-to-r from-brand-700 to-brand-600 text-white font-mono px-1.5 py-0.5 rounded-full font-bold shadow-sm">v4.8.1</span>
+            <span class="text-[10px] bg-gradient-to-r from-brand-700 to-brand-600 text-white font-mono px-1.5 py-0.5 rounded-full font-bold shadow-sm">v4.9.0</span>
           </div>
           <p id="storeSubtitleDisplay" class="text-xs text-brand-800 font-medium truncate">แซนวิชอุ่นพุง อิ่ม อร่อยเต็มคำ</p>
         </div>
@@ -1146,6 +1143,11 @@
     function onPointsLoaded(pts) {
       if (!pts) return;
       state.userPoints = pts;
+      try {
+        if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
+          localStorage.setItem('almond_points_' + state.lineUid, JSON.stringify(pts));
+        }
+      } catch(e) {}
       const ptsDisplay = document.getElementById('userPointsDisplay');
       if (ptsDisplay) ptsDisplay.textContent = pts.availablePoints || 0;
 
@@ -1190,20 +1192,49 @@
       const file = event && event.target && event.target.files ? event.target.files[0] : null;
       if (!file) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        alert("ขนาดไฟล์รูปใหญ่เกินไป กรุณาเลือกไฟล์ขนาดไม่เกิน 5MB");
-        return;
-      }
-
       const reader = new FileReader();
       reader.onload = (e) => {
-        state.slipBase64 = e.target.result;
-        const placeholder = document.getElementById('slipUploadPlaceholder');
-        const preview = document.getElementById('slipUploadPreview');
-        const fileNameEl = document.getElementById('slipFileNameText');
-        if (placeholder) placeholder.classList.add('hidden');
-        if (preview) preview.classList.remove('hidden');
-        if (fileNameEl) fileNameEl.textContent = file.name;
+        const img = new Image();
+        img.onload = () => {
+          // Client-side image compression: max dimension 1200px, JPEG quality 0.85
+          const maxDim = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          state.slipBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+          const placeholder = document.getElementById('slipUploadPlaceholder');
+          const preview = document.getElementById('slipUploadPreview');
+          const fileNameEl = document.getElementById('slipFileNameText');
+          if (placeholder) placeholder.classList.add('hidden');
+          if (preview) preview.classList.remove('hidden');
+          if (fileNameEl) fileNameEl.textContent = file.name;
+        };
+        img.onerror = () => {
+          // Fallback if image decode fails
+          state.slipBase64 = e.target.result;
+          const placeholder = document.getElementById('slipUploadPlaceholder');
+          const preview = document.getElementById('slipUploadPreview');
+          const fileNameEl = document.getElementById('slipFileNameText');
+          if (placeholder) placeholder.classList.add('hidden');
+          if (preview) preview.classList.remove('hidden');
+          if (fileNameEl) fileNameEl.textContent = file.name;
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
     }
@@ -1387,6 +1418,9 @@
         updateCartUI();
         loadStoreData();
         if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
+          try {
+            localStorage.removeItem('almond_points_' + state.lineUid);
+          } catch(e) {}
           gasCall('getCustomerPoints', [state.lineUid, state.displayName], onPointsLoaded, function(err) {
             console.warn("Points reload notice:", err);
           });
@@ -1562,13 +1596,24 @@
     }
 
     function loadStoreData() {
+      // Background revalidation: fetch fresh store config
       gasCall('getStoreConfig', [], function(res) {
         if (!res || !res.success) return;
         state.config = res;
+        try {
+          // Cache non-volatile store branding & setup info
+          localStorage.setItem('almond_cached_config', JSON.stringify(res));
+        } catch(e) {}
         updateStoreStatusUI(res);
       }, function(err) { console.warn("Config notice:", err); });
 
+      // Background revalidation: fetch latest menus
       gasCall('getAvailableMenus', [], function(menus) {
+        if (Array.isArray(menus) && menus.length > 0) {
+          try {
+            localStorage.setItem('almond_cached_menus', JSON.stringify(menus));
+          } catch(e) {}
+        }
         onMenusLoaded(menus);
       }, function(err) { console.warn("Menu notice:", err); });
     }
@@ -1576,37 +1621,27 @@
     async function initLiff() {
       const LIFF_ID = "2011369262-LFQQa3SO";
 
-      // Helper: show debug toast visible on screen
-      function liffDebug(msg, isError) {
-        console.log('[LIFF]', msg);
-        const el = document.getElementById('liffDebugToast');
-        if (el) {
-          el.textContent = msg;
-          el.style.display = 'block';
-          el.style.background = isError ? '#ef4444' : '#22c55e';
-          clearTimeout(el._timer);
-          el._timer = setTimeout(() => { el.style.display = 'none'; }, 15000);
-        }
+      // Helper: clean logging without screen popup
+      function liffLog(msg, isError) {
+        if (isError) console.error('[LIFF]', msg);
+        else console.log('[LIFF]', msg);
       }
 
-      // *** DEBUG: ยืนยันว่า initLiff ถูกเรียก ***
-      liffDebug('[v4.0.0] initLiff เริ่มทำงาน...');
+      liffLog('initLiff เริ่มทำงาน...');
 
-      // รอ LIFF SDK โหลด (เพราะโหลดแบบ async อาจยังไม่พร้อม)
+      // รอ LIFF SDK โหลด
       let waitCount = 0;
-      while (typeof liff === 'undefined' && waitCount < 30) {
-        await new Promise(r => setTimeout(r, 200));
+      while (typeof liff === 'undefined' && waitCount < 25) {
+        await new Promise(r => setTimeout(r, 150));
         waitCount++;
       }
 
       if (typeof liff === 'undefined') {
-        liffDebug('❌ LIFF SDK ไม่โหลด (' + (waitCount * 200) + 'ms)', true);
+        liffLog('❌ LIFF SDK ไม่โหลด (' + (waitCount * 150) + 'ms)', true);
         state.displayName = 'คุณลูกค้า';
         updateProfileUI();
         return;
       }
-
-      liffDebug('SDK โหลดแล้ว รอ ' + (waitCount * 200) + 'ms');
 
       try {
         // Timeout 8 วินาที
@@ -1620,38 +1655,42 @@
 
         await Promise.race([liffInitPromise, timeoutPromise]);
 
-        liffDebug('init OK | inClient=' + liff.isInClient() + ' | loggedIn=' + liff.isLoggedIn());
+        liffLog('init OK | inClient=' + liff.isInClient() + ' | loggedIn=' + liff.isLoggedIn());
 
         if (!liff.isLoggedIn()) {
-          liffDebug('Not logged in → liff.login()');
+          liffLog('Not logged in → liff.login()');
           liff.login();
           return;
         } else {
-          liffDebug('Logged in! Getting profile...');
           const profile = await liff.getProfile();
           if (profile) {
             state.lineUid = profile.userId || state.lineUid;
             state.displayName = profile.displayName || 'คุณลูกค้า';
             state.pictureUrl = profile.pictureUrl || '';
-            liffDebug('✅ ' + profile.displayName);
+            liffLog('✅ Login profile: ' + profile.displayName);
           }
         }
       } catch (err) {
         const errMsg = err && err.message ? err.message : String(err);
-        liffDebug('❌ ' + errMsg, true);
-        console.error('[LIFF] error:', err);
+        liffLog('❌ ' + errMsg, true);
         state.displayName = state.displayName || 'คุณลูกค้า';
       } finally {
         updateProfileUI();
         if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
+          // Instant display from local cache if present
+          try {
+            const cachedPts = localStorage.getItem('almond_points_' + state.lineUid);
+            if (cachedPts) {
+              onPointsLoaded(JSON.parse(cachedPts));
+            }
+          } catch(e) {}
+          // Background revalidation
           gasCall('getCustomerPoints', [state.lineUid, state.displayName], onPointsLoaded, function(err) {
             console.warn("Points load notice:", err);
           });
         }
       }
     }
-
-
 
     function updateProfileUI() {
       const nameEl = document.getElementById('userName');
@@ -1673,7 +1712,27 @@
     }
 
     function initCustomerApp() {
-      // Immediate render from available state/defaults
+      // 1. Cache-First: Hydrate menus and config from localStorage immediately for 0ms render
+      try {
+        const cachedMenusStr = localStorage.getItem('almond_cached_menus');
+        if (cachedMenusStr) {
+          const parsedMenus = JSON.parse(cachedMenusStr);
+          if (Array.isArray(parsedMenus) && parsedMenus.length > 0) {
+            state.availableMenus = parsedMenus;
+          }
+        }
+        const cachedCfgStr = localStorage.getItem('almond_cached_config');
+        if (cachedCfgStr) {
+          const parsedCfg = JSON.parse(cachedCfgStr);
+          if (parsedCfg && typeof parsedCfg === 'object') {
+            state.config = parsedCfg;
+          }
+        }
+      } catch(e) {
+        console.warn('Cache hydrate notice:', e);
+      }
+
+      // Immediate render from cached state or defaults
       onMenusLoaded(state.availableMenus || DEFAULT_MENUS);
 
       if (state.config) {
@@ -1924,28 +1983,16 @@
       initLiff();
     }
 
-    // ⚡ Error catcher — แสดง error ที่ทำให้ initCustomerApp ไม่ทำงาน
+    // Error handler
     window.onerror = function(msg, src, line, col, err) {
-      var t = document.getElementById('liffDebugToast');
-      if (t) {
-        t.textContent = '❌ JS Error: ' + msg + ' L' + line;
-        t.style.display = 'block';
-        t.style.background = '#ef4444';
-      }
+      console.error('JS Error:', msg, 'Line:', line, err);
       return false;
     };
 
-    // ⚡ Critical for GAS Sandbox: ใช้ทั้ง DOMContentLoaded + direct call
     function _bootApp() {
       try {
         initCustomerApp();
       } catch(e) {
-        var t = document.getElementById('liffDebugToast');
-        if (t) {
-          t.textContent = '❌ initCustomerApp Error: ' + (e && e.message ? e.message : String(e));
-          t.style.display = 'block';
-          t.style.background = '#ef4444';
-        }
         console.error('initCustomerApp failed:', e);
       }
     }
