@@ -85,7 +85,7 @@
         </button>
       </form>
       <div class="text-[11px] text-stone-400 font-medium">
-        🔒 AlmondWich Security System v4.9.2
+        🔒 AlmondWich Security System v4.9.4
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.9.2</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.9.4</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -714,6 +714,102 @@
     </div>
   </div>
 
+  <!-- PROOF OF DELIVERY VIEW MODAL -->
+  <div id="proofViewModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-4 max-w-sm w-full shadow-2xl space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+          <i class="fa-solid fa-camera text-brand-600"></i>
+          <span>รูปหลักฐานการส่งงาน</span>
+        </h3>
+        <button id="btn-close-proof-view" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="max-h-[70vh] overflow-y-auto flex items-center justify-center bg-slate-50 rounded-2xl p-2">
+        <img id="modalProofImg" src="" class="max-w-full h-auto rounded-xl object-contain shadow-sm" alt="Delivery Proof Preview">
+      </div>
+      <div class="flex items-center justify-end space-x-2 pt-1 text-xs">
+        <a id="modalProofDirectLink" href="#" target="_blank" class="text-brand-600 font-bold hover:underline flex items-center space-x-1">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>เปิดรูปขนาดเต็ม</span>
+        </a>
+        <button id="btn-close-proof-view2" type="button" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-lg font-bold cursor-pointer">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELIVER ORDER WITH PHOTO MODAL (POD MODAL) -->
+  <div id="deliveryProofModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+          <i class="fa-solid fa-motorcycle text-green-600 text-lg"></i>
+          <span>ยืนยันการจัดส่งออเดอร์</span>
+        </h3>
+        <button id="btn-close-delivery-modal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs space-y-1">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 font-mono" id="podOrderIdText">ORD-XXXX</span>
+          <span class="text-green-700 bg-green-100 font-bold px-2 py-0.5 rounded-md text-[10px]" id="podQtyText">X กล่อง</span>
+        </div>
+        <div class="font-black text-sm text-brand-700" id="podCustomerNameText">คุณลูกค้า</div>
+        <div class="text-slate-700 flex items-start space-x-1 pt-0.5" id="podLocationText">
+          <i class="fa-solid fa-location-dot text-brand-500 mt-0.5 shrink-0"></i>
+          <span class="font-medium">-</span>
+        </div>
+      </div>
+
+      <!-- Photo Capture / Upload Box -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-700">ถ่ายรูปหรือแนบภาพส่งงาน (ไม่บังคับ):</label>
+        
+        <input type="file" id="podFileInput" accept="image/*" capture="environment" class="hidden">
+
+        <div id="podUploadPlaceholder" class="border-2 border-dashed border-slate-300 hover:border-brand-500 bg-slate-50/70 hover:bg-amber-50/50 rounded-2xl p-5 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2">
+          <div class="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xl shadow-inner">
+            <i class="fa-solid fa-camera"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-800">แตะเพื่อถ่ายรูป / เลือกรูป</div>
+            <div class="text-[11px] text-slate-400">ถ่ายจุดวางแซนวิช หรือรูปตอนส่งมอบ</div>
+          </div>
+        </div>
+
+        <div id="podUploadPreview" class="hidden relative border border-slate-200 rounded-2xl p-2 bg-slate-50 flex flex-col items-center space-y-2">
+          <img id="podPreviewImg" src="" class="max-h-48 rounded-xl object-contain shadow-sm" alt="POD Preview">
+          <div class="flex items-center justify-between w-full px-1">
+            <span class="text-[10px] text-green-700 font-bold flex items-center space-x-1">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>รูปพร้อมอัปโหลด</span>
+            </span>
+            <button type="button" id="btnRemovePodPhoto" class="text-[11px] text-red-600 hover:text-red-700 font-semibold cursor-pointer">
+              <i class="fa-solid fa-trash-can mr-1"></i>ลบรูป
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 pt-1">
+        <button type="button" id="btnConfirmDeliveryWithPhoto" class="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold py-3 px-4 rounded-xl shadow-md text-sm flex items-center justify-center space-x-2 cursor-pointer transition active:scale-[0.99]">
+          <i class="fa-solid fa-check text-base"></i>
+          <span id="btnConfirmDeliveryText">ยืนยันส่งงานสำเร็จ</span>
+        </button>
+
+        <button type="button" id="btnConfirmDeliveryNoPhoto" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 px-4 rounded-xl text-xs cursor-pointer transition">
+          ส่งงานโดยไม่แนบรูป
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- LINE CHAT HELPER MODAL -->
   <div id="lineChatModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
@@ -1008,9 +1104,13 @@
     const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz1By_wElT1mGYkatyJxlBsaSGdP2gkVGaciG40i4OenK3AMxj8MfMvvFuTRBWWyRqR/exec";
 
     var DEFAULT_MENUS = [
-      { Menu_ID:'M01', Menu_Name:'Sandwich Egg-Sausage (แซนวิชไข่ดาว-ไส้กรอก)', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:1, Sausage_ea:1, Crabstick_ea:0, Box_ea:1 },
-      { Menu_ID:'M02', Menu_Name:'Sandwich Crabstick-Mayo (แซนวิชปูอัด-ไข่กุ้ง)', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:0, Crabstick_ea:3, Box_ea:1 },
-      { Menu_ID:'M03', Menu_Name:'Sandwich Double Sausage & Cheese', Price:45, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:2, Crabstick_ea:0, Box_ea:1 }
+      { Menu_ID:'M01', Menu_Name:'แซนวิชไข่ดาวไส้กรอก Sandwich Egg-Sausage', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:1, Sausage_ea:1, Crabstick_ea:0, Box_ea:1 },
+      { Menu_ID:'M02', Menu_Name:'แซนวิชปูอัดไข่กุ้ง ไข่ดาว Sandwich Crabstick-Mayo', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:0, Crabstick_ea:3, Box_ea:1 },
+      { Menu_ID:'M03', Menu_Name:'แซนวิชโบโลน่า ไข่ดาว Sandwich Fried Egg and Bologna', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:1, Sausage_ea:0, Crabstick_ea:0, Box_ea:1 },
+      { Menu_ID:'M04', Menu_Name:'แซนวิชสลัดผักไข่ต้ม Egg salad sandwich', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:1, Sausage_ea:0, Crabstick_ea:0, Box_ea:1 },
+      { Menu_ID:'M05', Menu_Name:'แซนวิชไส้กรอกโบโลน่า Sausage and Bologna Sandwich', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:1, Crabstick_ea:0, Box_ea:1 },
+      { Menu_ID:'M06', Menu_Name:'แซนวิชปูอัดโบโลน่า Crab Stick and Bologna Sandwich', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:0, Sausage_ea:0, Crabstick_ea:2, Box_ea:1 },
+      { Menu_ID:'M07', Menu_Name:'แซนวิชไข่ข้นโบโลน่า Creamy Scrambled Egg and Bologna Sandwich', Price:35, Status:'OPEN', Bread_slice:2, Egg_ea:1, Sausage_ea:0, Crabstick_ea:0, Box_ea:1 }
     ];
 
     var st = {
@@ -1195,6 +1295,7 @@
             return '<div class="py-0.5"><span class="font-semibold text-slate-800">' + (i.name||i.id) + '</span> <span class="font-bold text-brand-600">x' + i.qty + '</span>' + noteBadge + '</div>';
           }).join('<div class="my-1 border-t border-slate-100"></div>') : (o.items||'');
           var slip = o.slipUrl ? '<button class="slip-btn bg-blue-50 text-blue-600 hover:bg-blue-100 px-2 py-1 rounded text-[11px] font-bold cursor-pointer" data-slip="'+o.slipUrl+'">ดูสลิป</button>' : '-';
+          var proofBtn = o.deliveryProofUrl ? '<button class="proof-view-btn bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded text-[11px] font-bold cursor-pointer inline-flex items-center space-x-1" data-proof="'+o.deliveryProofUrl+'"><i class="fa-solid fa-camera text-[10px]"></i><span>รูปส่งงาน</span></button>' : '';
           
           var chatLink = '';
           if (o.lineUid && o.lineUid !== 'MOCK_USER_001') {
@@ -1226,7 +1327,7 @@
             confirm_btn = '<button class="order-status-btn bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Confirmed_COD" title="ยืนยันรับออเดอร์เก็บปลายทาง">รับออเดอร์</button>';
           }
 
-          var deliver_btn = (o.status === 'Paid' || o.status === 'Confirmed_COD') ? '<button class="order-status-btn bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Delivered">ส่งแล้ว</button>' : '';
+          var deliver_btn = (o.status === 'Paid' || o.status === 'Confirmed_COD') ? '<button class="btn-open-pod-modal bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-customer="'+(o.customerNickname||o.customerName||'ลูกค้า')+'" data-qty="'+(o.totalQty||1)+'" data-loc="'+(o.deliveryLocation||'-')+'">ส่งแล้ว</button>' : '';
           var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
           
           return '<tr class="hover:bg-slate-50 transition">' +
@@ -1237,7 +1338,7 @@
             '<td class="py-3 px-4 text-center font-bold">' + (o.totalQty||0) + '</td>' +
             '<td class="py-3 px-4 text-right font-bold text-brand-600">' + (o.totalPrice||0) + ' ฿</td>' +
             '<td class="py-3 px-4 text-center font-medium">' + (o.paymentMethod||'') + '</td>' +
-            '<td class="py-3 px-4 text-center">' + slip + '</td>' +
+            '<td class="py-3 px-4 text-center space-y-1">' + slip + (proofBtn ? ('<br>' + proofBtn) : '') + '</td>' +
             '<td class="py-3 px-4 text-center">' + (statusMap[o.status]||o.status) + '</td>' +
             '<td class="py-3 px-4 text-center space-x-1">' + confirm_btn + ' ' + deliver_btn + ' ' + cancel_btn + '</td>' +
           '</tr>';
@@ -1304,7 +1405,7 @@
           } else if (o.status === 'Paid' || o.status === 'Confirmed_COD') {
             actionButtonsMobile = 
               '<div class="space-y-2 pt-2 border-t border-slate-100">' +
-                '<button type="button" class="order-status-btn w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Delivered">' +
+                '<button type="button" class="btn-open-pod-modal w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-customer="' + (o.customerNickname || o.customerName || 'ลูกค้า') + '" data-qty="' + (o.totalQty || 1) + '" data-loc="' + (o.deliveryLocation || '-') + '">' +
                   '<i class="fa-solid fa-motorcycle text-lg"></i><span>🛵 จัดส่งถึงมือแล้ว (ส่งสำเร็จ)</span>' +
                 '</button>' +
                 '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
@@ -1312,11 +1413,15 @@
                 '</button>' +
               '</div>';
           } else if (o.status === 'Delivered') {
+            var proofBtnMobile = o.deliveryProofUrl 
+              ? ('<button type="button" class="proof-view-btn w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 py-2.5 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 cursor-pointer shadow-sm transition" data-proof="' + o.deliveryProofUrl + '"><i class="fa-solid fa-camera text-emerald-600"></i><span>ดูรูปหลักฐานการส่งงาน</span></button>') 
+              : '';
             actionButtonsMobile = 
-              '<div class="pt-2 border-t border-slate-100">' +
+              '<div class="pt-2 border-t border-slate-100 space-y-2">' +
                 '<div class="w-full bg-green-50 text-green-700 border border-green-200 py-3 rounded-xl font-bold text-xs text-center flex items-center justify-center space-x-1.5">' +
                   '<i class="fa-solid fa-circle-check text-green-600 text-sm"></i><span>จัดส่งถึงมือเรียบร้อยแล้ว</span>' +
                 '</div>' +
+                proofBtnMobile +
               '</div>';
           } else {
             actionButtonsMobile = 
@@ -1817,6 +1922,28 @@
           return;
         }
 
+        var proofViewBtn = e.target.closest('.proof-view-btn');
+        if (proofViewBtn) {
+          var proofUrl = proofViewBtn.getAttribute('data-proof');
+          var pModal = document.getElementById('proofViewModal');
+          var pImg = document.getElementById('modalProofImg');
+          var pLink = document.getElementById('modalProofDirectLink');
+          if (pImg) pImg.src = proofUrl;
+          if (pLink) pLink.href = proofUrl;
+          if (pModal) pModal.classList.remove('hidden');
+          return;
+        }
+
+        var openPodBtn = e.target.closest('.btn-open-pod-modal');
+        if (openPodBtn) {
+          var orderId = openPodBtn.getAttribute('data-order-id');
+          var cust = openPodBtn.getAttribute('data-customer');
+          var qty = openPodBtn.getAttribute('data-qty');
+          var loc = openPodBtn.getAttribute('data-loc');
+          openDeliveryProofModal(orderId, cust, qty, loc);
+          return;
+        }
+
         var statusBtn = e.target.closest('.order-status-btn');
         if (statusBtn) {
           var oId = statusBtn.getAttribute('data-order-id');
@@ -1957,6 +2084,180 @@
       var bcs2 = document.getElementById('btn-close-slip2');
       if (bcs1) bcs1.addEventListener('click', closeSlip);
       if (bcs2) bcs2.addEventListener('click', closeSlip);
+
+      // Close Proof View Modal
+      var closeProofView = function() { document.getElementById('proofViewModal').classList.add('hidden'); };
+      var bpv1 = document.getElementById('btn-close-proof-view');
+      var bpv2 = document.getElementById('btn-close-proof-view2');
+      if (bpv1) bpv1.addEventListener('click', closeProofView);
+      if (bpv2) bpv2.addEventListener('click', closeProofView);
+
+      // -------------------------------------------------------------
+      // 🛵 PROOF OF DELIVERY (POD) LOGIC & IMAGE COMPRESSION
+      // -------------------------------------------------------------
+      var currentPodOrderId = '';
+      var currentPodBase64 = '';
+
+      var podModal = document.getElementById('deliveryProofModal');
+      var podFileInput = document.getElementById('podFileInput');
+      var podPlaceholder = document.getElementById('podUploadPlaceholder');
+      var podPreview = document.getElementById('podUploadPreview');
+      var podPreviewImg = document.getElementById('podPreviewImg');
+      var btnRemovePod = document.getElementById('btnRemovePodPhoto');
+      var btnConfirmPodPhoto = document.getElementById('btnConfirmDeliveryWithPhoto');
+      var btnConfirmPodNoPhoto = document.getElementById('btnConfirmDeliveryNoPhoto');
+      var btnClosePod = document.getElementById('btn-close-delivery-modal');
+
+      function resetPodModal() {
+        currentPodOrderId = '';
+        currentPodBase64 = '';
+        if (podFileInput) podFileInput.value = '';
+        if (podPreviewImg) podPreviewImg.src = '';
+        if (podPlaceholder) podPlaceholder.classList.remove('hidden');
+        if (podPreview) podPreview.classList.add('hidden');
+        if (btnConfirmPodPhoto) {
+          btnConfirmPodPhoto.disabled = false;
+          btnConfirmPodPhoto.innerHTML = '<i class="fa-solid fa-check text-base"></i><span>ยืนยันส่งงานสำเร็จ</span>';
+        }
+        if (btnConfirmPodNoPhoto) btnConfirmPodNoPhoto.disabled = false;
+      }
+
+      window.openDeliveryProofModal = function(orderId, custName, qty, location) {
+        resetPodModal();
+        currentPodOrderId = orderId;
+        var oIdEl = document.getElementById('podOrderIdText');
+        var custEl = document.getElementById('podCustomerNameText');
+        var qtyEl = document.getElementById('podQtyText');
+        var locEl = document.getElementById('podLocationText');
+
+        if (oIdEl) oIdEl.textContent = orderId;
+        if (custEl) custEl.textContent = custName || 'คุณลูกค้า';
+        if (qtyEl) qtyEl.textContent = (qty || 1) + ' กล่อง';
+        if (locEl) {
+          locEl.innerHTML = '<i class="fa-solid fa-location-dot text-brand-500 mt-0.5 shrink-0"></i><span class="font-medium">' + (location || '-') + '</span>';
+        }
+
+        if (podModal) podModal.classList.remove('hidden');
+      };
+
+      if (btnClosePod) {
+        btnClosePod.addEventListener('click', function() {
+          if (podModal) podModal.classList.add('hidden');
+          resetPodModal();
+        });
+      }
+
+      if (podPlaceholder && podFileInput) {
+        podPlaceholder.addEventListener('click', function() {
+          podFileInput.click();
+        });
+      }
+
+      if (btnRemovePod) {
+        btnRemovePod.addEventListener('click', function() {
+          currentPodBase64 = '';
+          if (podFileInput) podFileInput.value = '';
+          if (podPreviewImg) podPreviewImg.src = '';
+          if (podPlaceholder) podPlaceholder.classList.remove('hidden');
+          if (podPreview) podPreview.classList.add('hidden');
+        });
+      }
+
+      // Handle Camera/Image Selection with Client-side Compression
+      if (podFileInput) {
+        podFileInput.addEventListener('change', function(e) {
+          var file = e.target.files && e.target.files[0];
+          if (!file) return;
+
+          var reader = new FileReader();
+          reader.onload = function(evt) {
+            var img = new Image();
+            img.onload = function() {
+              var maxDim = 1200;
+              var width = img.width;
+              var height = img.height;
+              if (width > maxDim || height > maxDim) {
+                if (width > height) {
+                  height = Math.round((height * maxDim) / width);
+                  width = maxDim;
+                } else {
+                  width = Math.round((width * maxDim) / height);
+                  height = maxDim;
+                }
+              }
+              var canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              var ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+
+              currentPodBase64 = canvas.toDataURL('image/jpeg', 0.82);
+              if (podPreviewImg) podPreviewImg.src = currentPodBase64;
+              if (podPlaceholder) podPlaceholder.classList.add('hidden');
+              if (podPreview) podPreview.classList.remove('hidden');
+            };
+            img.onerror = function() {
+              currentPodBase64 = evt.target.result;
+              if (podPreviewImg) podPreviewImg.src = currentPodBase64;
+              if (podPlaceholder) podPlaceholder.classList.add('hidden');
+              if (podPreview) podPreview.classList.remove('hidden');
+            };
+            img.src = evt.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Submit Delivery with Photo
+      if (btnConfirmPodPhoto) {
+        btnConfirmPodPhoto.addEventListener('click', async function() {
+          if (!currentPodOrderId) return;
+          btnConfirmPodPhoto.disabled = true;
+          if (btnConfirmPodNoPhoto) btnConfirmPodNoPhoto.disabled = true;
+          btnConfirmPodPhoto.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>กำลังบันทึกส่งงาน...';
+
+          try {
+            var payload = {
+              orderId: currentPodOrderId,
+              status: 'Delivered',
+              deliveryProofBase64: currentPodBase64
+            };
+            await adminApi('updateOrderStatus', payload);
+            if (podModal) podModal.classList.add('hidden');
+            resetPodModal();
+            loadAllAdminData();
+          } catch (err) {
+            alert('เกิดข้อผิดพลาดในการบันทึกส่งงาน: ' + err);
+            btnConfirmPodPhoto.disabled = false;
+            if (btnConfirmPodNoPhoto) btnConfirmPodNoPhoto.disabled = false;
+            btnConfirmPodPhoto.innerHTML = '<i class="fa-solid fa-check text-base"></i><span>ยืนยันส่งงานสำเร็จ</span>';
+          }
+        });
+      }
+
+      // Submit Delivery without Photo (Fast Mode)
+      if (btnConfirmPodNoPhoto) {
+        btnConfirmPodNoPhoto.addEventListener('click', async function() {
+          if (!currentPodOrderId) return;
+          if (!confirm('ยืนยันส่งงานออเดอร์ ' + currentPodOrderId + ' โดยไม่แนบรูปใช่หรือไม่?')) return;
+          
+          btnConfirmPodNoPhoto.disabled = true;
+          if (btnConfirmPodPhoto) btnConfirmPodPhoto.disabled = true;
+          btnConfirmPodNoPhoto.textContent = 'กำลังบันทึก...';
+
+          try {
+            await adminApi('updateOrderStatus', { orderId: currentPodOrderId, status: 'Delivered' });
+            if (podModal) podModal.classList.add('hidden');
+            resetPodModal();
+            loadAllAdminData();
+          } catch (err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+            btnConfirmPodNoPhoto.disabled = false;
+            if (btnConfirmPodPhoto) btnConfirmPodPhoto.disabled = false;
+            btnConfirmPodNoPhoto.textContent = 'ส่งงานโดยไม่แนบรูป';
+          }
+        });
+      }
 
       // -------------------------------------------------------------
       // 🥗 DYNAMIC BOM INGREDIENTS LOGIC

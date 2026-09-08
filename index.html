@@ -214,7 +214,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v4.9.2</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v4.9.4</span>
       </p>
     </footer>
 
@@ -586,6 +586,34 @@
     </div>
   </div>
 
+  <!-- CUSTOMER DELIVERY PROOF VIEW MODAL -->
+  <div id="customerDeliveryProofModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3 text-center">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+        <h3 class="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+          <i class="fa-solid fa-camera text-brand-500"></i>
+          <span>รูปหลักฐานการส่งมอบแซนวิช</span>
+        </h3>
+        <button id="btnCloseCustomerProof" type="button" class="text-gray-400 hover:text-gray-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="max-h-[65vh] overflow-y-auto flex items-center justify-center bg-gray-50 rounded-2xl p-2 border border-gray-100">
+        <img id="customerProofImg" src="" alt="จุดส่งของ" class="max-w-full h-auto rounded-xl object-contain shadow-sm">
+      </div>
+      <p class="text-[11px] text-gray-500">ร้านค้าได้นำส่งแซนวิชตามจุดนี้เรียบร้อยแล้วครับ</p>
+      <div class="flex items-center justify-end space-x-2 pt-1 text-xs">
+        <a id="customerProofDirectLink" href="#" target="_blank" class="text-brand-600 font-bold hover:underline flex items-center space-x-1">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span>เปิดรูปขนาดเต็ม</span>
+        </a>
+        <button id="btnCloseCustomerProof2" type="button" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-xl font-bold cursor-pointer transition">
+          ปิด
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- FULLSCREEN LOADING SPINNER -->
   <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-white rounded-2xl p-5 flex items-center space-x-3 shadow-xl">
@@ -628,11 +656,13 @@
     }
 
     const DEFAULT_MENUS = [
-      { id: 'M01', name: 'Sandwich Egg-Sausage (แซนวิชไข่ดาว-ไส้กรอก)', price: 35, status: 'OPEN' },
-      { id: 'M02', name: 'Sandwich Crabstick-Mayo (แซนวิชปูอัด-ไข่กุ้ง)', price: 35, status: 'OPEN' },
-      { id: 'M03', name: 'Sandwich Double Sausage & Cheese (แซนวิชไส้กรอกคู่ชีส)', price: 45, status: 'OPEN' },
-      { id: 'M04', name: 'Sandwich Egg Salad (แซนวิชสลัดไข่ต้ม)', price: 35, status: 'OPEN' },
-      { id: 'M05', name: 'Sandwich Ham-Cheese (แซนวิชแฮมชีส)', price: 45, status: 'OPEN' }
+      { id: 'M01', name: 'แซนวิชไข่ดาวไส้กรอก Sandwich Egg-Sausage', price: 35, status: 'OPEN' },
+      { id: 'M02', name: 'แซนวิชปูอัดไข่กุ้ง ไข่ดาว Sandwich Crabstick-Mayo', price: 35, status: 'OPEN' },
+      { id: 'M03', name: 'แซนวิชโบโลน่า ไข่ดาว Sandwich Fried Egg and Bologna', price: 35, status: 'OPEN' },
+      { id: 'M04', name: 'แซนวิชสลัดผักไข่ต้ม Egg salad sandwich', price: 35, status: 'OPEN' },
+      { id: 'M05', name: 'แซนวิชไส้กรอกโบโลน่า Sausage and Bologna Sandwich', price: 35, status: 'OPEN' },
+      { id: 'M06', name: 'แซนวิชปูอัดโบโลน่า Crab Stick and Bologna Sandwich', price: 35, status: 'OPEN' },
+      { id: 'M07', name: 'แซนวิชไข่ข้นโบโลน่า Creamy Scrambled Egg and Bologna Sandwich', price: 35, status: 'OPEN' }
     ];
 
     const state = {
@@ -1581,6 +1611,14 @@
             <div class="text-xs space-y-1">
               ${itemsHtml}
               ${ord.redeemedPoints > 0 ? '<div class="text-[11px] text-amber-600 font-semibold">🎁 ใช้สิทธิ์แลกฟรี 10 แต้ม</div>' : ''}
+              ${ord.deliveryProofUrl ? `
+                <div class="pt-1.5">
+                  <button type="button" class="btn-customer-view-proof w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer shadow-sm" data-proof="${ord.deliveryProofUrl}">
+                    <i class="fa-solid fa-camera text-emerald-600"></i>
+                    <span>ดูรูปถ่ายจุดส่งมอบแซนวิช</span>
+                  </button>
+                </div>
+              ` : ''}
             </div>
 
             <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs font-bold text-gray-900">
@@ -1994,6 +2032,37 @@
       if (btnZoom2) btnZoom2.addEventListener('click', openQrZoom);
       if (btnCloseZoom) btnCloseZoom.addEventListener('click', closeQrZoom);
 
+      // Customer Delivery Proof Lightbox Modal Controls
+      const proofModal = document.getElementById('customerDeliveryProofModal');
+      const proofImg = document.getElementById('customerProofImg');
+      const proofLink = document.getElementById('customerProofDirectLink');
+      const openProofModal = (imgUrl) => {
+        if (proofImg) proofImg.src = imgUrl;
+        if (proofLink) proofLink.href = imgUrl;
+        if (proofModal) proofModal.classList.remove('hidden');
+        setBodyScrollLock(true);
+      };
+      const closeProofModal = () => {
+        if (proofModal) proofModal.classList.add('hidden');
+        checkAndReleaseBodyScroll();
+      };
+
+      const btnCloseProof1 = document.getElementById('btnCloseCustomerProof');
+      const btnCloseProof2 = document.getElementById('btnCloseCustomerProof2');
+      if (btnCloseProof1) btnCloseProof1.addEventListener('click', closeProofModal);
+      if (btnCloseProof2) btnCloseProof2.addEventListener('click', closeProofModal);
+
+      // Event Delegation for Proof View in History List
+      if (historyContainer) {
+        historyContainer.addEventListener('click', function(e) {
+          const proofBtn = e.target.closest('.btn-customer-view-proof');
+          if (proofBtn) {
+            const proofUrl = proofBtn.getAttribute('data-proof');
+            if (proofUrl) openProofModal(proofUrl);
+          }
+        });
+      }
+
       // Close modals when clicking dark backdrop
       const backdropClose = (modalEl, closeFn) => {
         if (!modalEl) return;
@@ -2005,6 +2074,7 @@
       backdropClose(document.getElementById('cartDrawerModal'), closeCartDrawer);
       backdropClose(document.getElementById('paymentModal'), closePaymentModal);
       backdropClose(qrZoomModal, closeQrZoom);
+      backdropClose(proofModal, closeProofModal);
 
       // Auto-fill delivery details from localStorage
       try {
