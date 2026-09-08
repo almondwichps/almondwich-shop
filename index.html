@@ -129,22 +129,38 @@
   <!-- MAIN CONTAINER -->
   <main class="max-w-md mx-auto px-4 pt-4">
 
-    <!-- LOYALTY POINTS BANNER (High Contrast Warm Glass Gradient) -->
-    <section class="glass-card-points rounded-2xl p-4 text-white shadow-xl mb-4 flex items-center justify-between relative overflow-hidden">
-      <div class="relative z-10">
-        <div class="text-xs font-black text-amber-200 tracking-wider flex items-center space-x-1.5 drop-shadow">
-          <i class="fa-solid fa-crown text-yellow-300 text-sm"></i>
-          <span class="tracking-wide">คะแนนสะสมของคุณ</span>
+    <!-- LOYALTY POINTS BANNER (High Contrast Warm Glass Gradient with Gamified Progress Bar) -->
+    <section class="glass-card-points rounded-2xl p-4 text-white shadow-xl mb-4 relative overflow-hidden space-y-3">
+      <div class="flex items-center justify-between relative z-10">
+        <div>
+          <div class="text-xs font-black text-amber-200 tracking-wider flex items-center space-x-1.5 drop-shadow">
+            <i class="fa-solid fa-crown text-yellow-300 text-sm"></i>
+            <span class="tracking-wide">คะแนนสะสมของคุณ</span>
+          </div>
+          <div class="flex items-baseline space-x-1.5 mt-1.5">
+            <span id="userPointsDisplay" class="text-3xl font-black text-white drop-shadow-md">0</span>
+            <span class="text-xs text-amber-100 font-bold drop-shadow">แต้ม (1 กล่อง = 1 แต้ม)</span>
+          </div>
         </div>
-        <div class="flex items-baseline space-x-1.5 mt-1.5">
-          <span id="userPointsDisplay" class="text-3xl font-black text-white drop-shadow-md">0</span>
-          <span class="text-xs text-amber-100 font-bold drop-shadow">แต้ม (1 กล่อง = 1 แต้ม)</span>
+        <div class="text-right">
+          <span class="inline-block bg-black/25 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-black text-amber-100 border border-white/30 shadow-md">
+            🎁 สะสมครบ 10 แต้ม ฟรี 1 กล่อง!
+          </span>
         </div>
       </div>
-      <div class="text-right relative z-10">
-        <span class="inline-block bg-black/25 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs font-black text-amber-100 border border-white/30 shadow-md">
-          🎁 สะสมครบ 10 แต้ม ฟรี 1 กล่อง!
-        </span>
+
+      <!-- Gamified Progress Bar -->
+      <div class="relative z-10 pt-1 border-t border-white/15 space-y-1.5">
+        <div class="flex items-center justify-between text-[11px] font-bold text-amber-100/90">
+          <span id="pointsProgressMotivationText" class="flex items-center space-x-1">
+            <i class="fa-solid fa-gift text-yellow-300"></i>
+            <span>อีก 10 แต้ม จะได้แซนวิชฟรี 1 กล่อง!</span>
+          </span>
+          <span id="pointsProgressRatioText" class="font-mono text-[10px] bg-black/30 px-2 py-0.5 rounded-full border border-white/20">0 / 10 แต้ม</span>
+        </div>
+        <div class="w-full bg-black/30 rounded-full h-2.5 p-0.5 border border-white/20 overflow-hidden shadow-inner">
+          <div id="pointsProgressBarFill" class="bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-200 h-full rounded-full transition-all duration-500 shadow-sm" style="width: 0%;"></div>
+        </div>
       </div>
     </section>
 
@@ -214,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v4.9.5</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v4.9.7</span>
       </p>
     </footer>
 
@@ -486,9 +502,15 @@
               </a>
             </div>
 
-            <div class="text-xs text-gray-700">
+            <div class="text-xs text-gray-700 space-y-1">
               <p class="font-bold text-gray-900" id="promptPayAccName">Sandwich Shop</p>
-              <p class="font-mono text-gray-600" id="promptPayNumber">PromptPay: 0812345678</p>
+              <div class="flex items-center justify-center space-x-2 pt-0.5">
+                <p class="font-mono font-bold text-stone-800 bg-white px-2.5 py-1 rounded-lg border border-stone-200 shadow-xs" id="promptPayNumber">PromptPay: 0812345678</p>
+                <button type="button" id="btnCopyPromptPay" class="bg-brand-50 hover:bg-brand-100 active:bg-brand-200 text-brand-700 px-2.5 py-1 rounded-lg border border-brand-200 font-bold text-[11px] flex items-center space-x-1 cursor-pointer transition shadow-xs" title="แตะเพื่อคัดลอกเลขพร้อมเพย์">
+                  <i class="fa-solid fa-copy text-xs"></i>
+                  <span id="btnCopyPromptPayText">คัดลอกเลข</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -860,15 +882,28 @@
           : `<div class="w-20 h-20 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-3xl shrink-0 border border-amber-100 shadow-inner aspect-square">🥪</div>`;
 
         const card = document.createElement('div');
-        card.className = "menu-card glass-card rounded-2xl p-3 flex items-center space-x-3 cursor-pointer hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition";
+        card.className = "menu-card glass-card rounded-2xl p-3 flex items-center space-x-3 cursor-pointer hover:border-brand-300 hover:shadow-md active:scale-[0.99] transition relative overflow-hidden";
         card.setAttribute('data-menu-id', menu.id);
+
+        // Render Badges: Bestseller (🔥) and Recommended (⭐)
+        let badgesHtml = '';
+        if (menu.isBestseller) {
+          badgesHtml += `<span class="bg-gradient-to-r from-red-500 to-amber-500 text-white font-black text-[9px] px-1.5 py-0.5 rounded-md shadow-xs flex items-center space-x-0.5"><span>🔥</span><span>ขายดี</span></span>`;
+        }
+        if (menu.isRecommended) {
+          badgesHtml += `<span class="bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-950 font-black text-[9px] px-1.5 py-0.5 rounded-md shadow-xs flex items-center space-x-0.5"><span>⭐</span><span>แนะนำ</span></span>`;
+        }
+
         card.innerHTML = `
           <div class="relative shrink-0">
             ${imgHtml}
             <span id="menu-badge-${menu.id}" class="hidden absolute -top-1.5 -right-1.5 bg-brand-600 text-white font-extrabold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow">0</span>
           </div>
           <div class="flex-1 min-w-0 pr-1">
-            <h4 class="font-bold text-xs text-stone-900 line-clamp-1">${menu.name}</h4>
+            <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+              <h4 class="font-bold text-xs text-stone-900 line-clamp-1">${menu.name}</h4>
+              ${badgesHtml ? `<div class="flex items-center space-x-1">${badgesHtml}</div>` : ''}
+            </div>
             <p class="text-[11px] text-stone-500 line-clamp-2 mt-0.5 leading-tight">${menu.description || 'แซนวิชสดใหม่สูตรพิเศษ ไส้แน่นเต็มแผ่น อิ่มอร่อย'}</p>
             <div class="flex items-center justify-between mt-2">
               <span class="text-brand-700 font-black text-sm">${menu.price} ฿</span>
@@ -1217,13 +1252,33 @@
         }
       } catch(e) {}
       const ptsDisplay = document.getElementById('userPointsDisplay');
-      if (ptsDisplay) ptsDisplay.textContent = pts.availablePoints || 0;
+      const availPts = pts.availablePoints || 0;
+      if (ptsDisplay) ptsDisplay.textContent = availPts;
+
+      // Update Gamified Progress Bar (0 to 10 points cycle)
+      const currentCycle = availPts % 10;
+      const progressPercent = (availPts >= 10 && currentCycle === 0) ? 100 : Math.min(100, Math.round((currentCycle / 10) * 100));
+      const neededPts = (10 - currentCycle) === 0 ? 10 : (10 - currentCycle);
+
+      const fillBar = document.getElementById('pointsProgressBarFill');
+      const ratioText = document.getElementById('pointsProgressRatioText');
+      const motivText = document.getElementById('pointsProgressMotivationText');
+
+      if (fillBar) fillBar.style.width = `${progressPercent}%`;
+      if (ratioText) ratioText.textContent = `${availPts >= 10 ? 'สะสมครบแล้ว 🎉' : (currentCycle + ' / 10 แต้ม')}`;
+      if (motivText) {
+        if (availPts >= 10) {
+          motivText.innerHTML = `<i class="fa-solid fa-gift text-yellow-300"></i><span>คุณมีสิทธิ์แลกแซนวิชฟรี ${Math.floor(availPts / 10)} กล่อง!</span>`;
+        } else {
+          motivText.innerHTML = `<i class="fa-solid fa-gift text-yellow-300"></i><span>อีก ${neededPts} แต้ม จะได้แซนวิชฟรี 1 กล่อง!</span>`;
+        }
+      }
 
       const loyaltyBox = document.getElementById('loyaltyRedemptionBox');
       const chkRedeem = document.getElementById('chkRedeemPoints');
 
       if (loyaltyBox && chkRedeem) {
-        if (pts.availablePoints >= 10) {
+        if (availPts >= 10) {
           loyaltyBox.classList.remove('hidden');
         } else {
           loyaltyBox.classList.add('hidden');
@@ -1554,6 +1609,7 @@
     }
 
     function renderHistoryList(orders) {
+      state.customerOrdersHistory = Array.isArray(orders) ? orders : [];
       const container = document.getElementById('historyListContainer');
       if (!container) return;
       
@@ -1623,15 +1679,87 @@
 
             <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs font-bold text-gray-900">
               <span>ยอดรวม: <span class="text-brand-600">${ord.totalPrice} ฿</span> (${ord.totalQty} กล่อง)</span>
-              ${canCancel ? `
-                <button data-cancel-order-id="${ord.orderId}" type="button" class="btn-cancel-order text-[11px] text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition cursor-pointer">
-                  <i class="fa-solid fa-xmark"></i> ขอยกเลิก
+              <div class="flex items-center space-x-1.5">
+                <button type="button" class="btn-reorder text-[11px] bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold px-2.5 py-1 rounded-lg border border-brand-200 transition cursor-pointer flex items-center space-x-1" data-order-id="${ord.orderId}">
+                  <i class="fa-solid fa-rotate-right text-[10px]"></i>
+                  <span>สั่งซ้ำ 🔁</span>
                 </button>
-              ` : ''}
+                ${canCancel ? `
+                  <button data-cancel-order-id="${ord.orderId}" type="button" class="btn-cancel-order text-[11px] text-red-600 hover:text-red-700 font-medium px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i> ขอยกเลิก
+                  </button>
+                ` : ''}
+              </div>
             </div>
           </div>
         `;
       }).join('');
+    }
+
+    function reorderHandler(orderId) {
+      const container = document.getElementById('historyListContainer');
+      // Look up order in cached history or find from DOM
+      if (!state.customerOrdersHistory) state.customerOrdersHistory = [];
+      const ord = state.customerOrdersHistory.find(o => o.orderId === orderId);
+      if (!ord || !Array.isArray(ord.items) || ord.items.length === 0) {
+        alert("ไม่พบรายการสินค้าในออเดอร์นี้");
+        return;
+      }
+
+      // Add items from this order into cart
+      let addedCount = 0;
+      ord.items.forEach(item => {
+        // Skip free redemption items when reordering (customer can redeem separately)
+        if (item.price === 0 && (item.note || '').includes('แลกฟรี')) return;
+
+        // Verify if menu still exists in availableMenus
+        const existingMenu = (state.availableMenus || []).find(m => m.id === item.id || m.name === item.name);
+        const menuId = existingMenu ? existingMenu.id : (item.id || 'M01');
+        const menuName = existingMenu ? existingMenu.name : item.name;
+        const menuPrice = existingMenu ? existingMenu.price : (item.price || 35);
+        const itemNote = (item.note || '').trim();
+        const itemQty = Math.max(1, parseInt(item.qty || 1, 10));
+
+        const matchedCart = state.cartItems.find(c => c.menuId === menuId && (c.note || '') === itemNote);
+        if (matchedCart) {
+          matchedCart.qty += itemQty;
+        } else {
+          state.cartItems.push({
+            menuId: menuId,
+            name: menuName,
+            price: menuPrice,
+            qty: itemQty,
+            note: itemNote
+          });
+        }
+        addedCount += itemQty;
+      });
+
+      if (addedCount > 0) {
+        updateCartUI();
+        switchTab('order');
+        openCartDrawer();
+        showToast(`นำ ${addedCount} กล่องจากออเดอร์เดิมเข้าตะกร้าแล้ว`);
+      } else {
+        alert("ไม่มีรายการแซนวิชที่สามารถสั่งซ้ำได้ในออเดอร์นี้");
+      }
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById('appToastNotification');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'appToastNotification';
+        toast.className = 'fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold flex items-center space-x-2 transition-all duration-300 opacity-0 pointer-events-none border border-white/20';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i><span>${msg}</span>`;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
     }
 
     function cancelOrderHandler(orderId) {
@@ -2052,13 +2180,71 @@
       if (btnCloseProof1) btnCloseProof1.addEventListener('click', closeProofModal);
       if (btnCloseProof2) btnCloseProof2.addEventListener('click', closeProofModal);
 
-      // Event Delegation for Proof View in History List
+      // Event Delegation for Proof View, Cancel Order, and Re-order in History List
       if (historyContainer) {
         historyContainer.addEventListener('click', function(e) {
           const proofBtn = e.target.closest('.btn-customer-view-proof');
           if (proofBtn) {
             const proofUrl = proofBtn.getAttribute('data-proof');
             if (proofUrl) openProofModal(proofUrl);
+            return;
+          }
+
+          const reorderBtn = e.target.closest('.btn-reorder');
+          if (reorderBtn) {
+            const orderId = reorderBtn.getAttribute('data-order-id');
+            if (orderId) reorderHandler(orderId);
+            return;
+          }
+
+          const cancelBtn = e.target.closest('.btn-cancel-order');
+          if (cancelBtn) {
+            const orderId = cancelBtn.getAttribute('data-cancel-order-id');
+            if (orderId) cancelOrderHandler(orderId);
+            return;
+          }
+        });
+      }
+
+      // One-Tap Copy PromptPay Number Button
+      const btnCopyPP = document.getElementById('btnCopyPromptPay');
+      if (btnCopyPP) {
+        btnCopyPP.addEventListener('click', function() {
+          const ppEl = document.getElementById('promptPayNumber');
+          const cleanNum = (ppEl ? ppEl.textContent : '').replace(/[^0-9]/g, '');
+          if (!cleanNum) {
+            alert("ไม่พบเบอร์พร้อมเพย์");
+            return;
+          }
+
+          const copySuccess = () => {
+            const txt = document.getElementById('btnCopyPromptPayText');
+            if (txt) txt.textContent = 'คัดลอกแล้ว!';
+            showToast(`คัดลอกเลขพร้อมเพย์ ${cleanNum} แล้ว สลับไปแอปธนาคารได้เลย`);
+            setTimeout(() => {
+              if (txt) txt.textContent = 'คัดลอกเลข';
+            }, 2500);
+          };
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(cleanNum).then(copySuccess).catch(() => {
+              // Fallback
+              const tempInput = document.createElement('input');
+              tempInput.value = cleanNum;
+              document.body.appendChild(tempInput);
+              tempInput.select();
+              document.execCommand('copy');
+              document.body.removeChild(tempInput);
+              copySuccess();
+            });
+          } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = cleanNum;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            copySuccess();
           }
         });
       }

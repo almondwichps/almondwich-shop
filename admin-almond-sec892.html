@@ -85,7 +85,7 @@
         </button>
       </form>
       <div class="text-[11px] text-stone-400 font-medium">
-        🔒 AlmondWich Security System v4.9.5
+        🔒 AlmondWich Security System v4.9.7
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.9.5</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.9.7</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -149,6 +149,11 @@
           <button type="button" id="dtab-settings" data-tab="settings" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
             <i class="fa-solid fa-sliders"></i>
             <span>4. ตั้งค่าร้านค้า & รหัสผ่าน</span>
+          </button>
+
+          <button type="button" id="dtab-customers" data-tab="customers" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-users"></i>
+            <span>5. ลูกค้า & แต้มสะสม</span>
           </button>
         </div>
       </div>
@@ -752,6 +757,110 @@
 
       </section>
 
+      <!-- ===================================================================== -->
+      <!-- TAB 5: 👥 ระบบจัดการลูกค้า & แต้มสะสม (Customer & Loyalty Management) -->
+      <!-- ===================================================================== -->
+      <section id="section-customers" class="space-y-6" style="display: none;">
+        
+        <!-- Header & Quick Action Row -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-black text-stone-800 tracking-tight flex items-center space-x-2">
+              <span class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-sm shadow-sm">
+                <i class="fa-solid fa-users"></i>
+              </span>
+              <span>ระบบจัดการลูกค้า & แต้มสะสม</span>
+            </h2>
+            <p class="text-xs text-stone-500 mt-0.5">ตรวจสอบข้อมูลลูกค้า สิทธิ์แลกฟรี ปรับแต้ม และติดต่อลูกค้า 1:1 ผ่าน LINE</p>
+          </div>
+
+          <button id="btn-refresh-customers" type="button" class="bg-white hover:bg-stone-50 text-stone-700 font-bold px-4 py-2.5 rounded-2xl border border-stone-200 shadow-sm text-xs flex items-center justify-center space-x-2 transition cursor-pointer self-start sm:self-auto">
+            <i class="fa-solid fa-rotate text-brand-600"></i>
+            <span>รีเฟรชรายชื่อ</span>
+          </button>
+        </div>
+
+        <!-- 3 KPI Cards: Total Customers, Total System Points, Eligible for Free Box -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-brand-600 flex items-center justify-center text-xl shrink-0 border border-amber-200/60">
+              <i class="fa-solid fa-user-group"></i>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-stone-400">ลูกค้าทั้งหมด</div>
+              <div id="kpiCustTotalCount" class="text-2xl font-black text-stone-800">0 <span class="text-xs font-normal text-stone-500">คน</span></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 border border-emerald-200/60">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-stone-400">แต้มคงเหลือรวมทั้งระบบ</div>
+              <div id="kpiCustTotalPoints" class="text-2xl font-black text-emerald-600">0 <span class="text-xs font-normal text-stone-500">แต้ม</span></div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm flex items-center space-x-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center text-xl shrink-0 border border-orange-200/60">
+              <i class="fa-solid fa-gift"></i>
+            </div>
+            <div>
+              <div class="text-[11px] font-bold text-stone-400">มีสิทธิ์แลกฟรี (≥10 แต้ม)</div>
+              <div id="kpiCustEligibleFree" class="text-2xl font-black text-orange-600">0 <span class="text-xs font-normal text-stone-500">คน</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="bg-white rounded-3xl p-3 sm:p-4 border border-stone-200/80 shadow-sm">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 text-xs"></i>
+            <input type="text" id="customerSearchInput" placeholder="ค้นหาด้วยชื่อ LINE, ชื่อเล่น, เบอร์โทรศัพท์ หรือสถานที่ส่ง..." 
+              class="w-full bg-stone-50 border border-stone-200/80 rounded-2xl py-2.5 pl-9 pr-8 text-xs font-medium text-stone-800 placeholder-stone-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition">
+            <button id="btnClearCustSearch" type="button" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 cursor-pointer text-xs">
+              <i class="fa-solid fa-circle-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- DESKTOP TABLE VIEW (md:block) -->
+        <div class="hidden md:block bg-white rounded-3xl border border-stone-200/80 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-stone-50 text-stone-500 border-b border-stone-200/80 font-bold">
+                <tr>
+                  <th class="py-3.5 px-4">ลูกค้า (LINE / ชื่อเล่น)</th>
+                  <th class="py-3.5 px-4">เบอร์โทร & จุดส่ง</th>
+                  <th class="py-3.5 px-4 text-center">แต้มคงเหลือ</th>
+                  <th class="py-3.5 px-4 text-center">แต้มสะสมทั้งหมด / ใช้ไป</th>
+                  <th class="py-3.5 px-4 text-center">ยอดสั่งซื้อ</th>
+                  <th class="py-3.5 px-4 text-right">การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody" class="divide-y divide-stone-100 font-medium text-stone-700">
+                <tr>
+                  <td colspan="6" class="py-12 text-center text-stone-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-xl text-brand-500 mb-2"></i>
+                    <p>กำลังโหลดรายชื่อลูกค้า...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- MOBILE CARDS VIEW (md:hidden) -->
+        <div id="customersCardsContainer" class="md:hidden space-y-3">
+          <div class="py-12 text-center text-stone-400">
+            <i class="fa-solid fa-circle-notch fa-spin text-xl text-brand-500 mb-2"></i>
+            <p>กำลังโหลดรายชื่อลูกค้า...</p>
+          </div>
+        </div>
+
+      </section>
+
     </main>
 
   </div> <!-- End adminMainWrapper -->
@@ -1116,6 +1225,18 @@
           <textarea id="form_Description" rows="2" placeholder="เช่น แซนวิชโบราณน้ำสลัดเข้มข้น ไส้แน่นเต็มแผ่น อิ่มคุ้ม" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium"></textarea>
         </div>
 
+        <!-- IS RECOMMENDED TOGGLE -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5 flex items-center justify-between">
+          <label for="form_Is_Recommended" class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox" id="form_Is_Recommended" class="w-4 h-4 text-brand-600 rounded focus:ring-brand-500 cursor-pointer">
+            <span class="font-bold text-amber-950 text-xs flex items-center space-x-1">
+              <span>⭐</span>
+              <span>ปักหมุดเป็นเมนูแนะนำ (Recommended)</span>
+            </span>
+          </label>
+          <span class="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md font-extrabold">แสดงป้าย ⭐ หน้าร้าน</span>
+        </div>
+
         <!-- DYNAMIC BOM INGREDIENTS SECTION -->
         <div class="border-t border-slate-100 pt-2.5 space-y-2">
           <div class="flex items-center justify-between">
@@ -1228,26 +1349,118 @@
   </div>
 
   <!-- BOTTOM NAVIGATION FOR MOBILE -->
-  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2 z-40 shadow-lg">
-    <div class="grid grid-cols-4 gap-1 px-2 text-center">
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-1.5 z-40 shadow-lg">
+    <div class="grid grid-cols-5 gap-0.5 px-1 text-center">
       <button data-tab="orders" type="button" id="mtab-orders" class="mobile-tab active flex flex-col items-center justify-center py-1">
-        <i class="fa-solid fa-receipt text-base"></i>
-        <span class="text-[10px] mt-0.5">ออเดอร์</span>
+        <i class="fa-solid fa-receipt text-sm"></i>
+        <span class="text-[9px] mt-0.5">ออเดอร์</span>
       </button>
-      <button data-tab="prep" type="button" id="mtab-prep" class="mobile-tab flex flex-col items-center justify-center py-1">
-        <i class="fa-solid fa-kitchen-set text-base"></i>
-        <span class="text-[10px] mt-0.5">ครัว/BOM</span>
+      <button data-tab="prep" type="button" id="mtab-prep" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
+        <i class="fa-solid fa-kitchen-set text-sm"></i>
+        <span class="text-[9px] mt-0.5">ครัว/BOM</span>
       </button>
-      <button data-tab="menu" type="button" id="mtab-menu" class="mobile-tab flex flex-col items-center justify-center py-1">
-        <i class="fa-solid fa-burger text-base"></i>
-        <span class="text-[10px] mt-0.5">เมนู</span>
+      <button data-tab="menu" type="button" id="mtab-menu" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
+        <i class="fa-solid fa-burger text-sm"></i>
+        <span class="text-[9px] mt-0.5">เมนู</span>
       </button>
-      <button data-tab="settings" type="button" id="mtab-settings" class="mobile-tab flex flex-col items-center justify-center py-1">
-        <i class="fa-solid fa-sliders text-base"></i>
-        <span class="text-[10px] mt-0.5">ตั้งค่าร้าน</span>
+      <button data-tab="customers" type="button" id="mtab-customers" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
+        <i class="fa-solid fa-users text-sm"></i>
+        <span class="text-[9px] mt-0.5">ลูกค้า/แต้ม</span>
+      </button>
+      <button data-tab="settings" type="button" id="mtab-settings" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
+        <i class="fa-solid fa-sliders text-sm"></i>
+        <span class="text-[9px] mt-0.5">ตั้งค่าร้าน</span>
       </button>
     </div>
   </nav>
+
+  <!-- POINTS ADJUSTMENT MODAL -->
+  <div id="pointsAdjustModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
+        <h3 class="font-bold text-sm text-stone-800 flex items-center space-x-2">
+          <span class="w-7 h-7 rounded-lg bg-amber-100 text-brand-600 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-coins"></i>
+          </span>
+          <span>ปรับแต้มสะสมลูกค้า</span>
+        </h3>
+        <button id="btn-close-points-modal" type="button" class="text-stone-400 hover:text-stone-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Customer Summary Card in Modal -->
+      <div class="bg-stone-50 p-3.5 rounded-2xl border border-stone-200 text-xs space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-stone-500 text-[11px]">ลูกค้า:</span>
+          <span id="adjustModalCustName" class="font-bold text-stone-800">--</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-stone-500 text-[11px]">เบอร์โทร:</span>
+          <span id="adjustModalCustPhone" class="font-mono text-stone-700">--</span>
+        </div>
+        <div class="flex items-center justify-between pt-1 border-t border-stone-200/60">
+          <span class="text-stone-500 text-[11px]">แต้มคงเหลือปัจจุบัน:</span>
+          <span id="adjustModalCurrentPoints" class="font-black text-sm text-brand-600">0 แต้ม</span>
+        </div>
+      </div>
+
+      <!-- Adjustment Form -->
+      <form id="pointsAdjustForm" class="space-y-3.5 text-xs">
+        <input type="hidden" id="adjustModalLineUid">
+
+        <!-- Type Selector: Add or Deduct -->
+        <div class="space-y-1">
+          <label class="font-bold text-stone-700 block">ประเภทการปรับแต้ม:</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="cursor-pointer border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-emerald-800 font-bold transition">
+              <input type="radio" name="adjustType" value="add" checked class="sr-only">
+              <i class="fa-solid fa-circle-plus text-emerald-600"></i>
+              <span>+ เพิ่มแต้ม</span>
+            </label>
+            <label class="cursor-pointer border-2 border-stone-200 bg-white rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-stone-600 font-bold transition">
+              <input type="radio" name="adjustType" value="deduct" class="sr-only">
+              <i class="fa-solid fa-circle-minus text-red-500"></i>
+              <span>- หักแต้ม</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Point Amount Input -->
+        <div class="space-y-1">
+          <label class="font-bold text-stone-700 block">จำนวนแต้ม (แต้ม):</label>
+          <div class="flex items-center space-x-2">
+            <input type="number" id="adjustPointsDelta" min="1" max="1000" value="1" required
+              class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2.5 font-mono font-bold text-base text-center text-stone-800 focus:bg-white focus:ring-2 focus:ring-brand-500/30">
+          </div>
+          <div class="flex items-center space-x-1 pt-1">
+            <button type="button" class="btn-quick-point text-[11px] bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-lg font-bold text-stone-600 cursor-pointer" data-val="1">+1</button>
+            <button type="button" class="btn-quick-point text-[11px] bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-lg font-bold text-stone-600 cursor-pointer" data-val="5">+5</button>
+            <button type="button" class="btn-quick-point text-[11px] bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-lg font-bold text-stone-600 cursor-pointer" data-val="10">+10</button>
+            <button type="button" class="btn-quick-point text-[11px] bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded-lg font-bold text-stone-600 cursor-pointer" data-val="20">+20</button>
+          </div>
+        </div>
+
+        <!-- Reason / Note -->
+        <div class="space-y-1">
+          <label class="font-bold text-stone-700 block">เหตุผล / หมายเหตุ:</label>
+          <input type="text" id="adjustPointsReason" placeholder="เช่น แถมแต้มลูกค้าประจำ, กิจกรรมพิเศษ"
+            class="w-full bg-stone-50 border border-stone-300 rounded-xl p-2 text-stone-800 focus:bg-white">
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex items-center space-x-2 pt-2">
+          <button type="button" id="btn-close-points-modal2" class="w-1/3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold py-2.5 rounded-xl cursor-pointer">
+            ยกเลิก
+          </button>
+          <button type="submit" id="btnSubmitAdjustPoints" class="w-2/3 bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>ยืนยันปรับแต้ม</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ============================================================ -->
   <!-- APPLICATION SCRIPT (GitHub Pages + Headless GAS API) -->
@@ -1269,6 +1482,7 @@
       config: { storeStatus:'OPEN', cutoffTime:'20:00', maxQuota:30, promptPayNumber:'0801898692', promptPayAccountName:'Sandwich Merchant', lineBotBasicId:'' },
       menuItems: DEFAULT_MENUS,
       orders: [],
+      customers: [],
       prepSummary: { layer1Menu:{}, layer2Ingredients:{}, totalBoxes:0 }
     };
 
@@ -1385,7 +1599,7 @@
 
     // --- 3. Tab Navigation ---
     function switchTab(tabId) {
-      var tabs = ['orders','prep','menu','settings'];
+      var tabs = ['orders','prep','menu','settings','customers'];
       for (var i = 0; i < tabs.length; i++) {
         var t = tabs[i];
         var sec = document.getElementById('section-' + t);
@@ -1823,7 +2037,7 @@
         return;
       }
 
-      var nonIngredientKeys = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description'];
+      var nonIngredientKeys = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description', 'is_recommended'];
       var labelMapShort = {
         'Bread_slice': 'ขนมปัง',
         'bread_slice': 'ขนมปัง',
@@ -1844,6 +2058,10 @@
           ? '<img src="' + m.Image_URL + '" class="w-10 h-10 rounded-lg object-cover border border-slate-200 mx-auto shadow-sm" alt="thumb" onerror="this.onerror=null; this.parentElement.innerHTML=\'<span class=\\\'text-lg text-slate-300\\\'>🥪</span>\';">'
           : '<span class="text-lg text-slate-300">🥪</span>';
 
+        var recVal = String(m.Is_Recommended || '').trim().toUpperCase();
+        var isRec = (recVal === 'TRUE' || recVal === '1' || recVal === 'YES');
+        var recTag = isRec ? '<span class="ml-1 text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.2 rounded font-extrabold shadow-xs">⭐ แนะนำ</span>' : '';
+
         // Extract ingredients used in this menu
         var ings = [];
         for (var k in m) {
@@ -1862,13 +2080,174 @@
         return '<tr class="hover:bg-slate-50 transition">' +
           '<td class="py-3 px-4 font-mono font-bold">' + m.Menu_ID + '</td>' +
           '<td class="py-3 px-4 text-center">' + imgThumb + '</td>' +
-          '<td class="py-3 px-4 font-medium">' + m.Menu_Name + '</td>' +
+          '<td class="py-3 px-4 font-medium">' + m.Menu_Name + recTag + '</td>' +
           '<td class="py-3 px-4 text-right font-bold text-brand-600">' + m.Price + ' ฿</td>' +
           '<td class="py-3 px-4 text-center">' + statusBtn + '</td>' +
           '<td class="py-3 px-4">' + ingsHtml + '</td>' +
           '<td class="py-3 px-4 text-center"><button class="edit-menu-btn text-brand-600 hover:text-brand-800 font-bold cursor-pointer" data-menu-id="'+m.Menu_ID+'"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button></td>' +
         '</tr>';
       }).join('');
+    }
+
+    // --- 6.5 Render: Customers Table & Loyalty Directory ---
+    var _currentCustSearchQuery = '';
+
+    function renderCustomersTable() {
+      var tbody = document.getElementById('customersTableBody');
+      var cardsContainer = document.getElementById('customersCardsContainer');
+      var list = st.customers || [];
+
+      // Calculate Customer KPI Metrics
+      var totalCust = list.length;
+      var totalPts = 0;
+      var eligibleFreeCount = 0;
+
+      list.forEach(function(c) {
+        var avail = Number(c.availablePoints || 0);
+        totalPts += avail;
+        if (avail >= 10) eligibleFreeCount++;
+      });
+
+      var kpiCountEl = document.getElementById('kpiCustTotalCount');
+      if (kpiCountEl) kpiCountEl.innerHTML = totalCust + ' <span class="text-xs font-normal text-stone-500">คน</span>';
+      var kpiPtsEl = document.getElementById('kpiCustTotalPoints');
+      if (kpiPtsEl) kpiPtsEl.innerHTML = totalPts.toLocaleString() + ' <span class="text-xs font-normal text-stone-500">แต้ม</span>';
+      var kpiEligibleEl = document.getElementById('kpiCustEligibleFree');
+      if (kpiEligibleEl) kpiEligibleEl.innerHTML = eligibleFreeCount + ' <span class="text-xs font-normal text-stone-500">คน</span>';
+
+      // Apply Search Filter
+      var filtered = list.filter(function(c) {
+        if (!_currentCustSearchQuery) return true;
+        var q = _currentCustSearchQuery.toLowerCase();
+        var name = String(c.displayName || '').toLowerCase();
+        var nick = String(c.nickname || '').toLowerCase();
+        var phone = String(c.phoneNumber || '').toLowerCase();
+        var loc = String(c.deliveryLocation || '').toLowerCase();
+        var uid = String(c.lineUid || '').toLowerCase();
+        return name.indexOf(q) > -1 || nick.indexOf(q) > -1 || phone.indexOf(q) > -1 || loc.indexOf(q) > -1 || uid.indexOf(q) > -1;
+      });
+
+      // Clear search button visibility
+      var clearBtn = document.getElementById('btnClearCustSearch');
+      if (clearBtn) {
+        if (_currentCustSearchQuery) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+
+      if (!filtered.length) {
+        var emptyMsg = _currentCustSearchQuery ? 'ไม่พบข้อมูลลูกค้าที่ตรงกับคำค้นหา' : 'ยังไม่มีข้อมูลลูกค้าในระบบ';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="py-12 text-center text-stone-400 font-medium">' + emptyMsg + '</td></tr>';
+        if (cardsContainer) cardsContainer.innerHTML = '<div class="py-12 text-center text-stone-400 font-medium bg-white rounded-3xl p-6 border border-stone-200/80 shadow-sm">' + emptyMsg + '</div>';
+        return;
+      }
+
+      // Render Desktop Table
+      if (tbody) {
+        tbody.innerHTML = filtered.map(function(c) {
+          var avail = Number(c.availablePoints || 0);
+          var total = Number(c.totalPoints || 0);
+          var used = Number(c.usedPoints || 0);
+          var isEligible = avail >= 10;
+          var freeBoxes = Math.floor(avail / 10);
+
+          var pointsBadge = isEligible
+            ? '<span class="inline-flex items-center space-x-1 bg-amber-100 text-amber-900 border border-amber-300 font-black px-2.5 py-1 rounded-xl text-xs shadow-xs"><span>🎁 ' + avail + ' แต้ม</span><span class="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded-md ml-1">ฟรี ' + freeBoxes + '</span></span>'
+            : '<span class="font-extrabold text-stone-700 bg-stone-100 px-2.5 py-1 rounded-xl text-xs">' + avail + ' แต้ม</span>';
+
+          var phoneDisplay = c.phoneNumber 
+            ? '<a href="tel:' + c.phoneNumber + '" class="text-blue-600 font-mono font-bold hover:underline flex items-center space-x-1"><i class="fa-solid fa-phone text-[10px]"></i><span>' + c.phoneNumber + '</span></a>'
+            : '<span class="text-stone-400 italic">ไม่มีเบอร์</span>';
+
+          var locDisplay = c.deliveryLocation 
+            ? '<div class="text-[11px] text-stone-500 truncate max-w-xs flex items-center space-x-1 mt-0.5"><i class="fa-solid fa-location-dot text-amber-500 text-[10px] shrink-0"></i><span title="' + c.deliveryLocation + '">' + c.deliveryLocation + '</span></div>'
+            : '';
+
+          return '<tr class="hover:bg-stone-50/80 transition">' +
+            '<td class="py-3 px-4">' +
+              '<div class="font-bold text-stone-900 text-xs flex items-center space-x-1.5">' +
+                '<span>' + (c.displayName || 'Customer') + '</span>' +
+                (c.nickname ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-lg border border-amber-200">(' + c.nickname + ')</span>' : '') +
+              '</div>' +
+              '<div class="text-[10px] text-stone-400 font-mono mt-0.5 truncate max-w-[160px]" title="' + c.lineUid + '">' + c.lineUid + '</div>' +
+            '</td>' +
+            '<td class="py-3 px-4">' +
+              phoneDisplay +
+              locDisplay +
+            '</td>' +
+            '<td class="py-3 px-4 text-center">' +
+              pointsBadge +
+            '</td>' +
+            '<td class="py-3 px-4 text-center text-xs">' +
+              '<span class="text-stone-700 font-semibold">' + total + '</span>' +
+              '<span class="text-stone-400 mx-1">/</span>' +
+              '<span class="text-stone-400">' + used + '</span>' +
+            '</td>' +
+            '<td class="py-3 px-4 text-center">' +
+              '<div class="font-bold text-stone-800">' + (c.totalBoxes || 0) + ' <span class="text-[10px] font-normal text-stone-500">กล่อง</span></div>' +
+              '<div class="text-[10px] text-emerald-600 font-bold">' + Number(c.totalSpent || 0).toLocaleString() + ' ฿</div>' +
+            '</td>' +
+            '<td class="py-3 px-4 text-right">' +
+              '<div class="flex items-center justify-end space-x-1.5">' +
+                '<button type="button" class="btn-adjust-points bg-amber-50 hover:bg-amber-100 text-brand-700 border border-amber-200 font-bold px-2.5 py-1.5 rounded-xl text-xs transition cursor-pointer shadow-xs" data-uid="' + c.lineUid + '" data-name="' + (c.displayName || 'Customer') + '" data-nick="' + (c.nickname || '') + '" data-phone="' + (c.phoneNumber || '') + '" data-points="' + avail + '" title="ปรับแต้มสะสม">' +
+                  '<i class="fa-solid fa-pen-to-square"></i> <span class="hidden lg:inline ml-0.5">ปรับแต้ม</span>' +
+                '</button>' +
+                '<button type="button" class="btn-chat-line bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold px-2.5 py-1.5 rounded-xl text-xs transition cursor-pointer shadow-xs" data-name="' + (c.displayName || 'Customer') + '" data-phone="' + (c.phoneNumber || '') + '" title="ทักแชต LINE">' +
+                  '<i class="fa-brands fa-line text-emerald-600"></i>' +
+                '</button>' +
+                (c.phoneNumber ? '<a href="tel:' + c.phoneNumber + '" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold px-2.5 py-1.5 rounded-xl text-xs transition shadow-xs" title="โทรหาลูกค้า"><i class="fa-solid fa-phone"></i></a>' : '') +
+              '</div>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // Render Mobile Cards
+      if (cardsContainer) {
+        cardsContainer.innerHTML = filtered.map(function(c) {
+          var avail = Number(c.availablePoints || 0);
+          var isEligible = avail >= 10;
+          var freeBoxes = Math.floor(avail / 10);
+
+          return '<div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm space-y-3">' +
+            '<div class="flex items-start justify-between gap-2">' +
+              '<div>' +
+                '<div class="font-bold text-stone-900 text-sm flex items-center space-x-1.5">' +
+                  '<span>' + (c.displayName || 'Customer') + '</span>' +
+                  (c.nickname ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded-lg border border-amber-200">(' + c.nickname + ')</span>' : '') +
+                '</div>' +
+                (c.phoneNumber ? '<a href="tel:' + c.phoneNumber + '" class="text-xs text-blue-600 font-mono font-bold hover:underline inline-flex items-center space-x-1 mt-0.5"><i class="fa-solid fa-phone text-[10px]"></i><span>' + c.phoneNumber + '</span></a>' : '<span class="text-[11px] text-stone-400 italic">ไม่มีเบอร์โทร</span>') +
+              '</div>' +
+              '<div>' +
+                (isEligible
+                  ? '<span class="inline-flex items-center space-x-1 bg-amber-100 text-amber-900 border border-amber-300 font-black px-2.5 py-1 rounded-xl text-xs shadow-xs"><span>🎁 ' + avail + ' แต้ม</span><span class="text-[10px] bg-amber-500 text-white px-1.5 py-0.2 rounded-md ml-0.5">ฟรี ' + freeBoxes + '</span></span>'
+                  : '<span class="font-extrabold text-stone-700 bg-stone-100 px-2.5 py-1 rounded-xl text-xs">' + avail + ' แต้ม</span>') +
+              '</div>' +
+            '</div>' +
+            (c.deliveryLocation ? '<div class="text-xs text-stone-500 bg-stone-50 p-2.5 rounded-2xl border border-stone-200 flex items-start space-x-1.5"><i class="fa-solid fa-location-dot text-amber-500 text-xs mt-0.5 shrink-0"></i><span class="break-words">' + c.deliveryLocation + '</span></div>' : '') +
+            '<div class="grid grid-cols-2 gap-2 text-center text-xs pt-1 border-t border-stone-100">' +
+              '<div class="bg-stone-50/70 p-2 rounded-xl">' +
+                '<div class="text-[10px] text-stone-400 font-medium">สั่งสะสม</div>' +
+                '<div class="font-bold text-stone-800">' + (c.totalBoxes || 0) + ' กล่อง (' + Number(c.totalSpent || 0).toLocaleString() + ' ฿)</div>' +
+              '</div>' +
+              '<div class="bg-stone-50/70 p-2 rounded-xl">' +
+                '<div class="text-[10px] text-stone-400 font-medium">ประวัติแต้ม (ได้/ใช้)</div>' +
+                '<div class="font-bold text-stone-700">' + (c.totalPoints || 0) + ' / ' + (c.usedPoints || 0) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex items-center space-x-2 pt-1">' +
+              '<button type="button" class="btn-adjust-points flex-1 bg-amber-50 hover:bg-amber-100 text-brand-700 border border-amber-200 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer shadow-xs" data-uid="' + c.lineUid + '" data-name="' + (c.displayName || 'Customer') + '" data-nick="' + (c.nickname || '') + '" data-phone="' + (c.phoneNumber || '') + '" data-points="' + avail + '">' +
+                '<i class="fa-solid fa-pen-to-square"></i>' +
+                '<span>ปรับแต้ม</span>' +
+              '</button>' +
+              '<button type="button" class="btn-chat-line flex-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer shadow-xs" data-name="' + (c.displayName || 'Customer') + '" data-phone="' + (c.phoneNumber || '') + '">' +
+                '<i class="fa-brands fa-line text-emerald-600 text-sm"></i>' +
+                '<span>ทัก LINE</span>' +
+              '</button>' +
+              (c.phoneNumber ? '<a href="tel:' + c.phoneNumber + '" class="w-10 h-9 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold rounded-xl text-xs flex items-center justify-center transition shadow-xs"><i class="fa-solid fa-phone"></i></a>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
     }
 
     // --- 7. Settings Form Population ---
@@ -1955,17 +2334,16 @@
       var modalTitleEl = document.getElementById('pwaModalTitlePreview');
       if (modalTitleEl) modalTitleEl.textContent = appName;
 
-      // 3. Generate Dynamic Web App Manifest Blob for Android Chrome & PWA Engine
+      // 3. Generate and Inject Dynamic JSON Blob URL for Web App Manifest
       try {
         var manifestObj = {
-          name: appName + " - จัดการออเดอร์",
+          name: appName,
           short_name: shortName,
-          description: "ระบบจัดการคำสั่งซื้อแซนวิชและครัวสำหรับแม่ค้า " + storeTitle,
-          start_url: "./admin-almond-sec892.html",
+          description: storeTitle + " - Kitchen & Pre-order Admin Portal",
+          start_url: window.location.pathname,
           display: "standalone",
-          background_color: "#0f172a",
-          theme_color: "#f97316",
-          orientation: "portrait-primary",
+          background_color: "#1c1917",
+          theme_color: "#d97706",
           icons: [
             {
               src: storeLogo,
@@ -2025,10 +2403,12 @@
         st.config = data.config || st.config;
         st.menuItems = (data.menuItems && data.menuItems.length > 0) ? data.menuItems : st.menuItems;
         st.orders = data.orders || [];
+        st.customers = data.customers || [];
         st.prepSummary = data.prepSummary || st.prepSummary;
         renderOrdersTable();
         renderPrepSummary();
         renderMenuTable();
+        renderCustomersTable();
         populateSettingsForm();
       } catch (err) {
         console.warn("loadAllAdminData error:", err);
@@ -2907,6 +3287,8 @@
           document.getElementById('form_Description').value = '';
           document.getElementById('form_Status').value = 'OPEN';
           document.getElementById('form_Image_URL').value = '';
+          var chkRec = document.getElementById('form_Is_Recommended');
+          if (chkRec) chkRec.checked = false;
           
           // Populate default dynamic BOM
           populateBomRows({});
@@ -2956,8 +3338,12 @@
             document.getElementById('form_Status').value = m.Status;
             document.getElementById('form_Image_URL').value = m.Image_URL || '';
 
+            var recVal = String(m.Is_Recommended || '').trim().toUpperCase();
+            var chkRec = document.getElementById('form_Is_Recommended');
+            if (chkRec) chkRec.checked = (recVal === 'TRUE' || recVal === '1' || recVal === 'YES');
+
             // Extract existing ingredients (skip non-ingredient columns)
-            var nonIngredientCols = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description'];
+            var nonIngredientCols = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description', 'is_recommended'];
             var itemIngredients = {};
             for (var k in m) {
               if (!nonIngredientCols.includes(k.toLowerCase())) {
@@ -3280,6 +3666,7 @@
             Description: (document.getElementById('form_Description')?.value || '').trim(),
             Status: document.getElementById('form_Status').value,
             Image_URL: (document.getElementById('form_Image_URL')?.value || '').trim(),
+            Is_Recommended: document.getElementById('form_Is_Recommended')?.checked ? true : false,
             ingredients: customBom
           };
           try {
@@ -3512,6 +3899,190 @@
             } catch(err) { alert('อัปโหลดไม่สำเร็จ: ' + err); }
           };
           reader.readAsDataURL(file);
+        });
+      }
+
+      // --- CUSTOMER & LOYALTY MANAGEMENT EVENT LISTENERS ---
+      // 1. Refresh Customers Button
+      var refCustBtn = document.getElementById('btn-refresh-customers');
+      if (refCustBtn) {
+        refCustBtn.addEventListener('click', async function() {
+          var origHtml = refCustBtn.innerHTML;
+          refCustBtn.disabled = true;
+          refCustBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin text-brand-600"></i><span>กำลังโหลด...</span>';
+          try {
+            var res = await adminApi('getAllCustomers');
+            if (res && res.customers) {
+              st.customers = res.customers;
+              renderCustomersTable();
+            }
+          } catch(err) {
+            alert('ไม่สามารถโหลดรายชื่อลูกค้าได้: ' + (err.message || err));
+          } finally {
+            refCustBtn.disabled = false;
+            refCustBtn.innerHTML = origHtml;
+          }
+        });
+      }
+
+      // 2. Customer Search Input (Real-time Filter)
+      var custSearchInput = document.getElementById('customerSearchInput');
+      if (custSearchInput) {
+        custSearchInput.addEventListener('input', function(e) {
+          _currentCustSearchQuery = e.target.value.trim();
+          renderCustomersTable();
+        });
+      }
+
+      var btnClearCustSearch = document.getElementById('btnClearCustSearch');
+      if (btnClearCustSearch) {
+        btnClearCustSearch.addEventListener('click', function() {
+          if (custSearchInput) custSearchInput.value = '';
+          _currentCustSearchQuery = '';
+          renderCustomersTable();
+        });
+      }
+
+      // 3. Open Points Adjustment Modal via Delegated Clicks
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-adjust-points');
+        if (btn) {
+          var uid = btn.getAttribute('data-uid');
+          var name = btn.getAttribute('data-name');
+          var nick = btn.getAttribute('data-nick');
+          var phone = btn.getAttribute('data-phone');
+          var pts = btn.getAttribute('data-points');
+
+          var modal = document.getElementById('pointsAdjustModal');
+          var uidInput = document.getElementById('adjustModalLineUid');
+          var nameEl = document.getElementById('adjustModalCustName');
+          var phoneEl = document.getElementById('adjustModalCustPhone');
+          var ptsEl = document.getElementById('adjustModalCurrentPoints');
+          var deltaInput = document.getElementById('adjustPointsDelta');
+          var reasonInput = document.getElementById('adjustPointsReason');
+
+          if (uidInput) uidInput.value = uid;
+          if (nameEl) nameEl.textContent = name + (nick ? ' (' + nick + ')' : '');
+          if (phoneEl) phoneEl.textContent = phone || 'ไม่มีเบอร์';
+          if (ptsEl) ptsEl.textContent = pts + ' แต้ม';
+          if (deltaInput) deltaInput.value = 1;
+          if (reasonInput) reasonInput.value = '';
+
+          // Reset radio to 'add'
+          var addRadio = document.querySelector('input[name="adjustType"][value="add"]');
+          if (addRadio) {
+            addRadio.checked = true;
+            addRadio.parentElement.className = 'cursor-pointer border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-emerald-800 font-bold transition';
+            var deductRadio = document.querySelector('input[name="adjustType"][value="deduct"]');
+            if (deductRadio) deductRadio.parentElement.className = 'cursor-pointer border-2 border-stone-200 bg-white rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-stone-600 font-bold transition';
+          }
+
+          if (modal) modal.classList.remove('hidden');
+          return;
+        }
+
+        var chatBtn = e.target.closest('.btn-chat-line');
+        if (chatBtn) {
+          var cName = chatBtn.getAttribute('data-name') || 'ลูกค้า';
+          var cPhone = chatBtn.getAttribute('data-phone') || '';
+          openLineChatModal('', cName, cPhone);
+          return;
+        }
+      });
+
+      // 4. Radio Styling for Adjust Type
+      document.querySelectorAll('input[name="adjustType"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          var addLabel = document.querySelector('input[name="adjustType"][value="add"]').parentElement;
+          var deductLabel = document.querySelector('input[name="adjustType"][value="deduct"]').parentElement;
+          if (this.value === 'add') {
+            addLabel.className = 'cursor-pointer border-2 border-emerald-500 bg-emerald-50/50 rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-emerald-800 font-bold transition';
+            deductLabel.className = 'cursor-pointer border-2 border-stone-200 bg-white rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-stone-600 font-bold transition';
+          } else {
+            addLabel.className = 'cursor-pointer border-2 border-stone-200 bg-white rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-stone-600 font-bold transition';
+            deductLabel.className = 'cursor-pointer border-2 border-red-500 bg-red-50/50 rounded-xl p-2.5 flex items-center justify-center space-x-1.5 text-red-800 font-bold transition';
+          }
+        });
+      });
+
+      // 5. Quick Point Delta Buttons
+      document.querySelectorAll('.btn-quick-point').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var val = parseInt(btn.getAttribute('data-val') || '1', 10);
+          var input = document.getElementById('adjustPointsDelta');
+          if (input) input.value = val;
+        });
+      });
+
+      // 6. Close Points Adjustment Modal
+      var closePointsModal = function() {
+        var modal = document.getElementById('pointsAdjustModal');
+        if (modal) modal.classList.add('hidden');
+      };
+      var btnClosePts = document.getElementById('btn-close-points-modal');
+      var btnClosePts2 = document.getElementById('btn-close-points-modal2');
+      if (btnClosePts) btnClosePts.addEventListener('click', closePointsModal);
+      if (btnClosePts2) btnClosePts2.addEventListener('click', closePointsModal);
+
+      // 7. Submit Points Adjustment Form
+      var pointsForm = document.getElementById('pointsAdjustForm');
+      if (pointsForm) {
+        pointsForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var uid = document.getElementById('adjustModalLineUid').value;
+          var deltaNum = parseInt(document.getElementById('adjustPointsDelta').value, 10) || 0;
+          var typeRadio = document.querySelector('input[name="adjustType"]:checked');
+          var adjustType = typeRadio ? typeRadio.value : 'add';
+          var reason = document.getElementById('adjustPointsReason').value.trim();
+
+          if (!uid) { alert('ไม่พบข้อมูลลูกค้า'); return; }
+          if (deltaNum <= 0) { alert('กรุณาระบุจำนวนแต้มที่มากกว่า 0'); return; }
+
+          var finalDelta = (adjustType === 'deduct') ? -deltaNum : deltaNum;
+          var confirmMsg = (adjustType === 'deduct') 
+            ? ('คุณต้องการหักแต้มลูกค้าจำนวน ' + deltaNum + ' แต้ม ใช่หรือไม่?')
+            : ('คุณต้องการเพิ่มแต้มให้ลูกค้าจำนวน ' + deltaNum + ' แต้ม ใช่หรือไม่?');
+
+          if (!confirm(confirmMsg)) return;
+
+          var submitBtn = document.getElementById('btnSubmitAdjustPoints');
+          var origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> <span>กำลังบันทึก...</span>';
+          }
+
+          try {
+            var res = await adminApi('adjustCustomerPoints', {
+              lineUid: uid,
+              pointDelta: finalDelta,
+              reason: reason
+            });
+
+            if (res && res.success) {
+              alert(res.message || 'บันทึกการปรับแต้มเรียบร้อยแล้ว!');
+              closePointsModal();
+              // Update customer points locally in state
+              if (st.customers) {
+                var found = st.customers.find(function(c) { return c.lineUid === uid; });
+                if (found && res.newPoints) {
+                  found.totalPoints = res.newPoints.totalPoints;
+                  found.usedPoints = res.newPoints.usedPoints;
+                  found.availablePoints = res.newPoints.availablePoints;
+                }
+              }
+              renderCustomersTable();
+            } else {
+              alert('ปรับแต้มไม่สำเร็จ: ' + (res ? res.message : 'เกิดข้อผิดพลาด'));
+            }
+          } catch(err) {
+            alert('เกิดข้อผิดพลาด: ' + (err.message || err));
+          } finally {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = origBtnHtml;
+            }
+          }
         });
       }
 
