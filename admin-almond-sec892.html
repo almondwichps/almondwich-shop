@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.0.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.1.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -825,6 +825,27 @@
               <div id="diagnosticsDetails" class="text-xs text-stone-500 pt-1"></div>
             </div>
           </div>
+
+          <!-- 5.3 Developer Logs & Drive Auto-Archive -->
+          <div class="pt-3 border-t border-stone-100 bg-stone-50/70 p-4 rounded-2xl border border-stone-200/80 text-xs space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div class="font-bold text-stone-800 flex items-center space-x-1.5">
+                  <i class="fa-solid fa-file-waveform text-brand-600"></i>
+                  <span>ระบบบันทึก Log สำหรับผู้พัฒนา & สำรองลง Google Drive (Zero-Data-Loss)</span>
+                </div>
+                <p class="text-[11px] text-stone-500 mt-0.5">
+                  ระบบจะบันทึก Log ทุกการสั่งซื้อ ปรับแต้ม และความผิดพลาดลงแท็บ <code>Logs</code> เมื่อเกิน 500 บรรทัด จะส่งออกเป็น <code>.csv</code> ไปยังโฟลเดอร์ <code>Sandwich_System_Logs</code> ใน Google Drive อัตโนมัติ
+                </p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button id="btn-archive-logs-now" type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 transition cursor-pointer shadow-sm">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <span>สำรอง Log สดลง Drive ทันที</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
       </section>
@@ -846,10 +867,16 @@
             <p class="text-xs text-stone-500 mt-0.5">ตรวจสอบข้อมูลลูกค้า สิทธิ์แลกฟรี ปรับแต้ม และติดต่อลูกค้า 1:1 ผ่าน LINE</p>
           </div>
 
-          <button id="btn-refresh-customers" type="button" class="bg-white hover:bg-stone-50 text-stone-700 font-bold px-4 py-2.5 rounded-2xl border border-stone-200 shadow-sm text-xs flex items-center justify-center space-x-2 transition cursor-pointer self-start sm:self-auto">
-            <i class="fa-solid fa-rotate text-brand-600"></i>
-            <span>รีเฟรชรายชื่อ</span>
-          </button>
+          <div class="flex items-center space-x-2 self-start sm:self-auto">
+            <button id="btn-clean-customers" type="button" class="bg-amber-50 hover:bg-amber-100 text-brand-700 font-bold px-3 py-2.5 rounded-2xl border border-amber-300 shadow-sm text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer" title="รวมบัญชีซ้ำ & คืนแต้มที่กระจัดกระจาย">
+              <i class="fa-solid fa-wand-magic-sparkles text-brand-600"></i>
+              <span>รวมบัญชีซ้ำ (Clean)</span>
+            </button>
+            <button id="btn-refresh-customers" type="button" class="bg-white hover:bg-stone-50 text-stone-700 font-bold px-3.5 py-2.5 rounded-2xl border border-stone-200 shadow-sm text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer">
+              <i class="fa-solid fa-rotate text-brand-600"></i>
+              <span>รีเฟรช</span>
+            </button>
+          </div>
         </div>
 
         <!-- 3 KPI Cards: Total Customers, Total System Points, Eligible for Free Box -->
@@ -4312,6 +4339,32 @@
         });
       }
 
+      // 1.1 Clean & Deduplicate Customers Button
+      var cleanCustBtn = document.getElementById('btn-clean-customers');
+      if (cleanCustBtn) {
+        cleanCustBtn.addEventListener('click', async function() {
+          if (!confirm('ต้องการตรวจสอบและรวมบัญชีลูกค้าที่ชื่อซ้ำ/UID เดียวกัน พร้อมลบบัญชีทดสอบใช่หรือไม่?\n\n(แต้มสะสมทั้งหมดจะถูกรวมเข้าด้วยกันอย่างถูกต้องโดยไม่สูญหาย)')) return;
+          var origHtml = cleanCustBtn.innerHTML;
+          cleanCustBtn.disabled = true;
+          cleanCustBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-brand-600"></i><span>กำลังรวมบัญชี...</span>';
+          try {
+            var res = await adminApi('cleanCustomers');
+            alert(res.message || 'รวมบัญชีลูกค้าเรียบร้อยแล้ว');
+            // Refresh customer table
+            var custRes = await adminApi('getAllCustomers');
+            if (custRes && custRes.customers) {
+              st.customers = custRes.customers;
+              renderCustomersTable();
+            }
+          } catch(err) {
+            alert('เกิดข้อผิดพลาดในการรวมบัญชี: ' + (err.message || err));
+          } finally {
+            cleanCustBtn.disabled = false;
+            cleanCustBtn.innerHTML = origHtml;
+          }
+        });
+      }
+
       // 2. Customer Search Input (Real-time Filter)
       var custSearchInput = document.getElementById('customerSearchInput');
       if (custSearchInput) {
@@ -4588,6 +4641,31 @@
           } finally {
             btnCleanMigrate.disabled = false;
             btnCleanMigrate.innerHTML = origHtml;
+          }
+        });
+      }
+
+      // Manual Archive Logs Now Button
+      var btnArchiveLogs = document.getElementById('btn-archive-logs-now');
+      if (btnArchiveLogs) {
+        btnArchiveLogs.addEventListener('click', async function() {
+          if (!confirm('ต้องการสำรองข้อมูล Log ทั้งหมดในชีต Logs เป็นไฟล์ .csv ส่งเข้า Google Drive (โฟลเดอร์ Sandwich_System_Logs) ทันทีใช่หรือไม่?')) return;
+          btnArchiveLogs.disabled = true;
+          var origHtml = btnArchiveLogs.innerHTML;
+          btnArchiveLogs.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>กำลังสำรองลง Drive...';
+
+          try {
+            var res = await adminApi('archiveLogs', {});
+            if (res && res.success) {
+              alert(res.message + (res.fileName ? '\n\nชื่อไฟล์: ' + res.fileName : ''));
+            } else {
+              alert(res.message || 'ไม่สามารถสำรอง Log ได้');
+            }
+          } catch(err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            btnArchiveLogs.disabled = false;
+            btnArchiveLogs.innerHTML = origHtml;
           }
         });
       }
