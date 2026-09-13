@@ -85,7 +85,7 @@
         </button>
       </form>
       <div class="text-[11px] text-stone-400 font-medium">
-        🔒 AlmondWich Security System v4.9.8
+        🔒 AlmondWich Security System v5.0.0
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v4.9.8</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.0.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -128,32 +128,37 @@
         </div>
       </div>
 
-      <!-- NAVIGATION TABS (DESKTOP ONLY: Hidden on mobile because mobile uses bottom nav) -->
-      <div class="hidden md:block border-t border-slate-800 bg-slate-900/90 backdrop-blur px-4">
+      <!-- NAVIGATION TABS (DESKTOP & MOBILE RESPONSIVE SCROLL) -->
+      <div class="border-t border-slate-800 bg-slate-900/90 backdrop-blur px-4">
         <div class="max-w-7xl mx-auto flex space-x-2 text-xs font-bold overflow-x-auto py-2">
-          <button type="button" id="dtab-orders" data-tab="orders" class="tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer">
+          <button type="button" id="dtab-orders" data-tab="orders" class="tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-list-check"></i>
-            <span>1. จัดการคำสั่งซื้อ</span>
+            <span>1. คำสั่งซื้อ</span>
           </button>
 
-          <button type="button" id="dtab-prep" data-tab="prep" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+          <button type="button" id="dtab-prep" data-tab="prep" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-kitchen-set"></i>
-            <span>2. สรุปยอดครัว / BOM</span>
+            <span>2. สรุปยอดครัว</span>
           </button>
 
-          <button type="button" id="dtab-menu" data-tab="menu" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+          <button type="button" id="dtab-ingredients" data-tab="ingredients" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
+            <i class="fa-solid fa-carrot text-amber-400"></i>
+            <span>3. คลังวัตถุดิบ</span>
+          </button>
+
+          <button type="button" id="dtab-menu" data-tab="menu" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-burger"></i>
-            <span>3. จัดการเมนู & สูตร</span>
+            <span>4. เมนู & สูตร BOM</span>
           </button>
 
-          <button type="button" id="dtab-settings" data-tab="settings" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+          <button type="button" id="dtab-settings" data-tab="settings" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-sliders"></i>
-            <span>4. ตั้งค่าร้านค้า & รหัสผ่าน</span>
+            <span>5. ตั้งค่าร้าน</span>
           </button>
 
-          <button type="button" id="dtab-customers" data-tab="customers" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer">
+          <button type="button" id="dtab-customers" data-tab="customers" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-users"></i>
-            <span>5. ลูกค้า & แต้มสะสม</span>
+            <span>6. ลูกค้า & แต้ม</span>
           </button>
         </div>
       </div>
@@ -354,7 +359,57 @@
       </section>
 
       <!-- ===================================================================== -->
-      <!-- SECTION 3: MENU & BOM MANAGEMENT (TAB 3) -->
+      <!-- SECTION: MASTER INGREDIENTS MANAGEMENT (TAB: ingredients) -->
+      <!-- ===================================================================== -->
+      <section id="section-ingredients" style="display: none;" class="space-y-4">
+        <!-- Header & Action Controls -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="font-bold text-slate-800 text-sm sm:text-base flex items-center space-x-2">
+              <i class="fa-solid fa-carrot text-amber-500"></i>
+              <span>คลังวัตถุดิบหลัก (Master Ingredients)</span>
+            </h2>
+            <p class="text-[11px] text-slate-500 mt-0.5">วัตถุดิบมาตรฐานที่ใช้ในร้าน (Dropdown ในสูตรเมนูจะดึงจากที่นี่ ป้องกันการพิมพ์ชื่อซ้ำ)</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button id="btnCleanMigrateBom" type="button" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold px-3 py-2 rounded-xl text-xs transition flex items-center space-x-1.5 cursor-pointer shadow-xs" title="รวมคอลัมน์ชื่อซ้ำใน Google Sheet ให้เป็นมาตรฐาน">
+              <i class="fa-solid fa-broom text-amber-600"></i>
+              <span>จัดระเบียบตารางในชีต</span>
+            </button>
+            <button id="btnOpenAddIngredientModal" type="button" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3.5 py-2 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer">
+              <i class="fa-solid fa-plus"></i>
+              <span>เพิ่มวัตถุดิบใหม่</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Ingredients Table Container -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[11px]">
+                <tr>
+                  <th class="py-3 px-4 w-12 text-center">ลำดับ</th>
+                  <th class="py-3 px-4">ชื่อวัตถุดิบมาตรฐาน</th>
+                  <th class="py-3 px-4 text-center">หน่วยนับ</th>
+                  <th class="py-3 px-4 text-center">ใช้ในเมนู (รายการ)</th>
+                  <th class="py-3 px-4 text-right">การจัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="masterIngredientsTableBody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="5" class="py-8 text-center text-slate-400">
+                    กำลังโหลดข้อมูลวัตถุดิบ...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION 4: MENU & BOM MANAGEMENT (TAB 4) -->
       <!-- ===================================================================== -->
       <section id="section-menu" style="display: none;" class="space-y-4">
         <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
@@ -390,6 +445,22 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- BOM MATRIX OVERVIEW: ตารางสูตรภาพรวมทุกเมนู -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-table-cells text-brand-600"></i>
+              <span>ตารางภาพรวมสูตรทุกเมนู (BOM Recipe Matrix)</span>
+            </h3>
+            <span class="text-[10px] text-slate-400 font-medium">กวาดสายตาตรวจทานสูตรต่อ 1 กล่องได้ในหน้าเดียว</span>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="bomMatrixContainer" class="text-xs">
+              <p class="text-slate-400 py-4 text-center">กำลังประมวลผลตารางสูตรภาพรวม...</p>
+            </div>
           </div>
         </div>
       </section>
@@ -1306,6 +1377,47 @@
     </div>
   </div>
 
+  <!-- MASTER INGREDIENT ADD/EDIT MODAL -->
+  <div id="ingredientModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800" id="ingredientModalTitle">เพิ่มวัตถุดิบใหม่เข้าคลัง</h3>
+        <button id="btn-close-ingredient-modal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="ingredientForm" class="space-y-3 text-xs">
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-700 block">ชื่อวัตถุดิบ:</label>
+          <input type="text" id="form_Ing_Name" required placeholder="เช่น ไส้กรอก, ชีส, โบโลน่า" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-brand-500">
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-700 block">หน่วยนับ (Unit):</label>
+          <input type="text" id="form_Ing_Unit" required placeholder="เช่น ชิ้น, แผ่น, ฟอง, ช้อน, กรัม, ใบ" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-brand-500">
+          <div class="flex flex-wrap gap-1 pt-1">
+            <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">แผ่น</span>
+            <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">ชิ้น</span>
+            <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">ฟอง</span>
+            <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">ช้อน</span>
+            <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">กรัม</span>
+            <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">ใบ</span>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 pt-2">
+          <button id="btn-cancel-ingredient" type="button" class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 rounded-xl cursor-pointer">
+            ยกเลิก
+          </button>
+          <button type="submit" id="btn-submit-ingredient" class="w-2/3 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl shadow-md cursor-pointer">
+            บันทึกวัตถุดิบ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- UNIVERSAL 1:1 & CIRCLE CROPPER MODAL -->
   <div id="squareCropModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-3">
@@ -1600,7 +1712,7 @@
 
     // --- 3. Tab Navigation ---
     function switchTab(tabId) {
-      var tabs = ['orders','prep','menu','settings','customers'];
+      var tabs = ['orders','prep','ingredients','menu','settings','customers'];
       for (var i = 0; i < tabs.length; i++) {
         var t = tabs[i];
         var sec = document.getElementById('section-' + t);
@@ -1609,8 +1721,8 @@
         if (sec) sec.style.display = (t === tabId) ? 'block' : 'none';
         if (dtab) {
           dtab.className = (t === tabId)
-            ? 'tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer'
-            : 'tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer';
+            ? 'tab-btn active bg-brand-500 text-white font-bold py-2 px-3.5 rounded-xl shadow transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0'
+            : 'tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0';
         }
         if (mtab) {
           mtab.className = (t === tabId)
@@ -2100,45 +2212,54 @@
 
       var l2 = document.getElementById('prepIngredientsSummaryList');
       if (l2) {
-        var iKeys = Object.keys(p.layer2Ingredients || {});
-        // Filter out non-ingredient keys
-        var excludedKeys = ['image_url', 'description', 'menu_id', 'menu_name', 'price', 'status'];
-        iKeys = iKeys.filter(function(k) {
-          return !excludedKeys.includes(k.toLowerCase());
-        });
+        var rawIngredients = p.layer2Ingredients || {};
+        var excludedKeys = ['image_url', 'description', 'menu_id', 'menu_name', 'price', 'status', 'is_recommended'];
+        var labelMap = {
+          'Bread_slice': 'ขนมปัง (แผ่น)',
+          'bread_slice': 'ขนมปัง (แผ่น)',
+          'bread': 'ขนมปัง (แผ่น)',
+          'Egg_ea': 'ไข่ไก่ (ฟอง)',
+          'egg_ea': 'ไข่ไก่ (ฟอง)',
+          'eggs': 'ไข่ไก่ (ฟอง)',
+          'Sausage_ea': 'ไส้กรอก (ชิ้น)',
+          'sausage_ea': 'ไส้กรอก (ชิ้น)',
+          'sausages': 'ไส้กรอก (ชิ้น)',
+          'Crabstick_ea': 'ปูอัด (ชิ้น)',
+          'crabstick_ea': 'ปูอัด (ชิ้น)',
+          'crabsticks': 'ปูอัด (ชิ้น)',
+          'Box_ea': 'กล่องบรรจุ (ใบ)',
+          'box_ea': 'กล่องบรรจุ (ใบ)',
+          'boxes': 'กล่องบรรจุ (ใบ)',
+          'Bologna_ea': 'โบโลน่า (แผ่น)',
+          'bologna_ea': 'โบโลน่า (แผ่น)',
+          'Shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)',
+          'shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)',
+          'Tuna_ea': 'ทูน่า (ช้อน/กรัม)',
+          'tuna_ea': 'ทูน่า (ช้อน/กรัม)'
+        };
 
-        if (!iKeys.length) {
-          l2.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการวัตถุดิบ</p>';
+        // Merge amounts by normalized Thai name & filter > 0
+        var aggregated = {};
+        for (var k in rawIngredients) {
+          if (!excludedKeys.includes(k.toLowerCase())) {
+            var val = Number(rawIngredients[k]) || 0;
+            if (val > 0) {
+              var normName = labelMap[k] || k;
+              aggregated[normName] = (aggregated[normName] || 0) + val;
+            }
+          }
+        }
+
+        var sortedKeys = Object.keys(aggregated);
+        if (!sortedKeys.length) {
+          l2.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการวัตถุดิบที่ต้องเตรียม (หรือทุกรายการเป็น 0)</p>';
         } else {
-          var labelMap = {
-            'Bread_slice': 'ขนมปัง (แผ่น)',
-            'bread_slice': 'ขนมปัง (แผ่น)',
-            'bread': 'ขนมปัง (แผ่น)',
-            'Egg_ea': 'ไข่ไก่ (ฟอง)',
-            'egg_ea': 'ไข่ไก่ (ฟอง)',
-            'eggs': 'ไข่ไก่ (ฟอง)',
-            'Sausage_ea': 'ไส้กรอก (ชิ้น)',
-            'sausage_ea': 'ไส้กรอก (ชิ้น)',
-            'sausages': 'ไส้กรอก (ชิ้น)',
-            'Crabstick_ea': 'ปูอัด (ชิ้น)',
-            'crabstick_ea': 'ปูอัด (ชิ้น)',
-            'crabsticks': 'ปูอัด (ชิ้น)',
-            'Box_ea': 'กล่องบรรจุ (ใบ)',
-            'box_ea': 'กล่องบรรจุ (ใบ)',
-            'boxes': 'กล่องบรรจุ (ใบ)',
-            'Bologna_ea': 'โบโลน่า (แผ่น)',
-            'bologna_ea': 'โบโลน่า (แผ่น)',
-            'Shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)',
-            'shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)',
-            'Tuna_ea': 'ทูน่า (ช้อน/กรัม)',
-            'tuna_ea': 'ทูน่า (ช้อน/กรัม)'
-          };
-
-          l2.innerHTML = iKeys.map(function(k){
-            var thaiName = labelMap[k] || k;
-            return '<div class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200">' +
-              '<span class="font-bold text-slate-700 text-xs sm:text-sm">' + thaiName + '</span>' +
-              '<span class="bg-amber-100 text-amber-800 font-black px-3 py-1 rounded-xl text-xs sm:text-sm">' + p.layer2Ingredients[k] + '</span>' +
+          l2.innerHTML = sortedKeys.map(function(name){
+            var val = aggregated[name];
+            var displayVal = (Math.round(val * 100) / 100);
+            return '<div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-xs">' +
+              '<span class="font-bold text-slate-800 text-xs sm:text-sm">' + name + '</span>' +
+              '<span class="bg-amber-100 text-amber-900 border border-amber-300 font-black px-3 py-1 rounded-xl text-xs sm:text-sm shadow-xs">' + displayVal + '</span>' +
             '</div>';
           }).join('');
         }
@@ -2205,6 +2326,123 @@
           '<td class="py-3 px-4 text-center"><button class="edit-menu-btn text-brand-600 hover:text-brand-800 font-bold cursor-pointer" data-menu-id="'+m.Menu_ID+'"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button></td>' +
         '</tr>';
       }).join('');
+
+      // Render BOM Matrix Overview
+      renderBomMatrixTable();
+    }
+
+    // --- 6.1 Render: Master Ingredients Table ---
+    function renderMasterIngredientsTable() {
+      var tbody = document.getElementById('masterIngredientsTableBody');
+      if (!tbody) return;
+      var list = st.masterIngredients || [];
+      var menus = st.menuItems || [];
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-400">ยังไม่มีรายการวัตถุดิบในคลัง</td></tr>';
+        return;
+      }
+
+      // Count in how many menus each ingredient is used
+      var usageCount = {};
+      menus.forEach(function(m) {
+        for (var k in m) {
+          var v = Number(m[k]);
+          if (!isNaN(v) && v > 0) {
+            usageCount[k] = (usageCount[k] || 0) + 1;
+          }
+        }
+      });
+
+      tbody.innerHTML = list.map(function(item, idx) {
+        var used = usageCount[item.name] || 0;
+        var usageBadge = used > 0
+          ? '<span class="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded-lg text-[10px]">' + used + ' เมนู</span>'
+          : '<span class="text-slate-400 text-[10px]">ยังไม่ถูกใช้</span>';
+
+        return '<tr class="hover:bg-slate-50 transition">' +
+          '<td class="py-3 px-4 text-center text-slate-400 font-mono font-bold">' + (idx + 1) + '</td>' +
+          '<td class="py-3 px-4 font-bold text-slate-800 text-xs flex items-center space-x-2">' +
+            '<i class="fa-solid fa-seedling text-amber-600 text-xs"></i>' +
+            '<span>' + item.name + '</span>' +
+          '</td>' +
+          '<td class="py-3 px-4 text-center">' +
+            '<span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-md text-[11px]">' + (item.unit || 'ชิ้น') + '</span>' +
+          '</td>' +
+          '<td class="py-3 px-4 text-center">' + usageBadge + '</td>' +
+          '<td class="py-3 px-4 text-right">' +
+            '<div class="flex items-center justify-end space-x-2">' +
+              '<button type="button" class="btn-edit-ing text-brand-600 hover:text-brand-800 font-bold cursor-pointer text-xs" data-name="' + item.name + '" data-unit="' + (item.unit || '') + '"><i class="fa-solid fa-pen-to-square mr-0.5"></i> แก้ไข</button>' +
+              '<button type="button" class="btn-delete-ing text-red-500 hover:text-red-700 font-bold cursor-pointer text-xs" data-name="' + item.name + '"><i class="fa-solid fa-trash-can mr-0.5"></i> ลบ</button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // --- 6.2 Render: BOM Recipe Matrix (ภาพรวมสูตรทุกเมนู) ---
+    function renderBomMatrixTable() {
+      var container = document.getElementById('bomMatrixContainer');
+      if (!container) return;
+      var menus = st.menuItems || [];
+      var masterList = st.masterIngredients || [];
+
+      if (!menus.length) {
+        container.innerHTML = '<p class="text-slate-400 py-4 text-center">ไม่มีข้อมูลเมนู</p>';
+        return;
+      }
+
+      // Collect all active ingredients present across menus or master
+      var ingNames = masterList.map(function(x) { return x.name; });
+      menus.forEach(function(m) {
+        for (var k in m) {
+          if (!['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description', 'is_recommended'].includes(k.toLowerCase())) {
+            var v = Number(m[k]);
+            if (!isNaN(v) && v > 0 && !ingNames.includes(k)) {
+              ingNames.push(k);
+            }
+          }
+        }
+      });
+
+      if (!ingNames.length) {
+        container.innerHTML = '<p class="text-slate-400 py-4 text-center">ไม่มีข้อมูลสูตรวัตถุดิบ</p>';
+        return;
+      }
+
+      var html = '<table class="w-full text-left border-collapse">' +
+        '<thead>' +
+          '<tr class="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-bold text-[11px]">' +
+            '<th class="py-2.5 px-3 whitespace-nowrap sticky left-0 bg-slate-100 z-10">เมนู</th>' +
+            '<th class="py-2.5 px-2 text-right whitespace-nowrap">ราคา</th>';
+
+      ingNames.forEach(function(ing) {
+        var cleanLabel = ing.replace(/\s*\(.*\)$/, '');
+        html += '<th class="py-2.5 px-2 text-center whitespace-nowrap font-semibold text-[10px]" title="' + ing + '">' + cleanLabel + '</th>';
+      });
+      html += '</tr></thead><tbody class="divide-y divide-slate-100">';
+
+      menus.forEach(function(m) {
+        html += '<tr class="hover:bg-amber-50/50 transition text-xs">' +
+          '<td class="py-2 px-3 font-bold text-slate-800 whitespace-nowrap sticky left-0 bg-white z-10">' +
+            '<span class="font-mono text-[10px] text-slate-400 mr-1.5">' + m.Menu_ID + '</span>' +
+            '<span>' + m.Menu_Name + '</span>' +
+          '</td>' +
+          '<td class="py-2 px-2 text-right font-bold text-brand-600 whitespace-nowrap">' + m.Price + ' ฿</td>';
+
+        ingNames.forEach(function(ing) {
+          var val = Number(m[ing]) || 0;
+          if (val > 0) {
+            html += '<td class="py-2 px-2 text-center font-bold text-amber-900 bg-amber-50/70 whitespace-nowrap">' + val + '</td>';
+          } else {
+            html += '<td class="py-2 px-2 text-center text-slate-300 whitespace-nowrap">-</td>';
+          }
+        });
+        html += '</tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
     }
 
     // --- 6.5 Render: Customers Table & Loyalty Directory ---
@@ -2523,8 +2761,10 @@
         st.orders = data.orders || [];
         st.customers = data.customers || [];
         st.prepSummary = data.prepSummary || st.prepSummary;
+        st.masterIngredients = data.masterIngredients || st.masterIngredients || [];
         renderOrdersTable();
         renderPrepSummary();
+        renderMasterIngredientsTable();
         renderMenuTable();
         renderCustomersTable();
         populateSettingsForm();
@@ -3327,10 +3567,39 @@
       function createIngredientRow(name, qty) {
         var row = document.createElement('div');
         row.className = 'ingredient-row flex items-center space-x-2 bg-slate-50 p-2 rounded-xl border border-slate-200';
+        
+        var masterList = st.masterIngredients || [];
+        // Canonical map for backwards compatibility
+        var canonicalMap = {
+          'Bread_slice': 'ขนมปัง (แผ่น)', 'bread_slice': 'ขนมปัง (แผ่น)', 'bread': 'ขนมปัง (แผ่น)', 'ขนมปัง': 'ขนมปัง (แผ่น)',
+          'Egg_ea': 'ไข่ไก่ (ฟอง)', 'egg_ea': 'ไข่ไก่ (ฟอง)', 'eggs': 'ไข่ไก่ (ฟอง)', 'ไข่': 'ไข่ไก่ (ฟอง)', 'ไข่ดาว': 'ไข่ไก่ (ฟอง)',
+          'Sausage_ea': 'ไส้กรอก (ชิ้น)', 'sausage_ea': 'ไส้กรอก (ชิ้น)', 'sausages': 'ไส้กรอก (ชิ้น)', 'ไส้กรอก': 'ไส้กรอก (ชิ้น)',
+          'Crabstick_ea': 'ปูอัด (ชิ้น)', 'crabstick_ea': 'ปูอัด (ชิ้น)', 'crabsticks': 'ปูอัด (ชิ้น)', 'ปูอัด': 'ปูอัด (ชิ้น)',
+          'Box_ea': 'กล่องบรรจุ (ใบ)', 'box_ea': 'กล่องบรรจุ (ใบ)', 'boxes': 'กล่องบรรจุ (ใบ)', 'กล่อง': 'กล่องบรรจุ (ใบ)',
+          'Bologna_ea': 'โบโลน่า (แผ่น)', 'bologna_ea': 'โบโลน่า (แผ่น)', 'โบโลน่า': 'โบโลน่า (แผ่น)',
+          'Shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)', 'shrimp_egg_ea': 'ไข่กุ้ง (ช้อน)', 'ไข่กุ้ง': 'ไข่กุ้ง (ช้อน)',
+          'Tuna_ea': 'ทูน่า (ช้อน/กรัม)', 'tuna_ea': 'ทูน่า (ช้อน/กรัม)', 'ทูน่า': 'ทูน่า (ช้อน/กรัม)'
+        };
+        var currentName = canonicalMap[name] || name || '';
+
+        var optionsHtml = '<option value="">-- เลือกวัตถุดิบจากคลัง --</option>';
+        var foundInMaster = false;
+        masterList.forEach(function(item) {
+          var isSel = (item.name === currentName);
+          if (isSel) foundInMaster = true;
+          optionsHtml += '<option value="' + item.name + '" ' + (isSel ? 'selected' : '') + '>' + item.name + ' (' + (item.unit || 'หน่วย') + ')</option>';
+        });
+
+        // If not in master yet, append it so existing data is not lost
+        if (currentName && !foundInMaster) {
+          optionsHtml += '<option value="' + currentName + '" selected>' + currentName + '</option>';
+        }
+
         row.innerHTML = 
           '<div class="flex-1">' +
-            '<input type="text" list="commonIngredientsList" placeholder="ชื่อวัตถุดิบ (เช่น โบโลน่า, ไข่กุ้ง)" value="' + (name || '') + '" ' +
-              'class="ing-name-input w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-medium text-slate-800 focus:ring-1 focus:ring-brand-500" required>' +
+            '<select class="ing-name-select w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-brand-500" required>' +
+              optionsHtml +
+            '</select>' +
           '</div>' +
           '<div class="w-20">' +
             '<input type="number" min="0" step="any" placeholder="จำนวน" value="' + (qty !== undefined ? qty : 1) + '" ' +
@@ -3351,8 +3620,8 @@
           if (bomContainer) {
             var newRow = createIngredientRow('', 1);
             bomContainer.appendChild(newRow);
-            var inp = newRow.querySelector('.ing-name-input');
-            if (inp) inp.focus();
+            var sel = newRow.querySelector('.ing-name-select');
+            if (sel) sel.focus();
           }
         });
       }
@@ -3380,12 +3649,12 @@
         if (!bomContainer) return ings;
         var rows = bomContainer.querySelectorAll('.ingredient-row');
         rows.forEach(function(r) {
-          var nameInput = r.querySelector('.ing-name-input');
+          var nameSelect = r.querySelector('.ing-name-select') || r.querySelector('.ing-name-input');
           var qtyInput = r.querySelector('.ing-qty-input');
-          if (nameInput && qtyInput) {
-            var n = nameInput.value.trim();
+          if (nameSelect && qtyInput) {
+            var n = nameSelect.value.trim();
             var q = Number(qtyInput.value) || 0;
-            if (n) {
+            if (n && q > 0) {
               ings[n] = q;
             }
           }
@@ -4200,6 +4469,125 @@
               submitBtn.disabled = false;
               submitBtn.innerHTML = origBtnHtml;
             }
+          }
+        });
+      }
+
+      // -------------------------------------------------------------
+      // 🥕 MASTER INGREDIENTS MODAL & ACTIONS BINDING
+      // -------------------------------------------------------------
+      var ingModal = document.getElementById('ingredientModal');
+      var ingForm = document.getElementById('ingredientForm');
+      var btnOpenAddIng = document.getElementById('btnOpenAddIngredientModal');
+      var btnCloseIng1 = document.getElementById('btn-close-ingredient-modal');
+      var btnCloseIng2 = document.getElementById('btn-cancel-ingredient');
+      var btnCleanMigrate = document.getElementById('btnCleanMigrateBom');
+
+      var closeIngModal = function() {
+        if (ingModal) ingModal.classList.add('hidden');
+      };
+      if (btnCloseIng1) btnCloseIng1.addEventListener('click', closeIngModal);
+      if (btnCloseIng2) btnCloseIng2.addEventListener('click', closeIngModal);
+
+      // Open Add Master Ingredient Modal
+      if (btnOpenAddIng) {
+        btnOpenAddIng.addEventListener('click', function() {
+          document.getElementById('ingredientModalTitle').textContent = 'เพิ่มวัตถุดิบใหม่เข้าคลัง';
+          document.getElementById('form_Ing_Name').value = '';
+          document.getElementById('form_Ing_Name').readOnly = false;
+          document.getElementById('form_Ing_Unit').value = '';
+          if (ingModal) ingModal.classList.remove('hidden');
+          document.getElementById('form_Ing_Name').focus();
+        });
+      }
+
+      // Quick unit badges inside ingredient modal
+      document.querySelectorAll('.quick-unit-badge').forEach(function(badge) {
+        badge.addEventListener('click', function() {
+          var unitInp = document.getElementById('form_Ing_Unit');
+          if (unitInp) unitInp.value = badge.textContent.trim();
+        });
+      });
+
+      // Submit Master Ingredient Form
+      if (ingForm) {
+        ingForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          var name = document.getElementById('form_Ing_Name').value.trim();
+          var unit = document.getElementById('form_Ing_Unit').value.trim() || 'ชิ้น';
+          if (!name) { alert('กรุณาระบุชื่อวัตถุดิบ'); return; }
+
+          var btnSubmit = document.getElementById('btn-submit-ingredient');
+          if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'กำลังบันทึก...';
+          }
+
+          try {
+            var res = await adminApi('saveMasterIngredient', { name: name, unit: unit });
+            alert(res.message || 'บันทึกวัตถุดิบเรียบร้อยแล้ว');
+            closeIngModal();
+            loadAllAdminData();
+          } catch(err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.textContent = 'บันทึกวัตถุดิบ';
+            }
+          }
+        });
+      }
+
+      // Master Ingredients Table: Edit & Delete Event Delegation
+      var ingTbody = document.getElementById('masterIngredientsTableBody');
+      if (ingTbody) {
+        ingTbody.addEventListener('click', async function(e) {
+          var editBtn = e.target.closest('.btn-edit-ing');
+          if (editBtn) {
+            var name = editBtn.getAttribute('data-name');
+            var unit = editBtn.getAttribute('data-unit');
+            document.getElementById('ingredientModalTitle').textContent = 'แก้ไขวัตถุดิบ';
+            document.getElementById('form_Ing_Name').value = name;
+            document.getElementById('form_Ing_Name').readOnly = true;
+            document.getElementById('form_Ing_Unit').value = unit || 'ชิ้น';
+            if (ingModal) ingModal.classList.remove('hidden');
+            return;
+          }
+
+          var delBtn = e.target.closest('.btn-delete-ing');
+          if (delBtn) {
+            var delName = delBtn.getAttribute('data-name');
+            if (!confirm('ยืนยันลบวัตถุดิบ "' + delName + '" ออกจากคลังใช่หรือไม่?')) return;
+            try {
+              var res = await adminApi('deleteMasterIngredient', { name: delName });
+              alert(res.message || 'ลบวัตถุดิบเรียบร้อยแล้ว');
+              loadAllAdminData();
+            } catch(err) {
+              alert('เกิดข้อผิดพลาด: ' + err);
+            }
+            return;
+          }
+        });
+      }
+
+      // Clean & Migrate Menu_BOM Button
+      if (btnCleanMigrate) {
+        btnCleanMigrate.addEventListener('click', async function() {
+          if (!confirm('ต้องการจัดระเบียบตารางชีต Menu_BOM โดยรวมคอลัมน์ชื่อซ้ำ และลบคอลัมน์ที่ไม่จำเป็นออกใช่หรือไม่?')) return;
+          btnCleanMigrate.disabled = true;
+          var origHtml = btnCleanMigrate.innerHTML;
+          btnCleanMigrate.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>กำลังจัดระเบียบ...';
+
+          try {
+            var res = await adminApi('cleanAndMigrateMenuBomColumns', {});
+            alert(res.message || 'จัดระเบียบตารางใน Google Sheet สำเร็จแล้ว!');
+            loadAllAdminData();
+          } catch(err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            btnCleanMigrate.disabled = false;
+            btnCleanMigrate.innerHTML = origHtml;
           }
         });
       }
