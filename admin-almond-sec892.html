@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.1.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.2.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -748,12 +748,15 @@
 
                 <!-- LINE OA Basic ID for 1:1 Chat -->
                 <div class="space-y-1.5 bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-200">
-                  <label class="font-bold text-emerald-950 block flex items-center space-x-1.5">
-                    <i class="fa-brands fa-line text-emerald-600 text-base"></i>
-                    <span>LINE Official Account Basic ID (สำหรับปุ่มทักแชต 1:1):</span>
-                  </label>
-                  <input type="text" id="cfg_Line_Bot_Basic_ID" placeholder="เช่น @almondwich หรือ Basic ID ของ LINE OA" class="w-full bg-white border border-emerald-300 rounded-xl p-2.5 font-mono text-xs text-emerald-900 focus:ring-1 focus:ring-emerald-500">
-                  <p class="text-[10px] text-emerald-800/80">ใช้สร้างลิงก์เปิดห้องแชตกับลูกค้าโดยตรงผ่าน LINE Official Account Manager (chat.line.biz)</p>
+                  <div class="flex items-center justify-between">
+                    <label class="font-bold text-emerald-950 flex items-center space-x-1.5">
+                      <i class="fa-brands fa-line text-emerald-600 text-base"></i>
+                      <span>LINE Official Account Basic ID (สำหรับปุ่มทักแชต 1:1):</span>
+                    </label>
+                    <span class="text-[10px] bg-emerald-200 text-emerald-900 font-extrabold px-2 py-0.5 rounded-md">ค่าเริ่มต้น: @510zqbtw</span>
+                  </div>
+                  <input type="text" id="cfg_Line_Bot_Basic_ID" placeholder="@510zqbtw" class="w-full bg-white border border-emerald-300 rounded-xl p-2.5 font-mono text-xs text-emerald-900 focus:ring-1 focus:ring-emerald-500">
+                  <p class="text-[10px] text-emerald-800/80">ใช้สร้างลิงก์ให้ลูกค้าส่งข้อความแจ้งสรุปออเดอร์เข้า LINE ร้านค้า และเปิดห้องแชต 1:1 ผ่าน LINE OA Manager (หากเว้นว่าง ระบบจะใช้ <strong>@510zqbtw</strong> ให้อัตโนมัติ)</p>
                 </div>
               </div>
             </div>
@@ -4145,7 +4148,7 @@
             Logo_URL: document.getElementById('cfg_Logo_URL').value.trim(),
             Logo_Position: document.getElementById('cfg_Logo_Position').value,
             Redemption_Policy: document.getElementById('cfg_Redemption_Policy').value,
-            Line_Bot_Basic_ID: document.getElementById('cfg_Line_Bot_Basic_ID').value.trim()
+            Line_Bot_Basic_ID: document.getElementById('cfg_Line_Bot_Basic_ID').value.trim() || "@510zqbtw"
           };
           try {
             await adminApi('updateConfig', { payload: payload });
