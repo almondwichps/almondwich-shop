@@ -1173,6 +1173,117 @@
     </div>
   </div>
 
+  <!-- EDIT ORDER MODAL FOR ADMIN -->
+  <div id="editOrderModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-md w-full shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+          <i class="fa-solid fa-pen-to-square text-brand-600 text-base"></i>
+          <span>แก้ไขรายการออเดอร์</span>
+        </h3>
+        <button id="btn-close-edit-order" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Order Info Header -->
+      <div class="bg-amber-50/70 p-3 rounded-2xl border border-amber-200/80 text-xs shrink-0 flex items-center justify-between">
+        <div>
+          <span class="text-slate-500 text-[11px]">รหัสออเดอร์:</span>
+          <span class="font-mono font-extrabold text-brand-700 ml-1" id="editModalOrderId">-</span>
+        </div>
+        <div class="text-right">
+          <span class="text-slate-500 text-[11px]">ลูกค้า:</span>
+          <span class="font-bold text-slate-800 ml-1" id="editModalCustName">-</span>
+        </div>
+      </div>
+
+      <!-- Scrollable Form Body -->
+      <div class="overflow-y-auto space-y-4 flex-1 pr-1 text-xs">
+        <!-- Sandwiches List Section -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-700">รายการแซนวิช:</label>
+            <button type="button" id="btnAddEditOrderItem" class="inline-flex items-center space-x-1 text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-2.5 py-1 rounded-lg font-bold text-[11px] cursor-pointer transition">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>เพิ่มเมนู</span>
+            </button>
+          </div>
+
+          <div id="editOrderItemsList" class="space-y-2.5">
+            <!-- Dynamic order item rows rendered here -->
+          </div>
+
+          <!-- Total Calculation Bar -->
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between font-bold text-xs">
+            <span class="text-slate-600">รวมทั้งหมด:</span>
+            <div class="space-x-3">
+              <span class="text-slate-700">รวม <span id="editModalTotalQty" class="text-brand-600 font-extrabold">0</span> กล่อง</span>
+              <span class="text-slate-400">|</span>
+              <span class="text-slate-700">ยอดเงิน <span id="editModalTotalPrice" class="text-brand-600 font-extrabold text-sm">0</span> ฿</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer & Delivery Info Section -->
+        <div class="space-y-3 pt-2 border-t border-slate-100">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">ชื่อเล่นผู้รับ:</label>
+              <input type="text" id="editCustNickname" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="ชื่อเล่น">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">เบอร์โทรศัพท์:</label>
+              <input type="tel" id="editCustPhone" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="08xxxxxxxx">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">สถานที่จัดส่ง / แผนก / จุดวาง:</label>
+            <input type="text" id="editDeliveryLocation" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="เช่น ชั้น 3 ตึกอำนวยการ">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">หมายเหตุการจัดส่ง:</label>
+            <input type="text" id="editDeliveryNote" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="เช่น ฝากไว้ที่ป้อมยาม">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">วิธีชำระเงิน:</label>
+              <select id="editPaymentMethod" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition">
+                <option value="Transfer">โอนเงิน (Transfer)</option>
+                <option value="COD">เก็บเงินปลายทาง (COD)</option>
+                <option value="Points_Free">🎁 แลกฟรี 10 แต้ม</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">สถานะออเดอร์:</label>
+              <select id="editOrderStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition">
+                <option value="Pending">รอตรวจสอบยอด (Pending)</option>
+                <option value="Paid">รับออเดอร์แล้ว (Paid)</option>
+                <option value="COD">เก็บปลายทาง (COD)</option>
+                <option value="Confirmed_COD">ยืนยัน COD แล้ว</option>
+                <option value="Delivered">ส่งสำเร็จแล้ว (Delivered)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 shrink-0 pt-2 border-t border-slate-100">
+        <button type="button" id="btnSaveEditOrder" class="w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-extrabold py-3 px-4 rounded-xl shadow-md text-sm flex items-center justify-center space-x-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50">
+          <i class="fa-solid fa-floppy-disk text-base"></i>
+          <span id="btnSaveEditOrderText">บันทึกการแก้ไขออเดอร์</span>
+        </button>
+        <button type="button" id="btnCancelEditOrder" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer transition">
+          ยกเลิก / ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- LINE CHAT HELPER MODAL -->
   <div id="lineChatModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
@@ -1837,6 +1948,7 @@
         confirm_btn = '<button class="order-status-btn bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Confirmed_COD" title="ยืนยันรับออเดอร์เก็บปลายทาง">รับออเดอร์</button>';
       }
 
+      var edit_btn = (o.status !== 'Cancelled') ? '<button class="btn-open-edit-order-modal bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-[10px] font-bold cursor-pointer transition border border-slate-300" data-order-id="'+o.orderId+'" title="แก้ไขรายการออเดอร์"><i class="fa-solid fa-pen-to-square mr-0.5"></i>แก้ไข</button>' : '';
       var deliver_btn = (o.status === 'Paid' || o.status === 'Confirmed_COD') ? '<button class="btn-open-pod-modal bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-customer="'+(o.customerNickname||o.customerName||'ลูกค้า')+'" data-qty="'+(o.totalQty||1)+'" data-loc="'+(o.deliveryLocation||'-')+'">ส่งแล้ว</button>' : '';
       var cancel_btn = (o.status !== 'Delivered' && o.status !== 'Cancelled') ? '<button class="order-status-btn bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1 rounded text-[10px] font-bold cursor-pointer" data-order-id="'+o.orderId+'" data-status="Cancelled">ยกเลิก</button>' : '';
       
@@ -1850,7 +1962,7 @@
         '<td class="py-3 px-4 text-center font-medium">' + (o.paymentMethod||'') + '</td>' +
         '<td class="py-3 px-4 text-center space-y-1">' + slip + (proofBtn ? ('<br>' + proofBtn) : '') + '</td>' +
         '<td class="py-3 px-4 text-center">' + (statusMap[o.status]||o.status) + '</td>' +
-        '<td class="py-3 px-4 text-center space-x-1">' + confirm_btn + ' ' + deliver_btn + ' ' + cancel_btn + '</td>' +
+        '<td class="py-3 px-4 text-center space-x-1">' + confirm_btn + ' ' + edit_btn + ' ' + deliver_btn + ' ' + cancel_btn + '</td>' +
       '</tr>';
     }
 
@@ -1881,13 +1993,18 @@
       }
 
       var actionButtonsMobile = '';
+      var editBtnMobile = (o.status !== 'Cancelled')
+        ? ('<button type="button" class="btn-open-edit-order-modal w-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-slate-200 flex items-center justify-center space-x-1.5 transition" data-order-id="' + o.orderId + '"><i class="fa-solid fa-pen-to-square text-brand-600"></i><span>แก้ไขรายการออเดอร์ / เพิ่มแซนวิช</span></button>')
+        : '';
+
       if (o.status === 'Pending') {
         actionButtonsMobile = 
           '<div class="space-y-2 pt-2 border-t border-slate-100">' +
             '<button type="button" class="order-status-btn w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Paid">' +
               '<i class="fa-solid fa-circle-check text-base"></i><span>✅ ตรวจสอบยอดแล้ว & รับออเดอร์</span>' +
             '</button>' +
-            '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
+            editBtnMobile +
+            '<button type="button" class="order-status-btn w-full bg-slate-50 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
               '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
             '</button>' +
           '</div>';
@@ -1897,7 +2014,8 @@
             '<button type="button" class="order-status-btn w-full bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-status="Confirmed_COD">' +
               '<i class="fa-solid fa-circle-check text-base"></i><span>✅ ยืนยันรับออเดอร์ (เก็บปลายทาง)</span>' +
             '</button>' +
-            '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
+            editBtnMobile +
+            '<button type="button" class="order-status-btn w-full bg-slate-50 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
               '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
             '</button>' +
           '</div>';
@@ -1907,7 +2025,8 @@
             '<button type="button" class="btn-open-pod-modal w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-extrabold py-3.5 px-4 rounded-xl shadow text-sm flex items-center justify-center space-x-2 cursor-pointer active:scale-[0.99] transition" data-order-id="' + o.orderId + '" data-customer="' + (o.customerNickname || o.customerName || 'ลูกค้า') + '" data-qty="' + (o.totalQty || 1) + '" data-loc="' + (o.deliveryLocation || '-') + '">' +
               '<i class="fa-solid fa-motorcycle text-lg"></i><span>🛵 จัดส่งถึงมือแล้ว (ส่งสำเร็จ)</span>' +
             '</button>' +
-            '<button type="button" class="order-status-btn w-full bg-slate-100 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
+            editBtnMobile +
+            '<button type="button" class="order-status-btn w-full bg-slate-50 hover:bg-red-50 text-red-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer border border-transparent hover:border-red-200 transition" data-order-id="' + o.orderId + '" data-status="Cancelled">' +
               '<i class="fa-solid fa-xmark mr-1"></i>ยกเลิกออเดอร์นี้' +
             '</button>' +
           '</div>';
@@ -2972,6 +3091,13 @@
           return;
         }
 
+        var openEditBtn = e.target.closest('.btn-open-edit-order-modal');
+        if (openEditBtn) {
+          var editOrderId = openEditBtn.getAttribute('data-order-id');
+          openEditOrderModal(editOrderId);
+          return;
+        }
+
         var openPodBtn = e.target.closest('.btn-open-pod-modal');
         if (openPodBtn) {
           var orderId = openPodBtn.getAttribute('data-order-id');
@@ -3584,6 +3710,300 @@
             btnConfirmBatchNoPhoto.disabled = false;
             if (btnConfirmBatchPhoto) btnConfirmBatchPhoto.disabled = false;
             btnConfirmBatchNoPhoto.textContent = 'ยืนยันส่งงานที่เลือกโดยไม่แนบรูป';
+          }
+        });
+      }
+
+      // -------------------------------------------------------------
+      // ✏️ EDIT ORDER MODAL CONTROLLER
+      // -------------------------------------------------------------
+      var currentEditingOrder = null;
+      var editOrderWorkingItems = []; // [{ id, name, price, qty, note }]
+
+      var editOrderModalEl = document.getElementById('editOrderModal');
+      var editModalOrderIdEl = document.getElementById('editModalOrderId');
+      var editModalCustNameEl = document.getElementById('editModalCustName');
+      var editOrderItemsListEl = document.getElementById('editOrderItemsList');
+      var editModalTotalQtyEl = document.getElementById('editModalTotalQty');
+      var editModalTotalPriceEl = document.getElementById('editModalTotalPrice');
+      var editCustNicknameEl = document.getElementById('editCustNickname');
+      var editCustPhoneEl = document.getElementById('editCustPhone');
+      var editDeliveryLocationEl = document.getElementById('editDeliveryLocation');
+      var editDeliveryNoteEl = document.getElementById('editDeliveryNote');
+      var editPaymentMethodEl = document.getElementById('editPaymentMethod');
+      var editOrderStatusEl = document.getElementById('editOrderStatus');
+      var btnSaveEditOrderEl = document.getElementById('btnSaveEditOrder');
+      var btnSaveEditOrderTextEl = document.getElementById('btnSaveEditOrderText');
+      var btnCloseEditOrderEl = document.getElementById('btn-close-edit-order');
+      var btnCancelEditOrderEl = document.getElementById('btnCancelEditOrder');
+      var btnAddEditOrderItemEl = document.getElementById('btnAddEditOrderItem');
+
+      function closeEditOrderModal() {
+        if (editOrderModalEl) editOrderModalEl.classList.add('hidden');
+        currentEditingOrder = null;
+        editOrderWorkingItems = [];
+      }
+
+      if (btnCloseEditOrderEl) btnCloseEditOrderEl.addEventListener('click', closeEditOrderModal);
+      if (btnCancelEditOrderEl) btnCancelEditOrderEl.addEventListener('click', closeEditOrderModal);
+
+      window.openEditOrderModal = function(orderId) {
+        var orders = st.orders || [];
+        var order = orders.find(function(o) { return String(o.orderId).trim() === String(orderId).trim(); });
+        if (!order) {
+          alert('ไม่พบข้อมูลออเดอร์ ' + orderId);
+          return;
+        }
+
+        currentEditingOrder = order;
+        if (editModalOrderIdEl) editModalOrderIdEl.textContent = order.orderId || '-';
+        if (editModalCustNameEl) editModalCustNameEl.textContent = (order.customerNickname || order.customerName || 'ลูกค้า');
+
+        // Clone items array
+        if (Array.isArray(order.items) && order.items.length > 0) {
+          editOrderWorkingItems = order.items.map(function(it) {
+            return {
+              id: it.id || '',
+              name: it.name || 'Sandwich',
+              price: it.price !== undefined ? Number(it.price) : 35,
+              qty: parseInt(it.qty || 1, 10),
+              note: it.note || ''
+            };
+          });
+        } else {
+          editOrderWorkingItems = [];
+        }
+
+        if (editCustNicknameEl) editCustNicknameEl.value = order.customerNickname || '';
+        if (editCustPhoneEl) editCustPhoneEl.value = order.phoneNumber || '';
+        if (editDeliveryLocationEl) editDeliveryLocationEl.value = order.deliveryLocation || '';
+        if (editDeliveryNoteEl) editDeliveryNoteEl.value = order.deliveryNote || '';
+        if (editPaymentMethodEl) editPaymentMethodEl.value = order.paymentMethod || 'Transfer';
+        if (editOrderStatusEl) editOrderStatusEl.value = order.status || 'Pending';
+
+        renderEditOrderItems();
+        if (editOrderModalEl) editOrderModalEl.classList.remove('hidden');
+      };
+
+      function renderEditOrderItems() {
+        if (!editOrderItemsListEl) return;
+        editOrderItemsListEl.innerHTML = '';
+
+        var menuList = st.menuItems || [];
+
+        if (editOrderWorkingItems.length === 0) {
+          editOrderItemsListEl.innerHTML = '<div class="text-slate-400 text-center py-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">ยังไม่มีรายการแซนวิช กรุณากดปุ่ม "+ เพิ่มเมนู"</div>';
+        } else {
+          editOrderWorkingItems.forEach(function(item, idx) {
+            var row = document.createElement('div');
+            row.className = 'bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-2';
+
+            var topRow = document.createElement('div');
+            topRow.className = 'flex items-center justify-between space-x-2';
+
+            // Menu Select / Name
+            var menuSelect = document.createElement('select');
+            menuSelect.className = 'flex-1 bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-slate-800';
+
+            // Populate options from available menu list
+            menuList.forEach(function(m) {
+              var opt = document.createElement('option');
+              opt.value = m.id;
+              opt.textContent = m.name + ' (' + m.price + ' ฿)';
+              if (m.id === item.id) opt.selected = true;
+              menuSelect.appendChild(opt);
+            });
+
+            // If item not found in current menu list, add custom option
+            var hasMatch = menuList.some(function(m) { return m.id === item.id; });
+            if (!hasMatch && item.id) {
+              var customOpt = document.createElement('option');
+              customOpt.value = item.id;
+              customOpt.textContent = item.name + ' (' + item.price + ' ฿)';
+              customOpt.selected = true;
+              menuSelect.appendChild(customOpt);
+            }
+
+            menuSelect.addEventListener('change', function() {
+              var chosenId = this.value;
+              var chosenMenu = menuList.find(function(m) { return m.id === chosenId; });
+              if (chosenMenu) {
+                editOrderWorkingItems[idx].id = chosenMenu.id;
+                editOrderWorkingItems[idx].name = chosenMenu.name;
+                editOrderWorkingItems[idx].price = chosenMenu.price;
+              }
+              calculateEditTotals();
+            });
+
+            topRow.appendChild(menuSelect);
+
+            // Qty Stepper
+            var qtyContainer = document.createElement('div');
+            qtyContainer.className = 'flex items-center space-x-1.5 shrink-0';
+
+            var btnMinus = document.createElement('button');
+            btnMinus.type = 'button';
+            btnMinus.className = 'w-6 h-6 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs cursor-pointer';
+            btnMinus.textContent = '-';
+            btnMinus.addEventListener('click', function() {
+              if (editOrderWorkingItems[idx].qty > 1) {
+                editOrderWorkingItems[idx].qty--;
+                renderEditOrderItems();
+              }
+            });
+
+            var qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = '1';
+            qtyInput.value = item.qty;
+            qtyInput.className = 'w-10 text-center bg-white border border-slate-300 rounded-lg py-0.5 text-xs font-black text-brand-700';
+            qtyInput.addEventListener('change', function() {
+              var v = parseInt(this.value, 10);
+              editOrderWorkingItems[idx].qty = isNaN(v) || v < 1 ? 1 : v;
+              calculateEditTotals();
+            });
+
+            var btnPlus = document.createElement('button');
+            btnPlus.type = 'button';
+            btnPlus.className = 'w-6 h-6 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs cursor-pointer';
+            btnPlus.textContent = '+';
+            btnPlus.addEventListener('click', function() {
+              editOrderWorkingItems[idx].qty++;
+              renderEditOrderItems();
+            });
+
+            // Delete row button
+            var btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'w-6 h-6 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center text-xs cursor-pointer ml-1';
+            btnDel.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+            btnDel.title = 'ลบเมนูนี้';
+            btnDel.addEventListener('click', function() {
+              editOrderWorkingItems.splice(idx, 1);
+              renderEditOrderItems();
+            });
+
+            qtyContainer.appendChild(btnMinus);
+            qtyContainer.appendChild(qtyInput);
+            qtyContainer.appendChild(btnPlus);
+            qtyContainer.appendChild(btnDel);
+
+            topRow.appendChild(qtyContainer);
+            row.appendChild(topRow);
+
+            // Note input
+            var noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.value = item.note || '';
+            noteInput.placeholder = 'หมายเหตุพิเศษ (เช่น ไม่ผัก, มายองเนสเยอะ)';
+            noteInput.className = 'w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-600 placeholder-slate-400';
+            noteInput.addEventListener('input', function() {
+              editOrderWorkingItems[idx].note = this.value;
+            });
+            row.appendChild(noteInput);
+
+            editOrderItemsListEl.appendChild(row);
+          });
+        }
+
+        calculateEditTotals();
+      }
+
+      function calculateEditTotals() {
+        var totalQty = editOrderWorkingItems.reduce(function(s, it) {
+          return s + (parseInt(it.qty || 0, 10));
+        }, 0);
+
+        var totalPrice = editOrderWorkingItems.reduce(function(s, it) {
+          return s + (Number(it.price || 0) * parseInt(it.qty || 1, 10));
+        }, 0);
+
+        if (editPaymentMethodEl && editPaymentMethodEl.value === 'Points_Free') {
+          totalPrice = 0;
+        }
+
+        if (editModalTotalQtyEl) editModalTotalQtyEl.textContent = totalQty;
+        if (editModalTotalPriceEl) editModalTotalPriceEl.textContent = totalPrice;
+        return { totalQty: totalQty, totalPrice: totalPrice };
+      }
+
+      if (btnAddEditOrderItemEl) {
+        btnAddEditOrderItemEl.addEventListener('click', function() {
+          var menuList = st.menuItems || [];
+          var defaultMenu = menuList.length > 0 ? menuList[0] : { id: 'M01', name: 'แซนวิช', price: 35 };
+          editOrderWorkingItems.push({
+            id: defaultMenu.id,
+            name: defaultMenu.name,
+            price: defaultMenu.price || 35,
+            qty: 1,
+            note: ''
+          });
+          renderEditOrderItems();
+        });
+      }
+
+      if (editPaymentMethodEl) {
+        editPaymentMethodEl.addEventListener('change', calculateEditTotals);
+      }
+
+      if (btnSaveEditOrderEl) {
+        btnSaveEditOrderEl.addEventListener('click', async function() {
+          if (!currentEditingOrder) return;
+
+          if (editOrderWorkingItems.length === 0) {
+            alert('กรุณาเลือกรายการแซนวิชอย่างน้อย 1 รายการ');
+            return;
+          }
+
+          var totals = calculateEditTotals();
+          if (totals.totalQty <= 0) {
+            alert('จำนวนกล่องรวมต้องมากกว่า 0 กล่อง');
+            return;
+          }
+
+          var nickname = (editCustNicknameEl ? editCustNicknameEl.value : '').trim();
+          var phone = (editCustPhoneEl ? editCustPhoneEl.value : '').trim();
+          var location = (editDeliveryLocationEl ? editDeliveryLocationEl.value : '').trim();
+          var note = (editDeliveryNoteEl ? editDeliveryNoteEl.value : '').trim();
+          var payMethod = editPaymentMethodEl ? editPaymentMethodEl.value : 'Transfer';
+          var status = editOrderStatusEl ? editOrderStatusEl.value : 'Pending';
+
+          var confirmMsg = 'ยืนยันบันทึกการแก้ไขออเดอร์ ' + currentEditingOrder.orderId + ' ใช่หรือไม่?\n' +
+            '• จำนวนกล่อง: ' + totals.totalQty + ' กล่อง\n' +
+            '• ยอดเงินรวม: ' + totals.totalPrice + ' ฿';
+
+          if (!confirm(confirmMsg)) return;
+
+          btnSaveEditOrderEl.disabled = true;
+          if (btnSaveEditOrderTextEl) btnSaveEditOrderTextEl.textContent = 'กำลังบันทึกข้อมูล...';
+
+          try {
+            var payload = {
+              orderId: currentEditingOrder.orderId,
+              items: editOrderWorkingItems,
+              totalQty: totals.totalQty,
+              totalPrice: totals.totalPrice,
+              customerNickname: nickname,
+              phoneNumber: phone,
+              deliveryLocation: location,
+              deliveryNote: note,
+              paymentMethod: payMethod,
+              status: status
+            };
+
+            var res = await adminApi('adminUpdateOrder', payload);
+            if (res && res.success) {
+              alert(res.message || 'บันทึกการแก้ไขออเดอร์สำเร็จเรียบร้อยแล้ว!');
+              closeEditOrderModal();
+              loadAllAdminData();
+            } else {
+              alert('ไม่สามารถแก้ไขออเดอร์ได้: ' + (res ? res.message : 'ไม่ทราบสาเหตุ'));
+            }
+          } catch (err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            btnSaveEditOrderEl.disabled = false;
+            if (btnSaveEditOrderTextEl) btnSaveEditOrderTextEl.textContent = 'บันทึกการแก้ไขออเดอร์';
           }
         });
       }
