@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.3.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.3.1</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -422,13 +422,14 @@
                   <th class="py-3 px-4 w-12 text-center">ลำดับ</th>
                   <th class="py-3 px-4">ชื่อวัตถุดิบมาตรฐาน</th>
                   <th class="py-3 px-4 text-center">หน่วยนับ</th>
+                  <th class="py-3 px-4 text-right">ต้นทุนต่อหน่วย</th>
                   <th class="py-3 px-4 text-center">ใช้ในเมนู (รายการ)</th>
                   <th class="py-3 px-4 text-right">การจัดการ</th>
                 </tr>
               </thead>
               <tbody id="masterIngredientsTableBody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="5" class="py-8 text-center text-slate-400">
+                  <td colspan="6" class="py-8 text-center text-slate-400">
                     กำลังโหลดข้อมูลวัตถุดิบ...
                   </td>
                 </tr>
@@ -1024,6 +1025,10 @@
           </div>
 
           <div class="flex items-center space-x-2">
+            <button id="btn-goto-ingredients" type="button" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold px-3.5 py-2 rounded-2xl shadow-xs text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer" title="ไปยังหน้าคลังวัตถุดิบเพื่อปรับราคาต้นทุน">
+              <i class="fa-solid fa-carrot text-amber-600"></i>
+              <span>⚙️ ปรับต้นทุนวัตถุดิบ</span>
+            </button>
             <button id="btn-refresh-cost" type="button" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-3.5 py-2 rounded-2xl shadow-xs text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer">
               <i class="fa-solid fa-rotate text-emerald-600"></i>
               <span>คำนวณใหม่</span>
@@ -1711,6 +1716,15 @@
             <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">กรัม</span>
             <span class="cursor-pointer quick-unit-badge bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-900 border border-slate-200 px-2 py-0.5 rounded-lg text-[10px] font-semibold">ใบ</span>
           </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-700 block">ต้นทุนต่อหน่วย (บาท):</label>
+          <div class="relative">
+            <input type="number" id="form_Ing_Cost" step="0.01" min="0" placeholder="เช่น 1.25, 4.50" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-brand-500 pr-8">
+            <span class="absolute right-3 top-2.5 text-xs text-slate-400 font-bold">฿</span>
+          </div>
+          <p class="text-[10px] text-slate-400">ใช้คำนวณต้นทุนต่อกล่องและกำไรในหน้าวิเคราะห์ต้นทุนอัตโนมัติ</p>
         </div>
 
         <div class="flex items-center space-x-2 pt-2">
@@ -2729,6 +2743,11 @@
           ? '<span class="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded-lg text-[10px]">' + used + ' เมนู</span>'
           : '<span class="text-slate-400 text-[10px]">ยังไม่ถูกใช้</span>';
 
+        var costVal = (item.cost !== undefined && item.cost !== null && !isNaN(Number(item.cost))) ? Number(item.cost) : 0;
+        var costDisplay = costVal > 0 
+          ? '<span class="font-mono font-bold text-amber-700">' + costVal.toFixed(2) + ' ฿</span>' 
+          : '<span class="text-slate-400 text-[11px]">-</span>';
+
         return '<tr class="hover:bg-slate-50 transition">' +
           '<td class="py-3 px-4 text-center text-slate-400 font-mono font-bold">' + (idx + 1) + '</td>' +
           '<td class="py-3 px-4 font-bold text-slate-800 text-xs flex items-center space-x-2">' +
@@ -2738,10 +2757,11 @@
           '<td class="py-3 px-4 text-center">' +
             '<span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded-md text-[11px]">' + (item.unit || 'ชิ้น') + '</span>' +
           '</td>' +
+          '<td class="py-3 px-4 text-right">' + costDisplay + '</td>' +
           '<td class="py-3 px-4 text-center">' + usageBadge + '</td>' +
           '<td class="py-3 px-4 text-right">' +
             '<div class="flex items-center justify-end space-x-2">' +
-              '<button type="button" class="btn-edit-ing text-brand-600 hover:text-brand-800 font-bold cursor-pointer text-xs" data-name="' + item.name + '" data-unit="' + (item.unit || '') + '"><i class="fa-solid fa-pen-to-square mr-0.5"></i> แก้ไข</button>' +
+              '<button type="button" class="btn-edit-ing text-brand-600 hover:text-brand-800 font-bold cursor-pointer text-xs" data-name="' + item.name + '" data-unit="' + (item.unit || '') + '" data-cost="' + (costVal || '') + '"><i class="fa-solid fa-pen-to-square mr-0.5"></i> แก้ไข</button>' +
               '<button type="button" class="btn-delete-ing text-red-500 hover:text-red-700 font-bold cursor-pointer text-xs" data-name="' + item.name + '"><i class="fa-solid fa-trash-can mr-0.5"></i> ลบ</button>' +
             '</div>' +
           '</td>' +
@@ -2821,8 +2841,7 @@
       var prep = st.prepSummary || {};
       var masterIngs = st.masterIngredients || [];
 
-      // Build ingredient cost lookup (default estimated unit costs if not set)
-      // bread ~1.2 ฿/slice, egg ~4.5 ฿/ea, sausage ~3.5 ฿/ea, crabstick ~2.5 ฿/ea, box ~1.5 ฿/box, etc.
+      // Build ingredient cost lookup (first from st.masterIngredients, then fall back to defaults)
       var defaultIngCosts = {
         'bread_slice': 1.25,
         'egg_ea': 4.50,
@@ -2831,8 +2850,29 @@
         'box_ea': 1.50,
         'bologna_ea': 2.50,
         'shrimp_egg_ea': 2.00,
-        'tuna_ea': 3.50
+        'tuna_ea': 3.50,
+        'cheese_ea': 5.00,
+        'pork_floss_ea': 3.00,
+        'chili_paste_ea': 1.50
       };
+
+      var ingCostLookup = Object.assign({}, defaultIngCosts);
+      masterIngs.forEach(function(ing) {
+        var c = Number(ing.cost);
+        if (!isNaN(c) && c > 0) {
+          var nameLow = String(ing.name || '').toLowerCase();
+          ingCostLookup[nameLow] = c;
+          // also map normalized aliases
+          if (nameLow.indexOf('ขนมปัง') > -1) ingCostLookup['bread_slice'] = c;
+          if (nameLow.indexOf('ไข่ไก่') > -1 || nameLow.indexOf('ไข่') > -1) ingCostLookup['egg_ea'] = c;
+          if (nameLow.indexOf('ไส้กรอก') > -1) ingCostLookup['sausage_ea'] = c;
+          if (nameLow.indexOf('ปูอัด') > -1) ingCostLookup['crabstick_ea'] = c;
+          if (nameLow.indexOf('โบโลน่า') > -1) ingCostLookup['bologna_ea'] = c;
+          if (nameLow.indexOf('ไข่กุ้ง') > -1) ingCostLookup['shrimp_egg_ea'] = c;
+          if (nameLow.indexOf('ทูน่า') > -1) ingCostLookup['tuna_ea'] = c;
+          if (nameLow.indexOf('กล่อง') > -1) ingCostLookup['box_ea'] = c;
+        }
+      });
 
       // Calculate unit BOM cost for each menu item
       var nonIngKeys = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description', 'is_recommended'];
@@ -2845,7 +2885,7 @@
           if (!nonIngKeys.includes(kLower)) {
             var qty = Number(m[k]) || 0;
             if (qty > 0) {
-              var costPerUnit = defaultIngCosts[kLower] || 2.0; // fallback standard unit cost
+              var costPerUnit = ingCostLookup[kLower] || ingCostLookup[k] || 2.0; // dynamic custom cost
               unitCost += (qty * costPerUnit);
             }
           }
@@ -3406,6 +3446,14 @@
         renderCostAnalysis();
         alert('อัปเดตการวิเคราะห์ต้นทุนและกำไรเรียบร้อยแล้ว');
       });
+
+      // Quick Jump to Master Ingredients from Cost Tab
+      const btnGotoIng = document.getElementById('btn-goto-ingredients');
+      if (btnGotoIng) {
+        btnGotoIng.addEventListener('click', function() {
+          switchTab('ingredients');
+        });
+      }
 
       // Copy Flash Sale Leftovers Message Button
       const btnCopyFlashSale = document.getElementById('btnCopyFlashSaleMsg');
@@ -5416,6 +5464,7 @@
           document.getElementById('form_Ing_Name').value = '';
           document.getElementById('form_Ing_Name').readOnly = false;
           document.getElementById('form_Ing_Unit').value = '';
+          document.getElementById('form_Ing_Cost').value = '';
           if (ingModal) ingModal.classList.remove('hidden');
           document.getElementById('form_Ing_Name').focus();
         });
@@ -5435,6 +5484,8 @@
           e.preventDefault();
           var name = document.getElementById('form_Ing_Name').value.trim();
           var unit = document.getElementById('form_Ing_Unit').value.trim() || 'ชิ้น';
+          var costRaw = document.getElementById('form_Ing_Cost').value;
+          var cost = (costRaw !== '' && !isNaN(Number(costRaw))) ? Math.max(0, Number(costRaw)) : 0;
           if (!name) { alert('กรุณาระบุชื่อวัตถุดิบ'); return; }
 
           var btnSubmit = document.getElementById('btn-submit-ingredient');
@@ -5444,7 +5495,7 @@
           }
 
           try {
-            var res = await adminApi('saveMasterIngredient', { name: name, unit: unit });
+            var res = await adminApi('saveMasterIngredient', { name: name, unit: unit, cost: cost });
             alert(res.message || 'บันทึกวัตถุดิบเรียบร้อยแล้ว');
             closeIngModal();
             loadAllAdminData();
@@ -5467,10 +5518,12 @@
           if (editBtn) {
             var name = editBtn.getAttribute('data-name');
             var unit = editBtn.getAttribute('data-unit');
-            document.getElementById('ingredientModalTitle').textContent = 'แก้ไขวัตถุดิบ';
+            var cost = editBtn.getAttribute('data-cost');
+            document.getElementById('ingredientModalTitle').textContent = 'แก้ไขวัตถุดิบ & ต้นทุน';
             document.getElementById('form_Ing_Name').value = name;
             document.getElementById('form_Ing_Name').readOnly = true;
             document.getElementById('form_Ing_Unit').value = unit || 'ชิ้น';
+            document.getElementById('form_Ing_Cost').value = (cost !== '' && cost !== null && cost !== undefined) ? cost : '';
             if (ingModal) ingModal.classList.remove('hidden');
             return;
           }
