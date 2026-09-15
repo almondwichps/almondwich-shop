@@ -1399,6 +1399,17 @@
     }
 
     function submitOrderHandler() {
+      // Guard Check: ตรวจสอบการยืนยันตัวตน LINE ก่อนสั่งซื้อ ป้องกันออเดอร์หลุดเป็น MOCK_USER_001
+      if (!state.lineUid || state.lineUid === 'MOCK_USER_001' || !state.lineUid.startsWith('U')) {
+        if (typeof liff !== 'undefined' && !liff.isLoggedIn()) {
+          alert("กรุณาเข้าสู่ระบบ LINE เพื่อระบุตัวตนและสะสมแต้มก่อนทำการสั่งซื้อ");
+          liff.login();
+        } else {
+          alert("ไม่พบข้อมูลบัญชี LINE ของคุณ\nกรุณาเปิดลิงก์ผ่าน LINE Official Account หรือเปิดผ่านแอป LINE เพื่อระบุตัวตนและสะสมแต้มค่ะ");
+        }
+        return;
+      }
+
       const redeemPolicy = String((state.config && (state.config.redemptionPolicy || state.config.Redemption_Policy)) || 'MIN_1').trim().toUpperCase();
       const isStandaloneAllowed = (redeemPolicy === 'FREE_0');
 
