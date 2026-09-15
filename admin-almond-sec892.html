@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.2.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.3.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -151,14 +151,19 @@
             <span>4. เมนู & สูตร BOM</span>
           </button>
 
+          <button type="button" id="dtab-cost" data-tab="cost" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
+            <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+            <span>5. วิเคราะห์ต้นทุน & กำไร</span>
+          </button>
+
           <button type="button" id="dtab-settings" data-tab="settings" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-sliders"></i>
-            <span>5. ตั้งค่าร้าน</span>
+            <span>6. ตั้งค่าร้าน</span>
           </button>
 
           <button type="button" id="dtab-customers" data-tab="customers" class="tab-btn text-slate-300 hover:text-white hover:bg-slate-800 font-semibold py-2 px-3.5 rounded-xl transition text-xs flex items-center space-x-1.5 cursor-pointer shrink-0">
             <i class="fa-solid fa-users"></i>
-            <span>6. ลูกค้า & แต้ม</span>
+            <span>7. ลูกค้า & แต้ม</span>
           </button>
         </div>
       </div>
@@ -338,7 +343,7 @@
           <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
             <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider flex items-center space-x-1.5 pb-2 border-b border-slate-100">
               <i class="fa-solid fa-layer-group text-blue-500"></i>
-              <span>Layer 1: ยอดรวมตามประเภทเมนู</span>
+              <span>Layer 1: ยอดรวมตามประเภทเมนู & จำนวนคู่ที่ต้องทำ</span>
             </h3>
             <div id="prepMenuSummaryList" class="space-y-2">
               <p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการที่ต้องผลิต</p>
@@ -354,6 +359,31 @@
             <div id="prepIngredientsSummaryList" class="space-y-2">
               <p class="text-xs text-slate-400 py-4 text-center">ไม่มีรายการวัตถุดิบ</p>
             </div>
+          </div>
+        </div>
+
+        <!-- Leftover Halves Preview (ขนมปังอีกครึ่งที่เหลือพร้อมจัด Flash Sale) -->
+        <div id="prepLeftoversCard" class="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 rounded-2xl p-4 border border-orange-200 shadow-sm space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-center space-x-2">
+              <div class="w-8 h-8 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                <i class="fa-solid fa-bolt"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center space-x-2">
+                  <span>แซนวิชอีกครึ่งที่เหลือ (Leftover Halves Preview)</span>
+                  <span id="prepTotalLeftoversBadge" class="bg-orange-100 text-orange-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-orange-200">0 ชิ้น</span>
+                </h3>
+                <p class="text-[11px] text-slate-500">เกิดจากการตัดแบ่ง 1 ชิ้นคู่ สามารถนำไปโพสต์ขายต่อในกลุ่ม LINE ได้ทันที</p>
+              </div>
+            </div>
+            <button id="btnCopyFlashSaleMsg" type="button" class="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-md transition flex items-center justify-center space-x-1.5 cursor-pointer shrink-0">
+              <i class="fa-solid fa-copy"></i>
+              <span>คัดลอกข้อความขาย Flash Sale</span>
+            </button>
+          </div>
+          <div id="prepLeftoversList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+            <p class="text-xs text-slate-400 py-2 col-span-full text-center">ไม่มีชิ้นส่วนที่เหลือจากการตัดคู่ (ครบคู่พอดี 🎉)</p>
           </div>
         </div>
       </section>
@@ -694,6 +724,20 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Custom Recipe Pair Enforcement Policy -->
+                <div class="bg-orange-50/80 p-4 rounded-2xl border border-orange-200 space-y-2.5">
+                  <div class="flex items-center justify-between">
+                    <label class="font-bold text-orange-950 text-xs flex items-center space-x-2 cursor-pointer">
+                      <input type="checkbox" id="cfg_Enforce_Custom_Pair" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 cursor-pointer">
+                      <span>บังคับสั่งคู่ (2 กล่อง = 70.-) เมื่อมีโน้ตสั่งพิเศษ</span>
+                    </label>
+                    <span id="customPairStatusBadge" class="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full">ปิดใช้งาน</span>
+                  </div>
+                  <p class="text-[11px] text-orange-800 leading-relaxed">
+                    เมื่อเปิดใช้งาน หากลูกค้าพิมพ์ปรับแต่งสูตร/ไส้เฉพาะตัว (เช่น ไม่ผัก, ขอไข่สุก) ระบบจะปรับจำนวนกล่องเป็นเลขคู่ (ขั้นต่ำ 2 กล่อง = 70 บาท) เพื่อแก้ปัญหาการทำ 1 คู่แล้วเหลืออีกครึ่งหนึ่งขายไม่ออก
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -961,6 +1005,128 @@
           </div>
         </div>
 
+      </section>
+
+      <!-- ===================================================================== -->
+      <!-- SECTION: COST & WASTE ANALYSIS DASHBOARD (TAB: cost) -->
+      <!-- ===================================================================== -->
+      <section id="section-cost" style="display: none;" class="space-y-5">
+        <!-- Header & Action Controls -->
+        <div class="bg-white rounded-3xl p-5 border border-stone-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-base sm:text-lg font-black text-stone-800 flex items-center space-x-2.5">
+              <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shadow-xs border border-emerald-200">
+                <i class="fa-solid fa-chart-pie"></i>
+              </span>
+              <span>วิเคราะห์ต้นทุน กำไร & เศษเหลือ (Cost & Waste Analysis)</span>
+            </h2>
+            <p class="text-xs text-stone-500 mt-0.5">คำนวณต้นทุนวัตถุดิบ (Food Cost), มูลค่าขยะเศษเหลือ (Waste Cost) และอัตรากำไรขั้นต้น (Gross Margin)</p>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button id="btn-refresh-cost" type="button" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-3.5 py-2 rounded-2xl shadow-xs text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer">
+              <i class="fa-solid fa-rotate text-emerald-600"></i>
+              <span>คำนวณใหม่</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Financial KPI Summary Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Total Revenue -->
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-stone-400">รายรับรวม (Revenue)</span>
+              <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-wallet"></i>
+              </span>
+            </div>
+            <div id="costKpiRevenue" class="text-xl sm:text-2xl font-black text-stone-800">0 ฿</div>
+            <div class="text-[10px] text-slate-400 font-medium">จากออเดอร์ที่ยืนยันแล้ว</div>
+          </div>
+
+          <!-- Total Food Cost -->
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-stone-400">ต้นทุนวัตถุดิบ (BOM Cost)</span>
+              <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-receipt"></i>
+              </span>
+            </div>
+            <div id="costKpiFoodCost" class="text-xl sm:text-2xl font-black text-amber-700">0 ฿</div>
+            <div id="costKpiFoodCostPct" class="text-[10px] text-amber-600 font-bold">0% ของยอดขาย</div>
+          </div>
+
+          <!-- Waste & Leftovers Cost -->
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-stone-400">ต้นทุนเศษเหลือ (Waste Cost)</span>
+              <span class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-trash-can"></i>
+              </span>
+            </div>
+            <div id="costKpiWasteCost" class="text-xl sm:text-2xl font-black text-rose-600">0 ฿</div>
+            <div id="costKpiWasteCount" class="text-[10px] text-rose-500 font-bold">เหลือเศษ 0 ชิ้น</div>
+          </div>
+
+          <!-- Gross Profit & Margin % -->
+          <div class="bg-white rounded-3xl p-4 border border-stone-200/80 shadow-sm space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-stone-400">กำไรขั้นต้น (Gross Profit)</span>
+              <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-coins"></i>
+              </span>
+            </div>
+            <div id="costKpiGrossProfit" class="text-xl sm:text-2xl font-black text-emerald-600">0 ฿</div>
+            <div id="costKpiMarginPct" class="text-[10px] text-emerald-700 font-bold">Margin 0%</div>
+          </div>
+        </div>
+
+        <!-- Strategy Insights Card -->
+        <div class="bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-blue-500/10 rounded-3xl p-4 border border-emerald-200 shadow-sm space-y-2">
+          <div class="flex items-center space-x-2 font-bold text-stone-800 text-xs sm:text-sm">
+            <i class="fa-solid fa-lightbulb text-amber-500"></i>
+            <span>ข้อแนะนำเชิงกลยุทธ์ลดต้นทุนของเสีย (Strategic Waste Reduction)</span>
+          </div>
+          <p class="text-xs text-stone-600 leading-relaxed">
+            • <strong>บังคับสั่งคู่ (Enforce Custom Pair):</strong> การเปิดฟังก์ชันบังคับสั่งคู่สำหรับเมนูโน้ตพิเศษ จะช่วยขจัดต้นทุนเศษเหลือ (Waste Cost) ที่เกิดจากการผ่าครึ่งได้ 100% ทันที<br>
+            • <strong>Flash Sale ในกลุ่ม LINE:</strong> หากมีเศษชิ้นเดียวเหลือ ให้กดปุ่ม <em>"คัดลอกข้อความขาย Flash Sale"</em> ในหน้าสรุปยอดครัวเพื่อนำไปปล่อยขายกล่องละ 25-30 บาท จะเปลี่ยนต้นทุนที่จมเป็นกระแสเงินสดคืนกลับมา
+          </p>
+        </div>
+
+        <!-- Unit Economics Table by Menu Item -->
+        <div class="bg-white rounded-3xl border border-stone-200/80 shadow-sm overflow-hidden space-y-3 p-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-stone-800 text-xs sm:text-sm flex items-center space-x-2">
+              <i class="fa-solid fa-table-list text-emerald-600"></i>
+              <span>ต้นทุนและกำไรจำแนกตามเมนู (Unit Economics)</span>
+            </h3>
+            <span class="text-[11px] text-stone-400 font-medium">คำนวณจากสูตร BOM และราคาขาย</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-stone-50 text-stone-500 border-b border-stone-200/80 font-bold">
+                <tr>
+                  <th class="py-3 px-3">เมนู</th>
+                  <th class="py-3 px-3 text-right">ราคาขาย/กล่อง</th>
+                  <th class="py-3 px-3 text-right">ต้นทุน BOM</th>
+                  <th class="py-3 px-3 text-right">กำไรต่อกล่อง</th>
+                  <th class="py-3 px-3 text-center">Margin %</th>
+                  <th class="py-3 px-3 text-center">จำนวนสั่ง</th>
+                  <th class="py-3 px-3 text-right">กำไรรวมเมนูนี้</th>
+                </tr>
+              </thead>
+              <tbody id="costAnalysisTableBody" class="divide-y divide-stone-100 font-medium text-stone-700">
+                <tr>
+                  <td colspan="7" class="py-8 text-center text-stone-400">
+                    กำลังประมวลผลต้นทุนกำไร...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
     </main>
@@ -1604,7 +1770,7 @@
 
   <!-- BOTTOM NAVIGATION FOR MOBILE -->
   <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-1.5 z-40 shadow-lg">
-    <div class="grid grid-cols-5 gap-0.5 px-1 text-center">
+    <div class="grid grid-cols-6 gap-0.5 px-1 text-center">
       <button data-tab="orders" type="button" id="mtab-orders" class="mobile-tab active flex flex-col items-center justify-center py-1">
         <i class="fa-solid fa-receipt text-sm"></i>
         <span class="text-[9px] mt-0.5">ออเดอร์</span>
@@ -1616,6 +1782,10 @@
       <button data-tab="menu" type="button" id="mtab-menu" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
         <i class="fa-solid fa-burger text-sm"></i>
         <span class="text-[9px] mt-0.5">เมนู</span>
+      </button>
+      <button data-tab="cost" type="button" id="mtab-cost" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
+        <i class="fa-solid fa-chart-pie text-sm"></i>
+        <span class="text-[9px] mt-0.5">ต้นทุน/กำไร</span>
       </button>
       <button data-tab="customers" type="button" id="mtab-customers" class="mobile-tab flex flex-col items-center justify-center py-1 text-slate-400">
         <i class="fa-solid fa-users text-sm"></i>
@@ -1853,7 +2023,7 @@
 
     // --- 3. Tab Navigation ---
     function switchTab(tabId) {
-      var tabs = ['orders','prep','ingredients','menu','settings','customers'];
+      var tabs = ['orders','prep','ingredients','menu','cost','settings','customers'];
       for (var i = 0; i < tabs.length; i++) {
         var t = tabs[i];
         var sec = document.getElementById('section-' + t);
@@ -1870,6 +2040,9 @@
             ? 'mobile-tab active text-brand-500 font-bold flex flex-col items-center justify-center py-1 cursor-pointer'
             : 'mobile-tab text-slate-400 font-normal flex flex-col items-center justify-center py-1 cursor-pointer';
         }
+      }
+      if (tabId === 'cost') {
+        renderCostAnalysis();
       }
     }
 
@@ -2321,9 +2494,12 @@
 
     // --- 5. Render: Prep BOM ---
     function renderPrepSummary() {
-      var p = st.prepSummary || { layer1Menu:{}, layer2Ingredients:{}, totalBoxes:0 };
+      var p = st.prepSummary || { layer1Menu:{}, layer2Ingredients:{}, totalBoxes:0, totalPairsToMake:0, totalLeftoverHalves:0, leftoversList:[] };
       var badge = document.getElementById('prepTotalBoxesBadge');
-      if (badge) badge.textContent = (p.totalBoxes||0) + ' กล่อง';
+      if (badge) {
+        var pairsText = (p.totalPairsToMake > 0) ? (' (ต้องทำ ' + p.totalPairsToMake + ' คู่)') : '';
+        badge.textContent = (p.totalBoxes||0) + ' กล่อง' + pairsText;
+      }
       
       var l1 = document.getElementById('prepMenuSummaryList');
       if (l1) {
@@ -2334,6 +2510,9 @@
           l1.innerHTML = mKeys.map(function(k){
             var itemData = p.layer1Menu[k];
             var total = (typeof itemData === 'object' && itemData !== null) ? (itemData.totalQty || 0) : itemData;
+            var pairs = (typeof itemData === 'object' && itemData !== null && itemData.pairsToMake) ? itemData.pairsToMake : Math.ceil(total / 2);
+            var leftoverHalves = (typeof itemData === 'object' && itemData !== null && itemData.leftoverHalves !== undefined) ? itemData.leftoverHalves : ((pairs * 2) - total);
+            
             var breakdownHtml = '';
             if (typeof itemData === 'object' && itemData !== null && Array.isArray(itemData.orderBreakdown) && itemData.orderBreakdown.length > 0) {
               breakdownHtml = '<div class="mt-2.5 pt-2 border-t border-slate-200/70 space-y-1.5 text-xs">' +
@@ -2348,10 +2527,21 @@
                 }).join('') +
               '</div>';
             }
+
+            var leftoverBadge = (leftoverHalves > 0)
+              ? '<span class="text-[11px] bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded-lg border border-rose-200 ml-1.5"><i class="fa-solid fa-triangle-exclamation mr-0.5"></i>เหลือเศษ ' + leftoverHalves + ' ชิ้น</span>'
+              : '<span class="text-[11px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-lg border border-emerald-200 ml-1.5"><i class="fa-solid fa-check mr-0.5"></i>ครบคู่</span>';
+
             return '<div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm">' +
               '<div class="flex items-center justify-between">' +
-                '<span class="font-bold text-slate-800 text-xs sm:text-sm">' + k + '</span>' +
-                '<span class="bg-blue-100 text-blue-800 font-black px-2.5 py-1 rounded-xl text-xs sm:text-sm">' + total + ' กล่อง</span>' +
+                '<div>' +
+                  '<span class="font-bold text-slate-800 text-xs sm:text-sm">' + k + '</span>' +
+                  leftoverBadge +
+                '</div>' +
+                '<div class="text-right">' +
+                  '<span class="bg-blue-100 text-blue-800 font-black px-2.5 py-1 rounded-xl text-xs sm:text-sm">' + total + ' กล่อง</span>' +
+                  '<div class="text-[11px] text-slate-500 font-semibold mt-1">ต้องทำ ' + pairs + ' คู่</div>' +
+                '</div>' +
               '</div>' +
               breakdownHtml +
             '</div>';
@@ -2409,6 +2599,36 @@
             return '<div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200 shadow-xs">' +
               '<span class="font-bold text-slate-800 text-xs sm:text-sm">' + name + '</span>' +
               '<span class="bg-amber-100 text-amber-900 border border-amber-300 font-black px-3 py-1 rounded-xl text-xs sm:text-sm shadow-xs">' + displayVal + '</span>' +
+            '</div>';
+          }).join('');
+        }
+      }
+
+      // Render Leftovers Card
+      var leftoversList = p.leftoversList || [];
+      var leftoversBadge = document.getElementById('prepTotalLeftoversBadge');
+      if (leftoversBadge) leftoversBadge.textContent = (p.totalLeftoverHalves || 0) + ' ชิ้น';
+      
+      var leftoversCont = document.getElementById('prepLeftoversList');
+      if (leftoversCont) {
+        if (!leftoversList.length) {
+          leftoversCont.innerHTML = '<p class="text-xs text-slate-400 py-2 col-span-full text-center">ไม่มีชิ้นส่วนที่เหลือจากการตัดคู่ (ครบคู่พอดี 🎉)</p>';
+        } else {
+          leftoversCont.innerHTML = leftoversList.map(function(item) {
+            var typeBadge = item.isCustom 
+              ? '<span class="text-[10px] bg-rose-100 text-rose-800 font-bold px-1.5 py-0.5 rounded border border-rose-200">สูตรพิเศษ</span>'
+              : '<span class="text-[10px] bg-slate-100 text-slate-700 font-bold px-1.5 py-0.5 rounded border border-slate-200">สูตรปกติ</span>';
+            var noteDesc = item.note ? ('<div class="text-[11px] text-slate-600 mt-0.5"><i class="fa-solid fa-pen-nib text-amber-500 mr-1"></i>' + item.note + '</div>') : '';
+            return '<div class="p-2.5 bg-white rounded-xl border border-orange-200 shadow-2xs space-y-1">' +
+              '<div class="flex items-center justify-between">' +
+                '<span class="font-bold text-slate-800 text-xs">' + item.menuName + '</span>' +
+                '<span class="bg-orange-500 text-white font-black text-xs px-2 py-0.5 rounded-lg shrink-0">เหลือ ' + item.leftoverCount + ' ชิ้น</span>' +
+              '</div>' +
+              '<div class="flex items-center justify-between pt-1 border-t border-slate-100">' +
+                typeBadge +
+                '<span class="text-[10px] text-slate-400 font-medium">รอจัด Flash Sale</span>' +
+              '</div>' +
+              noteDesc +
             '</div>';
           }).join('');
         }
@@ -2592,6 +2812,164 @@
 
       html += '</tbody></table>';
       container.innerHTML = html;
+    }
+
+    // --- 6.2 Render: Cost & Waste Analysis Dashboard ---
+    function renderCostAnalysis() {
+      var orders = st.orders || [];
+      var menuList = st.menuItems || [];
+      var prep = st.prepSummary || {};
+      var masterIngs = st.masterIngredients || [];
+
+      // Build ingredient cost lookup (default estimated unit costs if not set)
+      // bread ~1.2 ฿/slice, egg ~4.5 ฿/ea, sausage ~3.5 ฿/ea, crabstick ~2.5 ฿/ea, box ~1.5 ฿/box, etc.
+      var defaultIngCosts = {
+        'bread_slice': 1.25,
+        'egg_ea': 4.50,
+        'sausage_ea': 3.50,
+        'crabstick_ea': 2.50,
+        'box_ea': 1.50,
+        'bologna_ea': 2.50,
+        'shrimp_egg_ea': 2.00,
+        'tuna_ea': 3.50
+      };
+
+      // Calculate unit BOM cost for each menu item
+      var nonIngKeys = ['menu_id', 'menu_name', 'price', 'status', 'image_url', 'description', 'is_recommended'];
+      var menuCostMap = {};
+
+      menuList.forEach(function(m) {
+        var unitCost = 0;
+        for (var k in m) {
+          var kLower = k.toLowerCase();
+          if (!nonIngKeys.includes(kLower)) {
+            var qty = Number(m[k]) || 0;
+            if (qty > 0) {
+              var costPerUnit = defaultIngCosts[kLower] || 2.0; // fallback standard unit cost
+              unitCost += (qty * costPerUnit);
+            }
+          }
+        }
+        // If BOM produced 0 (no ingredients assigned yet), estimate at 35% of menu price
+        if (unitCost <= 0 && Number(m.Price) > 0) {
+          unitCost = Number(m.Price) * 0.35;
+        }
+        menuCostMap[m.Menu_ID] = {
+          menuId: m.Menu_ID,
+          name: m.Menu_Name,
+          price: Number(m.Price) || 35,
+          unitCost: Math.round(unitCost * 100) / 100
+        };
+      });
+
+      // Aggregate revenue and sales by menu from CONFIRMED / DELIVERED / ACTIVE orders
+      var menuSalesCount = {};
+      var totalRevenue = 0;
+
+      orders.forEach(function(o) {
+        var status = String(o.status || '').toUpperCase();
+        if (status === 'CANCELLED' || status === 'REJECTED') return;
+
+        totalRevenue += (Number(o.totalPrice) || 0);
+
+        if (Array.isArray(o.items)) {
+          o.items.forEach(function(item) {
+            var mId = item.id;
+            var q = Number(item.qty) || 1;
+            menuSalesCount[mId] = (menuSalesCount[mId] || 0) + q;
+          });
+        }
+      });
+
+      // If no orders yet, populate menu sales count with 0
+      menuList.forEach(function(m) {
+        if (!menuSalesCount[m.Menu_ID]) menuSalesCount[m.Menu_ID] = 0;
+      });
+
+      // Calculate total food cost
+      var totalFoodCost = 0;
+      var menuStats = [];
+
+      for (var mId in menuCostMap) {
+        var item = menuCostMap[mId];
+        var soldQty = menuSalesCount[mId] || 0;
+        var itemTotalCost = soldQty * item.unitCost;
+        var itemTotalRev = soldQty * item.price;
+        var itemProfit = itemTotalRev - itemTotalCost;
+        var unitProfit = item.price - item.unitCost;
+        var marginPct = item.price > 0 ? Math.round((unitProfit / item.price) * 100) : 0;
+
+        totalFoodCost += itemTotalCost;
+
+        menuStats.push({
+          menuId: item.menuId,
+          name: item.name,
+          price: item.price,
+          unitCost: item.unitCost,
+          unitProfit: unitProfit,
+          marginPct: marginPct,
+          soldQty: soldQty,
+          totalProfit: itemProfit
+        });
+      }
+
+      // Calculate Waste Cost from leftover halves in prepSummary
+      var leftoverHalves = Number(prep.totalLeftoverHalves) || 0;
+      // Average half-sandwich cost ~ 50% of average unit cost (~6 ฿)
+      var avgHalfCost = 6.0;
+      var totalWasteCost = Math.round(leftoverHalves * avgHalfCost * 100) / 100;
+
+      var grossProfit = totalRevenue - totalFoodCost - totalWasteCost;
+      if (grossProfit < 0 && totalRevenue === 0) grossProfit = 0;
+      var grossMarginPct = totalRevenue > 0 ? Math.round((grossProfit / totalRevenue) * 100) : 0;
+      var foodCostPct = totalRevenue > 0 ? Math.round((totalFoodCost / totalRevenue) * 100) : 0;
+
+      // Update KPI Cards
+      var revEl = document.getElementById('costKpiRevenue');
+      if (revEl) revEl.textContent = totalRevenue.toLocaleString() + ' ฿';
+
+      var foodCostEl = document.getElementById('costKpiFoodCost');
+      if (foodCostEl) foodCostEl.textContent = Math.round(totalFoodCost).toLocaleString() + ' ฿';
+
+      var foodCostPctEl = document.getElementById('costKpiFoodCostPct');
+      if (foodCostPctEl) foodCostPctEl.textContent = foodCostPct + '% ของยอดขาย';
+
+      var wasteCostEl = document.getElementById('costKpiWasteCost');
+      if (wasteCostEl) wasteCostEl.textContent = totalWasteCost.toLocaleString() + ' ฿';
+
+      var wasteCountEl = document.getElementById('costKpiWasteCount');
+      if (wasteCountEl) wasteCountEl.textContent = 'เหลือเศษ ' + leftoverHalves + ' ชิ้น';
+
+      var profitEl = document.getElementById('costKpiGrossProfit');
+      if (profitEl) profitEl.textContent = Math.round(grossProfit).toLocaleString() + ' ฿';
+
+      var marginPctEl = document.getElementById('costKpiMarginPct');
+      if (marginPctEl) marginPctEl.textContent = 'Margin ' + grossMarginPct + '%';
+
+      // Render Unit Economics Table
+      var tbody = document.getElementById('costAnalysisTableBody');
+      if (tbody) {
+        if (!menuStats.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-stone-400">ยังไม่มีข้อมูลเมนู</td></tr>';
+          return;
+        }
+
+        // Sort by total profit descending
+        menuStats.sort(function(a, b) { return b.totalProfit - a.totalProfit; });
+
+        tbody.innerHTML = menuStats.map(function(ms) {
+          var marginColor = ms.marginPct >= 50 ? 'text-emerald-700 bg-emerald-50' : (ms.marginPct >= 35 ? 'text-amber-700 bg-amber-50' : 'text-rose-700 bg-rose-50');
+          return '<tr class="hover:bg-stone-50 transition">' +
+            '<td class="py-3 px-3 font-bold text-stone-800">' + ms.name + '</td>' +
+            '<td class="py-3 px-3 text-right font-mono text-stone-700">' + ms.price + ' ฿</td>' +
+            '<td class="py-3 px-3 text-right font-mono text-amber-700">~' + ms.unitCost + ' ฿</td>' +
+            '<td class="py-3 px-3 text-right font-mono font-bold text-emerald-600">+' + Math.round(ms.unitProfit) + ' ฿</td>' +
+            '<td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ' + marginColor + '">' + ms.marginPct + '%</span></td>' +
+            '<td class="py-3 px-3 text-center font-bold text-stone-800">' + ms.soldQty + ' กล่อง</td>' +
+            '<td class="py-3 px-3 text-right font-mono font-black text-brand-600">' + Math.round(ms.totalProfit).toLocaleString() + ' ฿</td>' +
+          '</tr>';
+        }).join('');
+      }
     }
 
     // --- 6.5 Render: Customers Table & Loyalty Directory ---
@@ -2804,6 +3182,15 @@
         badgeQuota.className = enableQuota ? 'text-[10px] bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded';
       }
 
+      var enforcePair = (c.enforceCustomPair === true || String(c.enforceCustomPair).toUpperCase() === 'TRUE' || String(c.Enforce_Custom_Pair).toUpperCase() === 'TRUE');
+      var chkEnforcePairEl = document.getElementById('cfg_Enforce_Custom_Pair');
+      var badgePair = document.getElementById('customPairStatusBadge');
+      if (chkEnforcePairEl) chkEnforcePairEl.checked = enforcePair;
+      if (badgePair) {
+        badgePair.textContent = enforcePair ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+        badgePair.className = enforcePair ? 'text-[10px] bg-green-100 text-green-700 font-bold px-2.5 py-0.5 rounded-full' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2.5 py-0.5 rounded-full';
+      }
+
       var img = document.getElementById('adminQrPreviewImg');
       if (img) {
         if (c.promptPayQrUrl) img.src = c.promptPayQrUrl;
@@ -2916,6 +3303,7 @@
         renderMasterIngredientsTable();
         renderMenuTable();
         renderCustomersTable();
+        renderCostAnalysis();
         populateSettingsForm();
       } catch (err) {
         console.warn("loadAllAdminData error:", err);
@@ -3011,6 +3399,51 @@
       // Refresh Button
       const refreshBtn = document.getElementById('btn-refresh');
       if (refreshBtn) refreshBtn.addEventListener('click', function() { loadAllAdminData(); });
+
+      // Refresh Cost Button
+      const refreshCostBtn = document.getElementById('btn-refresh-cost');
+      if (refreshCostBtn) refreshCostBtn.addEventListener('click', function() {
+        renderCostAnalysis();
+        alert('อัปเดตการวิเคราะห์ต้นทุนและกำไรเรียบร้อยแล้ว');
+      });
+
+      // Copy Flash Sale Leftovers Message Button
+      const btnCopyFlashSale = document.getElementById('btnCopyFlashSaleMsg');
+      if (btnCopyFlashSale) {
+        btnCopyFlashSale.addEventListener('click', function() {
+          var p = st.prepSummary || {};
+          var list = p.leftoversList || [];
+          if (!list.length) {
+            alert('ไม่มีชิ้นแซนวิชเศษเหลือให้จัด Flash Sale ในขณะนี้ (ครบคู่พอดี)');
+            return;
+          }
+
+          var text = '🔥 [FLASH SALE] แซนวิชพร้อมส่งรอบด่วนพิเศษ! 🥪✨\n' +
+            'มีเมนูทำสดใหม่เพิ่มพร้อมรับประทานได้ทันที:\n';
+
+          list.forEach(function(item, idx) {
+            var notePart = item.note ? (' (' + item.note + ')') : '';
+            text += (idx + 1) + '. ' + item.menuName + notePart + ' เหลือเพียง ' + item.leftoverCount + ' ชิ้น\n';
+          });
+
+          text += '\n💰 พิเศษราคากล่องละ 25-30 บาทเท่านั้น (หรือตามตกลง)!\n' +
+            '🛵 ทักแชทเพื่อรับสิทธิ์ด่วนก่อนหมดรอบส่งวันนี้ค่า 🎉';
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() {
+              alert('คัดลอกข้อความ Flash Sale เรียบร้อยแล้ว! สามารถนำไปวางในกลุ่ม LINE ได้ทันที');
+            }).catch(function() {
+              copyViaPrompt(text);
+            });
+          } else {
+            copyViaPrompt(text);
+          }
+        });
+      }
+
+      function copyViaPrompt(text) {
+        window.prompt('คัดลอกข้อความ Flash Sale ด้านล่างนี้:', text);
+      }
 
       // Order Status Filter
       const filterEl = document.getElementById('orderStatusFilter');
@@ -4536,6 +4969,16 @@
           }
         });
       }
+      var chkCustomPairEl = document.getElementById('cfg_Enforce_Custom_Pair');
+      if (chkCustomPairEl) {
+        chkCustomPairEl.addEventListener('change', function() {
+          var b = document.getElementById('customPairStatusBadge');
+          if (b) {
+            b.textContent = chkCustomPairEl.checked ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+            b.className = chkCustomPairEl.checked ? 'text-[10px] bg-orange-100 text-orange-700 font-bold px-2 py-0.5 rounded' : 'text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded';
+          }
+        });
+      }
 
       // Store Settings Form Submit
       var setForm = document.getElementById('storeSettingsForm');
@@ -4562,6 +5005,7 @@
             Cutoff_Time: document.getElementById('cfg_Cutoff_Time').value,
             Enable_Max_Quota: document.getElementById('cfg_Enable_Max_Quota')?.checked ? "TRUE" : "FALSE",
             Max_Quota_Per_Day: Number(document.getElementById('cfg_Max_Quota_Per_Day').value),
+            Enforce_Custom_Pair: document.getElementById('cfg_Enforce_Custom_Pair')?.checked ? "TRUE" : "FALSE",
             PromptPay_Account_Name: document.getElementById('cfg_PromptPay_Account_Name').value.trim(),
             PromptPay_Number: document.getElementById('cfg_PromptPay_Number').value.trim(),
             PromptPay_QR_URL: document.getElementById('cfg_PromptPay_QR_URL').value.trim(),

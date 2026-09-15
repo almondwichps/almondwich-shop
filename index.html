@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Last Updated: 2026-09-14 (v5.2.0) -->
+<!-- Last Updated: 2026-09-16 (v5.3.0) -->
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -283,13 +283,24 @@
         <p id="detailMenuDesc" class="text-xs text-gray-600 leading-relaxed">คำอธิบายความอร่อย วัตถุดิบสดใหม่สูตรพิเศษ</p>
       </div>
 
-      <!-- Per-item Note Input -->
-      <div class="space-y-1">
-        <label class="block font-bold text-xs text-gray-800">
-          หมายเหตุสำหรับเมนูนี้:
-          <span class="text-[10px] text-gray-400 font-normal">(เช่น ไม่ใส่มายองเนส, ขอไข่ดาวสุกๆ)</span>
-        </label>
-        <input type="text" id="detailMenuNote" placeholder="ระบุความชอบเฉพาะตัว (ไม่บังคับ)" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-xs outline-none focus:border-brand-500 focus:bg-white text-gray-800 font-medium">
+      <!-- Per-item Custom Recipe Note Input -->
+      <div class="space-y-1.5 bg-amber-50/60 p-3 rounded-2xl border border-amber-200/70">
+        <div class="flex items-center justify-between">
+          <label class="block font-bold text-xs text-amber-950 flex items-center space-x-1">
+            <i class="fa-solid fa-wand-magic-sparkles text-amber-600"></i>
+            <span>ปรับแต่งสูตร / ไส้พิเศษ:</span>
+          </label>
+          <span class="text-[10px] text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md font-semibold">ปรับแต่งเฉพาะบุคคล</span>
+        </div>
+        <input type="text" id="detailMenuNote" placeholder="เช่น ไม่ใส่ผัก, ขอไข่ดาวไม่สุก, ซอสพริกล้วน" class="w-full bg-white border border-amber-300/80 rounded-xl p-2.5 text-xs outline-none focus:border-brand-500 text-gray-800 font-medium placeholder-gray-400">
+        
+        <!-- Pair Policy Notice (Dynamic) -->
+        <div id="detailCustomPairNotice" class="hidden text-[11px] text-amber-800 bg-amber-100/70 border border-amber-300 rounded-xl p-2 flex items-start space-x-2">
+          <span class="text-sm">🥪</span>
+          <div>
+            <strong class="font-bold">เมนูสั่งทำพิเศษ:</strong> เพื่อความสดใหม่ ร้านประกอบทำสดชิ้นต่อชิ้นเต็มคู่ เมนูนี้จึงเสิร์ฟเป็นคู่ (2 กล่อง = 70.-) ค่ะ
+          </div>
+        </div>
       </div>
 
       <!-- Qty Stepper & Add Button -->
@@ -986,8 +997,12 @@
       if (priceEl) priceEl.textContent = `${menu.price} ฿`;
       if (descEl) descEl.textContent = menu.description || 'แซนวิชสดใหม่สูตรพิเศษ ไส้แน่นเต็มแผ่น อิ่มอร่อยทุกเช้า';
       if (noteInput) noteInput.value = '';
+      state.detailQty = 1;
       if (qtyEl) qtyEl.textContent = '1';
       if (totalText) totalText.textContent = `${menu.price} ฿`;
+
+      const pairNotice = document.getElementById('detailCustomPairNotice');
+      if (pairNotice) pairNotice.classList.add('hidden');
 
       if (menu.imageUrl && menu.imageUrl.trim().length > 5) {
         if (img) {
@@ -1002,6 +1017,33 @@
 
       if (modal) modal.classList.remove('hidden');
       setBodyScrollLock(true);
+    }
+
+    function isCustomPairEnforced() {
+      return !!(state.config && (state.config.enforceCustomPair === true || String(state.config.enforceCustomPair).toUpperCase() === 'TRUE' || String(state.config.Enforce_Custom_Pair).toUpperCase() === 'TRUE'));
+    }
+
+    function checkDetailNotePairPolicy() {
+      const noteInput = document.getElementById('detailMenuNote');
+      const pairNotice = document.getElementById('detailCustomPairNotice');
+      const note = noteInput ? noteInput.value.trim() : '';
+      const isEnforced = isCustomPairEnforced();
+
+      if (isEnforced && note.length > 0) {
+        if (pairNotice) pairNotice.classList.remove('hidden');
+        // If current qty is 1, auto-bump to 2
+        if (state.detailQty < 2) {
+          state.detailQty = 2;
+          const qtyEl = document.getElementById('detailQtyDisplay');
+          if (qtyEl) qtyEl.textContent = state.detailQty;
+          const totalText = document.getElementById('detailTotalPriceText');
+          if (totalText && state.currentDetailMenu) {
+            totalText.textContent = `${state.currentDetailMenu.price * state.detailQty} ฿`;
+          }
+        }
+      } else {
+        if (pairNotice) pairNotice.classList.add('hidden');
+      }
     }
 
     function closeMenuDetail() {
@@ -1033,7 +1075,20 @@
     }
 
     function changeDetailQty(delta) {
-      state.detailQty = Math.max(1, state.detailQty + delta);
+      const noteInput = document.getElementById('detailMenuNote');
+      const note = noteInput ? noteInput.value.trim() : '';
+      const isEnforced = isCustomPairEnforced();
+      const minQty = (isEnforced && note.length > 0) ? 2 : 1;
+      const step = (isEnforced && note.length > 0) ? 2 : 1;
+
+      let newQty = state.detailQty + (delta * (isEnforced && note.length > 0 && Math.abs(delta) === 1 ? 2 : delta));
+      state.detailQty = Math.max(minQty, newQty);
+
+      // If enforced pair, make sure qty is even
+      if (isEnforced && note.length > 0 && state.detailQty % 2 !== 0) {
+        state.detailQty += 1;
+      }
+
       const qtyEl = document.getElementById('detailQtyDisplay');
       if (qtyEl) qtyEl.textContent = state.detailQty;
       const totalText = document.getElementById('detailTotalPriceText');
@@ -1046,17 +1101,24 @@
       if (!state.currentDetailMenu) return;
       const noteInput = document.getElementById('detailMenuNote');
       const note = noteInput ? noteInput.value.trim() : '';
+      const isEnforced = isCustomPairEnforced();
+
+      let finalQty = state.detailQty;
+      if (isEnforced && note.length > 0) {
+        if (finalQty < 2) finalQty = 2;
+        if (finalQty % 2 !== 0) finalQty += 1;
+      }
 
       // Match item by both menuId AND note
       const existing = state.cartItems.find(i => i.menuId === state.currentDetailMenu.id && (i.note || '') === note);
       if (existing) {
-        existing.qty += state.detailQty;
+        existing.qty += finalQty;
       } else {
         state.cartItems.push({
           menuId: state.currentDetailMenu.id,
           name: state.currentDetailMenu.name,
           price: state.currentDetailMenu.price,
-          qty: state.detailQty,
+          qty: finalQty,
           note: note
         });
       }
@@ -1067,9 +1129,22 @@
 
     function updateCartItemQty(index, delta) {
       if (!state.cartItems[index]) return;
-      state.cartItems[index].qty += delta;
-      if (state.cartItems[index].qty <= 0) {
-        state.cartItems.splice(index, 1);
+      const itm = state.cartItems[index];
+      const isEnforced = isCustomPairEnforced();
+      const hasCustomNote = !!(itm.note && String(itm.note).trim().length > 0 && !itm.note.includes('แลกฟรี'));
+
+      const step = (isEnforced && hasCustomNote) ? 2 : 1;
+      const minQty = (isEnforced && hasCustomNote) ? 2 : 1;
+
+      let newQty = itm.qty + (delta * (isEnforced && hasCustomNote && Math.abs(delta) === 1 ? 2 : delta));
+      
+      if (newQty < minQty) {
+        if (confirm(`ลบรายการ "${itm.name}" ออกจากตะกร้าใช่หรือไม่?`)) {
+          state.cartItems.splice(index, 1);
+        }
+      } else {
+        if (isEnforced && hasCustomNote && newQty % 2 !== 0) newQty += 1;
+        itm.qty = newQty;
       }
       updateCartUI();
     }
@@ -2044,6 +2119,9 @@
 
       const btnAddToCartConfirm = document.getElementById('btnAddToCartConfirm');
       if (btnAddToCartConfirm) btnAddToCartConfirm.addEventListener('click', addDetailToCart);
+
+      const noteInputEl = document.getElementById('detailMenuNote');
+      if (noteInputEl) noteInputEl.addEventListener('input', checkDetailNotePairPolicy);
 
       // Floating Cart Bar -> Open Drawer
       const btnOpenDrawer = document.getElementById('btnOpenCartDrawer');
