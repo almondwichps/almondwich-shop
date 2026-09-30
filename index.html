@@ -116,7 +116,7 @@
       <!-- User profile badge (Glass) -->
       <div id="userProfileBadge" class="flex items-center space-x-2 bg-white/70 backdrop-blur-md py-1 px-2.5 rounded-full border border-brand-200 shadow-sm">
         <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=945532&color=fff" class="w-6 h-6 rounded-full border border-brand-200 object-cover" alt="Avatar">
-        <span id="userName" class="text-xs font-bold text-brand-900 max-w-[90px] truncate">กำลังโหลด...</span>
+        <span id="userName" class="text-xs font-bold text-brand-900 max-w-[90px] truncate">คุณลูกค้า</span>
       </div>
     </div>
   </header>
@@ -2339,9 +2339,16 @@
         liffLog('init OK | inClient=' + liff.isInClient() + ' | loggedIn=' + liff.isLoggedIn());
 
         if (!liff.isLoggedIn()) {
-          liffLog('Not logged in → liff.login()');
-          liff.login();
-          return;
+          if (liff.isInClient()) {
+            liffLog('In client & not logged in → liff.login()');
+            liff.login();
+            return;
+          } else {
+            liffLog('External browser & not logged in → continue as guest until order');
+            if (!state.displayName || state.displayName === 'กำลังโหลด...') {
+              state.displayName = 'คุณลูกค้า';
+            }
+          }
         } else {
           // ดึงโปรไฟล์พร้อมกลไก Retry เผื่อเครือข่ายกระตุก
           let profile = null;
@@ -2682,6 +2689,7 @@
       if (btnCloseProof2) btnCloseProof2.addEventListener('click', closeProofModal);
 
       // Event Delegation for Proof View, Retro Slip, Cancel Order, and Re-order in History List
+      const historyContainer = document.getElementById('historyListContainer');
       if (historyContainer) {
         historyContainer.addEventListener('click', function(e) {
           const proofBtn = e.target.closest('.btn-customer-view-proof');
