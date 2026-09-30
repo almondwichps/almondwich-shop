@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Last Updated: 2026-09-16 (v5.3.1) -->
+<!-- Last Updated: 2026-09-30 (v5.7.0) -->
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -230,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.6.0</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.0</span>
       </p>
     </footer>
 
@@ -932,7 +932,9 @@
       }
 
       const isQuotaOk = enableQuota ? (remainingQ > 0) : true;
-      const isOpen = config.isStoreOpen !== false && isQuotaOk;
+      const masterOpen = String(config.storeStatus || config.Store_Status || 'OPEN').toUpperCase() === 'OPEN';
+      const isOpen = config.isStoreOpen !== false && isQuotaOk && masterOpen;
+
       if (isOpen) {
         if (statusDot) statusDot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
         const cutoffMsg = enableCutoff ? ` (ปิดรับ ${cutoff} น.)` : ` (เปิดรับตลอดวัน)`;
@@ -942,7 +944,58 @@
       } else {
         if (statusDot) statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500";
         if (statusText) statusText.textContent = `ปิดรับออเดอร์`;
-        if (closedBanner) closedBanner.classList.remove('hidden');
+        if (closedBanner) {
+          closedBanner.classList.remove('hidden');
+
+          const closedTitleEl = document.getElementById('closedReasonTitle');
+          const closedDescEl = document.getElementById('closedReasonDesc');
+
+          // Case 1: Merchant closed manually (Master Status = CLOSED)
+          if (!masterOpen) {
+            if (closedTitleEl) closedTitleEl.textContent = "🍞 ร้านค้าจะเปิดขายเร็วๆ นี้";
+
+            const reopenDateStr = config.reopenDate || config.Reopen_Date || '';
+            const customNotice = (config.closedReasonNotice || config.Closed_Reason_Notice || '').trim();
+
+            let formattedDate = '';
+            if (reopenDateStr) {
+              try {
+                const parts = reopenDateStr.split('-');
+                if (parts.length === 3) {
+                  const thMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                  const d = parseInt(parts[2], 10);
+                  const m = thMonths[parseInt(parts[1], 10) - 1] || parts[1];
+                  const y = parseInt(parts[0], 10);
+                  const thYear = y > 2400 ? y : y + 543;
+                  formattedDate = `${d} ${m} ${thYear}`;
+                }
+              } catch (e) {
+                formattedDate = reopenDateStr;
+              }
+            }
+
+            let descText = "ขณะนี้ทางร้านปิดรับออเดอร์ชั่วคราว";
+            if (customNotice) {
+              descText += ` (${customNotice})`;
+            }
+            if (formattedDate) {
+              descText += ` และมีกำหนดจะเปิดให้บริการอีกครั้งประมาณวันที่ <strong>${formattedDate}</strong>`;
+            }
+            descText += " ขออภัยในความไม่สะดวกนะคะ แล้วพบกันใหม่อิ่มอร่อยสดใหม่ทุกเช้าค่ะ 🥪";
+
+            if (closedDescEl) closedDescEl.innerHTML = descText;
+          }
+          // Case 2: Daily Quota exceeded
+          else if (enableQuota && remainingQ <= 0) {
+            if (closedTitleEl) closedTitleEl.textContent = "ขออภัย โควตาประจำวันเต็มแล้ว";
+            if (closedDescEl) closedDescEl.textContent = "ออเดอร์สำหรับรอบส่งวันนี้เต็มจำนวนแล้ว ทางร้านจะเปิดรับออเดอร์รอบใหม่ในวันถัดไป ขอบคุณลูกค้าทุกท่านที่ให้การสนับสนุนค่ะ";
+          }
+          // Case 3: Past Cutoff time
+          else {
+            if (closedTitleEl) closedTitleEl.textContent = "เลยเวลาปิดรับออเดอร์แล้ว";
+            if (closedDescEl) closedDescEl.textContent = `ขณะนี้เลยเวลาปิดรับออเดอร์ประจำวัน (${cutoff} น.) แล้ว ทางร้านกำลังเตรียมความพร้อมรอบส่งพรุ่งนี้เช้า ขออภัยในความไม่สะดวกนะคะ`;
+          }
+        }
         if (submitBtn) submitBtn.disabled = true;
       }
 

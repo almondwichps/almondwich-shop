@@ -85,7 +85,7 @@
         </button>
       </form>
       <div class="text-[11px] text-stone-400 font-medium">
-        🔒 AlmondWich Security System v5.6.0
+        🔒 AlmondWich Security System v5.8.0
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.6.0</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.8.0</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -111,6 +111,12 @@
 
         <!-- Quick Action Buttons -->
         <div class="flex items-center space-x-2">
+          <!-- Quick Store Open/Close Toggle Button -->
+          <button id="btnQuickToggleStore" type="button" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer border border-emerald-400/40">
+            <span id="quickToggleDot" class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+            <span id="quickToggleText">ร้านเปิดอยู่</span>
+          </button>
+
           <button id="btn-install-pwa" type="button" title="ติดตั้งแอปลงมือถือ" class="bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer">
             <i class="fa-solid fa-mobile-screen"></i>
             <span class="hidden sm:inline">โหลดแอปลงจอ</span>
@@ -230,8 +236,12 @@
               <span id="orderCountBadge" class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-0.5 rounded-lg">0 รายการ</span>
             </div>
 
-            <!-- Batch Delivery Action Button -->
-            <div class="flex items-center space-x-2">
+            <!-- Actions: Batch Delivery & Manual Order -->
+            <div class="flex flex-wrap items-center gap-2">
+              <button id="btnOpenManualOrderModal" type="button" class="bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 active:scale-[0.99] text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer">
+                <i class="fa-solid fa-plus-circle text-sm"></i>
+                <span>➕ คีย์ออเดอร์แทนลูกค้า</span>
+              </button>
               <button id="btnOpenBatchDeliveryModal" type="button" class="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 active:scale-[0.99] text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer">
                 <i class="fa-solid fa-boxes-packing text-sm"></i>
                 <span>📦 จัดส่งแบบกลุ่ม (Batch Delivery)</span>
@@ -639,7 +649,7 @@
 
               <div class="space-y-4 text-xs">
                 <!-- Master Store Status -->
-                <div class="space-y-1 bg-stone-50 p-3 rounded-2xl border border-stone-200">
+                <div class="space-y-2 bg-stone-50 p-3 rounded-2xl border border-stone-200">
                   <label class="font-bold text-stone-800 block flex items-center space-x-1.5">
                     <i class="fa-solid fa-power-off text-brand-500"></i>
                     <span>สถานะหลักของร้าน (Master Status):</span>
@@ -649,6 +659,18 @@
                     <option value="CLOSED">🔴 CLOSED (ปิดรับออเดอร์ชั่วคราว)</option>
                   </select>
                   <p class="text-[10px] text-stone-400">หากเลือก CLOSED ลูกค้าจะไม่สามารถส่งออเดอร์ได้ทันที</p>
+
+                  <!-- Reopen Date & Vacation Notice in Card 2 -->
+                  <div id="cfgReopenNoticeGroup" class="space-y-2 pt-2 border-t border-stone-200">
+                    <div class="space-y-1">
+                      <label class="text-[11px] font-semibold text-stone-600 block">📅 วันที่คาดว่าจะเปิดร้าน (Reopen Date):</label>
+                      <input type="date" id="cfg_Reopen_Date" class="w-full bg-white border border-stone-300 rounded-xl p-2 text-xs font-bold">
+                    </div>
+                    <div class="space-y-1">
+                      <label class="text-[11px] font-semibold text-stone-600 block">💬 ข้อความแจ้งลูกค้าเพิ่มเติม (ถ้ามี):</label>
+                      <input type="text" id="cfg_Closed_Reason_Notice" placeholder="เช่น ติดภารกิจชั่วคราว หรือเว้นว่างเพื่อใช้ข้อความมาตรฐาน" class="w-full bg-white border border-stone-300 rounded-xl p-2 text-xs">
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Cutoff Time Control -->
@@ -1512,6 +1534,214 @@
         </button>
         <button type="button" id="btnCancelEditOrder" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer transition">
           ยกเลิก / ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ➕ MANUAL ORDER MODAL (คีย์ออเดอร์หน้าร้าน / ทักแชทสั่งส่วนตัว) -->
+  <div id="manualOrderModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-md w-full shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+          <i class="fa-solid fa-cart-plus text-brand-600 text-base"></i>
+          <span>คีย์ออเดอร์หน้าร้าน / ทักแชตส่วนตัว</span>
+        </h3>
+        <button id="btn-close-manual-order" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Quick helper header banner -->
+      <div class="bg-gradient-to-r from-amber-50 to-orange-50 p-3 rounded-2xl border border-amber-200/80 text-xs shrink-0 flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center text-sm shrink-0">
+          <i class="fa-solid fa-store"></i>
+        </div>
+        <div class="leading-tight">
+          <div class="font-extrabold text-amber-900">บันทึกออเดอร์ลงระบบทันที</div>
+          <div class="text-[11px] text-amber-700">คำนวณวัตถุดิบลงสรุปครัว และแสดงในการ์ดจัดส่งอัตโนมัติ</div>
+        </div>
+      </div>
+
+      <!-- Scrollable Form Body -->
+      <div class="overflow-y-auto space-y-4 flex-1 pr-1 text-xs">
+        <!-- Section A: Customer Info & Autocomplete -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-700">1. ข้อมูลผู้สั่ง / จุดจัดส่ง:</label>
+            <span class="text-[10px] text-slate-400 font-semibold">*จำเป็นต้องระบุชื่อเล่นและจุดส่ง</span>
+          </div>
+
+          <!-- Customer linkage dropdown / select from existing customers -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+              เลือกลูกค้าเดิม (ถ้ามี เพื่อสะสมแต้ม):
+            </label>
+            <select id="manualOrderCustomerSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 focus:ring-1 focus:ring-brand-500 focus:bg-white transition">
+              <option value="">-- ไม่ผูกแต้ม / ลูกค้าใหม่หน้าร้าน --</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">ชื่อเล่นผู้รับ <span class="text-red-500">*</span>:</label>
+              <input type="text" id="manualCustNickname" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="เช่น พี่นก, มายด์">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">เบอร์โทรศัพท์ (ถ้ามี):</label>
+              <input type="tel" id="manualCustPhone" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="08xxxxxxxx">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">สถานที่จัดส่ง / แผนก / จุดวาง <span class="text-red-500">*</span>:</label>
+            <input type="text" id="manualDeliveryLocation" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="เช่น หน้าร้าน, ตึก A ชั้น 4 บัญชี">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">หมายเหตุการส่ง / ฝากข้อความ:</label>
+            <input type="text" id="manualDeliveryNote" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-brand-500 focus:bg-white transition" placeholder="เช่น ฝากไว้หน้าห้อง, ส่งก่อน 08:30 น.">
+          </div>
+        </div>
+
+        <!-- Section B: Sandwiches List Section -->
+        <div class="space-y-2 pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-700">2. รายการแซนวิช:</label>
+            <button type="button" id="btnAddManualOrderItem" class="inline-flex items-center space-x-1 text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-2.5 py-1 rounded-lg font-bold text-[11px] cursor-pointer transition">
+              <i class="fa-solid fa-plus text-[10px]"></i>
+              <span>เพิ่มเมนู</span>
+            </button>
+          </div>
+
+          <div id="manualOrderItemsList" class="space-y-2.5">
+            <!-- Dynamic order item rows rendered here -->
+          </div>
+
+          <!-- Total Calculation Bar -->
+          <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center justify-between font-bold text-xs">
+            <span class="text-slate-600">รวมทั้งหมด:</span>
+            <div class="space-x-3">
+              <span class="text-slate-700">รวม <span id="manualModalTotalQty" class="text-brand-600 font-extrabold text-sm">0</span> กล่อง</span>
+              <span class="text-slate-400">|</span>
+              <span class="text-slate-700">ยอดเงิน <span id="manualModalTotalPrice" class="text-brand-600 font-extrabold text-sm">0</span> ฿</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section C: Payment & Initial Status -->
+        <div class="space-y-3 pt-2 border-t border-slate-100">
+          <label class="font-bold text-slate-700 block">3. การชำระเงินและสถานะ:</label>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">วิธีชำระเงิน:</label>
+              <select id="manualPaymentMethod" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-brand-500 focus:bg-white transition">
+                <option value="Transfer" selected>โอนเงิน (Transfer)</option>
+                <option value="COD">เก็บเงินปลายทาง (COD)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1">สถานะออเดอร์:</label>
+              <select id="manualOrderStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:ring-1 focus:ring-brand-500 focus:bg-white transition">
+                <option value="Paid" selected>🍳 รับออเดอร์แล้ว (Paid)</option>
+                <option value="Pending">⏳ รอตรวจสลิป (Pending)</option>
+                <option value="COD">📦 เก็บปลายทาง (COD)</option>
+                <option value="Delivered">✅ ส่งสำเร็จแล้ว (Delivered)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 shrink-0 pt-2 border-t border-slate-100">
+        <button type="button" id="btnSaveManualOrder" class="w-full bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-extrabold py-3 px-4 rounded-xl shadow-md text-sm flex items-center justify-center space-x-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50">
+          <i class="fa-solid fa-check-circle text-base"></i>
+          <span id="btnSaveManualOrderText">บันทึกออเดอร์ลงระบบ</span>
+        </button>
+        <button type="button" id="btnCancelManualOrder" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer transition">
+          ยกเลิก / ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⏱️ QUICK TOGGLE STORE MODAL (ยืนยันเปิด-ปิดร้าน & กำหนดวันเปิดล่วงหน้า) -->
+  <div id="quickToggleStoreModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center space-x-2" id="quickToggleModalTitle">
+          <i class="fa-solid fa-power-off text-brand-600"></i>
+          <span>จัดการสถานะเปิด-ปิดร้านค้า</span>
+        </h3>
+        <button id="btn-close-quick-toggle" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Scrollable Modal Body -->
+      <div class="overflow-y-auto space-y-3.5 flex-1 text-xs">
+        <!-- Target Status Display Banner -->
+        <div id="quickToggleStatusBanner" class="p-3.5 rounded-2xl border text-center space-y-1">
+          <div class="text-2xl" id="quickToggleBannerIcon">🔴</div>
+          <div class="font-black text-sm" id="quickToggleBannerHeading">ต้องการปิดรับออเดอร์ชั่วคราว</div>
+          <p class="text-[11px] text-slate-600" id="quickToggleBannerSub">ลูกค้าจะไม่สามารถส่งออเดอร์ใหม่ผ่านหน้าร้านได้</p>
+        </div>
+
+        <!-- Closing Options Section (Visible only when action is CLOSE) -->
+        <div id="quickToggleCloseOptions" class="space-y-3 pt-1">
+          <!-- Reopen Date Picker -->
+          <div class="space-y-1">
+            <label class="font-bold text-slate-700 flex items-center justify-between">
+              <span>📅 กำหนดวันเปิดร้านโดยประมาณ:</span>
+              <span class="text-[10px] text-slate-400 font-normal">(ไม่ระบุก็ได้)</span>
+            </label>
+            <input type="date" id="quickToggleReopenDate" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-brand-500">
+            <div class="flex flex-wrap gap-1 pt-1">
+              <button type="button" class="quick-date-chip text-[10px] bg-slate-100 hover:bg-amber-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200 cursor-pointer font-semibold" data-days="1">พรุ่งนี้</button>
+              <button type="button" class="quick-date-chip text-[10px] bg-slate-100 hover:bg-amber-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200 cursor-pointer font-semibold" data-days="2">อีก 2 วัน</button>
+              <button type="button" class="quick-date-chip text-[10px] bg-slate-100 hover:bg-amber-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200 cursor-pointer font-semibold" data-days="3">อีก 3 วัน</button>
+              <button type="button" class="quick-date-chip text-[10px] bg-slate-100 hover:bg-amber-100 text-slate-700 px-2 py-0.5 rounded-lg border border-slate-200 cursor-pointer font-semibold" data-days="7">สัปดาห์หน้า</button>
+              <button type="button" id="btnClearReopenDate" class="text-[10px] text-red-500 hover:text-red-700 px-1 py-0.5 cursor-pointer font-bold">ล้างวันที่</button>
+            </div>
+          </div>
+
+          <!-- Neutral Notice Presets -->
+          <div class="space-y-1.5">
+            <label class="font-bold text-slate-700 block">💬 ข้อความแจ้งลูกค้า (เลือกแบบสำเร็จรูป):</label>
+            <div class="space-y-1.5" id="closureNoticePresets">
+              <label class="flex items-center space-x-2 bg-slate-50 hover:bg-amber-50/60 p-2 rounded-xl border border-slate-200 cursor-pointer transition">
+                <input type="radio" name="quickNoticePreset" value="" checked class="text-brand-600 focus:ring-brand-500">
+                <span class="text-[11px] font-semibold text-slate-700">🔹 ข้อความมาตรฐาน (เป็นกลาง ไม่ระบุเหตุผล)</span>
+              </label>
+              <label class="flex items-center space-x-2 bg-slate-50 hover:bg-amber-50/60 p-2 rounded-xl border border-slate-200 cursor-pointer transition">
+                <input type="radio" name="quickNoticePreset" value="ทางร้านติดภารกิจชั่วคราว" class="text-brand-600 focus:ring-brand-500">
+                <span class="text-[11px] font-semibold text-slate-700">🔹 ติดภารกิจชั่วคราว</span>
+              </label>
+              <label class="flex items-center space-x-2 bg-slate-50 hover:bg-amber-50/60 p-2 rounded-xl border border-slate-200 cursor-pointer transition">
+                <input type="radio" name="quickNoticePreset" value="เตรียมความพร้อมและคัดสรรวัตถุดิบสดใหม่" class="text-brand-600 focus:ring-brand-500">
+                <span class="text-[11px] font-semibold text-slate-700">🔹 เตรียมวัตถุดิบ/ปรับปรุงร้าน</span>
+              </label>
+            </div>
+            <input type="text" id="quickToggleCustomNotice" placeholder="หรือพิมพ์เหตุผลสั้นๆ เพิ่มเติมเอง..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-700 focus:bg-white focus:ring-1 focus:ring-brand-500 mt-1">
+          </div>
+
+          <!-- Safety Warning Notice -->
+          <div class="bg-amber-50 border border-amber-200 p-2.5 rounded-xl text-[11px] text-amber-900 flex items-start space-x-1.5">
+            <i class="fa-solid fa-shield-cat text-amber-600 text-sm mt-0.5 shrink-0"></i>
+            <span class="leading-tight"><strong>ปลอดภัย 100%:</strong> เมื่อถึงวันหรือเลยวันที่กำหนดแล้ว ร้านจะไม่เปิดเองอัตโนมัติ แม่ค้าจะต้องมากดเปิดด้วยตนเองเท่านั้นค่ะ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 shrink-0 pt-2 border-t border-slate-100">
+        <button type="button" id="btnConfirmQuickToggle" class="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-extrabold py-3 px-4 rounded-xl shadow-md text-sm flex items-center justify-center space-x-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50">
+          <i class="fa-solid fa-power-off text-base"></i>
+          <span id="btnConfirmQuickToggleText">ยืนยันปิดรับออเดอร์</span>
+        </button>
+        <button type="button" id="btnCancelQuickToggle" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 px-4 rounded-xl text-xs cursor-pointer transition">
+          ยกเลิก / ไม่เปลี่ยน
         </button>
       </div>
     </div>
@@ -3285,6 +3515,8 @@
       var c = st.config || {};
       var setVal = function(id, v) { var el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
       setVal('cfg_Store_Status', c.storeStatus || 'OPEN');
+      setVal('cfg_Reopen_Date', c.reopenDate || '');
+      setVal('cfg_Closed_Reason_Notice', c.closedReasonNotice || '');
       setVal('cfg_Store_Icon', c.storeIcon || '🥪');
       setVal('cfg_Store_Title', c.storeTitle || 'Fresh Sandwiches');
       setVal('cfg_Store_Subtitle', c.storeSubtitle || 'พรีออเดอร์ แซนวิชสดใหม่ทุกวัน');
@@ -3357,6 +3589,28 @@
 
       // Update Dynamic PWA Manifest & App Identity
       updateDynamicPwaManifest(c);
+
+      // Update Header Quick Toggle Store Status Button
+      updateHeaderQuickToggle(c);
+    }
+
+    function updateHeaderQuickToggle(config) {
+      var c = config || st.config || {};
+      var status = String(c.storeStatus || c.Store_Status || 'OPEN').toUpperCase();
+      var btn = document.getElementById('btnQuickToggleStore');
+      var dot = document.getElementById('quickToggleDot');
+      var text = document.getElementById('quickToggleText');
+
+      if (!btn) return;
+      if (status === 'OPEN') {
+        btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer border border-emerald-400/40";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+        if (text) text.textContent = "ร้านเปิดอยู่";
+      } else {
+        btn.className = "bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold px-3 py-1.5 rounded-xl shadow-md transition flex items-center space-x-1.5 cursor-pointer border border-red-400/40";
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white";
+        if (text) text.textContent = "ปิดร้านอยู่";
+      }
     }
 
     // --- Dynamic PWA Web App Manifest Updater ---
@@ -4709,6 +4963,337 @@
       }
 
       // -------------------------------------------------------------
+      // ➕ MANUAL ORDER MODAL LOGIC (คีย์ออเดอร์หน้าร้าน / ทักแชทสั่ง)
+      // -------------------------------------------------------------
+      var manualOrderModalEl = document.getElementById('manualOrderModal');
+      var btnOpenManualOrderModalEl = document.getElementById('btnOpenManualOrderModal');
+      var btnCloseManualOrderEl = document.getElementById('btn-close-manual-order');
+      var btnCancelManualOrderEl = document.getElementById('btnCancelManualOrder');
+      var btnSaveManualOrderEl = document.getElementById('btnSaveManualOrder');
+      var btnSaveManualOrderTextEl = document.getElementById('btnSaveManualOrderText');
+      var btnAddManualOrderItemEl = document.getElementById('btnAddManualOrderItem');
+      var manualOrderItemsListEl = document.getElementById('manualOrderItemsList');
+      var manualModalTotalQtyEl = document.getElementById('manualModalTotalQty');
+      var manualModalTotalPriceEl = document.getElementById('manualModalTotalPrice');
+
+      var manualCustSelectEl = document.getElementById('manualOrderCustomerSelect');
+      var manualCustNicknameEl = document.getElementById('manualCustNickname');
+      var manualCustPhoneEl = document.getElementById('manualCustPhone');
+      var manualDeliveryLocationEl = document.getElementById('manualDeliveryLocation');
+      var manualDeliveryNoteEl = document.getElementById('manualDeliveryNote');
+      var manualPaymentMethodEl = document.getElementById('manualPaymentMethod');
+      var manualOrderStatusEl = document.getElementById('manualOrderStatus');
+
+      var manualOrderWorkingItems = [];
+
+      function closeManualOrderModal() {
+        if (manualOrderModalEl) manualOrderModalEl.classList.add('hidden');
+        manualOrderWorkingItems = [];
+      }
+
+      if (btnCloseManualOrderEl) btnCloseManualOrderEl.addEventListener('click', closeManualOrderModal);
+      if (btnCancelManualOrderEl) btnCancelManualOrderEl.addEventListener('click', closeManualOrderModal);
+
+      function openManualOrderModal() {
+        manualOrderWorkingItems = [];
+
+        // Reset form inputs
+        if (manualCustNicknameEl) manualCustNicknameEl.value = '';
+        if (manualCustPhoneEl) manualCustPhoneEl.value = '';
+        if (manualDeliveryLocationEl) manualDeliveryLocationEl.value = 'หน้าร้าน / นัดรับเอง';
+        if (manualDeliveryNoteEl) manualDeliveryNoteEl.value = '';
+        if (manualPaymentMethodEl) manualPaymentMethodEl.value = 'Transfer';
+        if (manualOrderStatusEl) manualOrderStatusEl.value = 'Paid';
+
+        // Populate customer select
+        if (manualCustSelectEl) {
+          manualCustSelectEl.innerHTML = '<option value="">-- ไม่ผูกแต้ม / ลูกค้าใหม่หน้าร้าน --</option>';
+          var custList = st.customers || [];
+          custList.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.lineUid || '';
+            var availPts = (c.totalPoints || 0) - (c.usedPoints || 0);
+            opt.textContent = (c.customerName || c.displayName || 'ลูกค้า') + ' (มี ' + availPts + ' แต้ม) ' + (c.lineUid ? '[' + c.lineUid.slice(-6) + ']' : '');
+            opt.dataset.custName = c.customerName || c.displayName || '';
+            opt.dataset.phone = c.phone || '';
+            opt.dataset.location = c.location || '';
+            opt.dataset.nickname = c.nickname || '';
+            manualCustSelectEl.appendChild(opt);
+          });
+        }
+
+        // Add default first item from menu
+        var menuList = st.menuItems || [];
+        var defaultMenu = menuList.length > 0 ? menuList[0] : { id: 'M01', name: 'แซนวิช', price: 35 };
+        manualOrderWorkingItems.push({
+          id: defaultMenu.id,
+          name: defaultMenu.name,
+          price: defaultMenu.price || 35,
+          qty: 1,
+          note: ''
+        });
+
+        renderManualOrderItems();
+        if (manualOrderModalEl) manualOrderModalEl.classList.remove('hidden');
+      }
+
+      if (btnOpenManualOrderModalEl) {
+        btnOpenManualOrderModalEl.addEventListener('click', openManualOrderModal);
+      }
+
+      // Customer Autocomplete selection handler
+      if (manualCustSelectEl) {
+        manualCustSelectEl.addEventListener('change', function() {
+          var selOpt = manualCustSelectEl.options[manualCustSelectEl.selectedIndex];
+          if (selOpt && selOpt.value) {
+            if (manualCustNicknameEl && selOpt.dataset.nickname) {
+              manualCustNicknameEl.value = selOpt.dataset.nickname;
+            } else if (manualCustNicknameEl && selOpt.dataset.custName) {
+              manualCustNicknameEl.value = selOpt.dataset.custName;
+            }
+            if (manualCustPhoneEl && selOpt.dataset.phone) {
+              manualCustPhoneEl.value = selOpt.dataset.phone;
+            }
+            if (manualDeliveryLocationEl && selOpt.dataset.location) {
+              manualDeliveryLocationEl.value = selOpt.dataset.location;
+            }
+          }
+        });
+      }
+
+      function renderManualOrderItems() {
+        if (!manualOrderItemsListEl) return;
+        manualOrderItemsListEl.innerHTML = '';
+
+        var menuList = st.menuItems || [];
+
+        if (manualOrderWorkingItems.length === 0) {
+          manualOrderItemsListEl.innerHTML = '<div class="text-slate-400 text-center py-3 bg-slate-50 rounded-xl border border-dashed border-slate-200">ยังไม่มีรายการแซนวิช กรุณากดปุ่ม "+ เพิ่มเมนู"</div>';
+        } else {
+          manualOrderWorkingItems.forEach(function(item, idx) {
+            var row = document.createElement('div');
+            row.className = 'bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-2';
+
+            var topRow = document.createElement('div');
+            topRow.className = 'flex items-center justify-between space-x-2';
+
+            // Menu Select / Name
+            var menuSelect = document.createElement('select');
+            menuSelect.className = 'flex-1 bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-slate-800';
+
+            menuList.forEach(function(m) {
+              var opt = document.createElement('option');
+              opt.value = m.id;
+              opt.textContent = m.name + ' (' + m.price + ' ฿)';
+              if (m.id === item.id) opt.selected = true;
+              menuSelect.appendChild(opt);
+            });
+
+            var hasMatch = menuList.some(function(m) { return m.id === item.id; });
+            if (!hasMatch && item.id) {
+              var customOpt = document.createElement('option');
+              customOpt.value = item.id;
+              customOpt.textContent = item.name + ' (' + item.price + ' ฿)';
+              customOpt.selected = true;
+              menuSelect.appendChild(customOpt);
+            }
+
+            menuSelect.addEventListener('change', function() {
+              var chosenId = this.value;
+              var chosenMenu = menuList.find(function(m) { return m.id === chosenId; });
+              if (chosenMenu) {
+                manualOrderWorkingItems[idx].id = chosenMenu.id;
+                manualOrderWorkingItems[idx].name = chosenMenu.name;
+                manualOrderWorkingItems[idx].price = chosenMenu.price;
+              }
+              calculateManualTotals();
+            });
+
+            topRow.appendChild(menuSelect);
+
+            // Qty Stepper
+            var qtyContainer = document.createElement('div');
+            qtyContainer.className = 'flex items-center space-x-1.5 shrink-0';
+
+            var btnMinus = document.createElement('button');
+            btnMinus.type = 'button';
+            btnMinus.className = 'w-6 h-6 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs cursor-pointer';
+            btnMinus.textContent = '-';
+            btnMinus.addEventListener('click', function() {
+              if (manualOrderWorkingItems[idx].qty > 1) {
+                manualOrderWorkingItems[idx].qty--;
+                renderManualOrderItems();
+              }
+            });
+
+            var qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = '1';
+            qtyInput.value = item.qty;
+            qtyInput.className = 'w-10 text-center bg-white border border-slate-300 rounded-lg py-0.5 text-xs font-black text-brand-700';
+            qtyInput.addEventListener('change', function() {
+              var v = parseInt(this.value, 10);
+              manualOrderWorkingItems[idx].qty = isNaN(v) || v < 1 ? 1 : v;
+              calculateManualTotals();
+            });
+
+            var btnPlus = document.createElement('button');
+            btnPlus.type = 'button';
+            btnPlus.className = 'w-6 h-6 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-xs cursor-pointer';
+            btnPlus.textContent = '+';
+            btnPlus.addEventListener('click', function() {
+              manualOrderWorkingItems[idx].qty++;
+              renderManualOrderItems();
+            });
+
+            var btnDel = document.createElement('button');
+            btnDel.type = 'button';
+            btnDel.className = 'w-6 h-6 rounded-lg text-red-500 hover:bg-red-50 flex items-center justify-center text-xs cursor-pointer ml-1';
+            btnDel.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+            btnDel.title = 'ลบเมนูนี้';
+            btnDel.addEventListener('click', function() {
+              manualOrderWorkingItems.splice(idx, 1);
+              renderManualOrderItems();
+            });
+
+            qtyContainer.appendChild(btnMinus);
+            qtyContainer.appendChild(qtyInput);
+            qtyContainer.appendChild(btnPlus);
+            qtyContainer.appendChild(btnDel);
+
+            topRow.appendChild(qtyContainer);
+            row.appendChild(topRow);
+
+            // Note input
+            var noteInput = document.createElement('input');
+            noteInput.type = 'text';
+            noteInput.value = item.note || '';
+            noteInput.placeholder = 'หมายเหตุพิเศษ (เช่น ไม่ผัก, มายองเนสเยอะ)';
+            noteInput.className = 'w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] text-slate-600 placeholder-slate-400';
+            noteInput.addEventListener('input', function() {
+              manualOrderWorkingItems[idx].note = this.value;
+            });
+            row.appendChild(noteInput);
+
+            manualOrderItemsListEl.appendChild(row);
+          });
+        }
+
+        calculateManualTotals();
+      }
+
+      function calculateManualTotals() {
+        var totalQty = manualOrderWorkingItems.reduce(function(s, it) {
+          return s + (parseInt(it.qty || 0, 10));
+        }, 0);
+
+        var totalPrice = manualOrderWorkingItems.reduce(function(s, it) {
+          return s + (Number(it.price || 0) * parseInt(it.qty || 1, 10));
+        }, 0);
+
+        if (manualModalTotalQtyEl) manualModalTotalQtyEl.textContent = totalQty;
+        if (manualModalTotalPriceEl) manualModalTotalPriceEl.textContent = totalPrice;
+        return { totalQty: totalQty, totalPrice: totalPrice };
+      }
+
+      if (btnAddManualOrderItemEl) {
+        btnAddManualOrderItemEl.addEventListener('click', function() {
+          var menuList = st.menuItems || [];
+          var defaultMenu = menuList.length > 0 ? menuList[0] : { id: 'M01', name: 'แซนวิช', price: 35 };
+          manualOrderWorkingItems.push({
+            id: defaultMenu.id,
+            name: defaultMenu.name,
+            price: defaultMenu.price || 35,
+            qty: 1,
+            note: ''
+          });
+          renderManualOrderItems();
+        });
+      }
+
+      if (btnSaveManualOrderEl) {
+        btnSaveManualOrderEl.addEventListener('click', async function() {
+          if (manualOrderWorkingItems.length === 0) {
+            alert('กรุณาเลือกรายการแซนวิชอย่างน้อย 1 รายการ');
+            return;
+          }
+
+          var totals = calculateManualTotals();
+          if (totals.totalQty <= 0) {
+            alert('จำนวนกล่องรวมต้องมากกว่า 0 กล่อง');
+            return;
+          }
+
+          var nickname = (manualCustNicknameEl ? manualCustNicknameEl.value : '').trim();
+          if (!nickname) {
+            alert('กรุณาระบุชื่อเล่นผู้รับ');
+            if (manualCustNicknameEl) manualCustNicknameEl.focus();
+            return;
+          }
+
+          var location = (manualDeliveryLocationEl ? manualDeliveryLocationEl.value : '').trim();
+          if (!location) {
+            alert('กรุณาระบุสถานที่จัดส่งหรือจุดวาง');
+            if (manualDeliveryLocationEl) manualDeliveryLocationEl.focus();
+            return;
+          }
+
+          var phone = (manualCustPhoneEl ? manualCustPhoneEl.value : '').trim();
+          var note = (manualDeliveryNoteEl ? manualDeliveryNoteEl.value : '').trim();
+          var payMethod = manualPaymentMethodEl ? manualPaymentMethodEl.value : 'Transfer';
+          var status = manualOrderStatusEl ? manualOrderStatusEl.value : 'Paid';
+
+          var selectedUid = (manualCustSelectEl ? manualCustSelectEl.value : '').trim();
+          var selectedName = nickname;
+          if (selectedUid && manualCustSelectEl) {
+            var opt = manualCustSelectEl.options[manualCustSelectEl.selectedIndex];
+            if (opt && opt.dataset.custName) selectedName = opt.dataset.custName;
+          }
+
+          var confirmMsg = 'ยืนยันบันทึกออเดอร์ใหม่ใช่หรือไม่?\n' +
+            '• ผู้รับ: ' + nickname + '\n' +
+            '• จุดส่ง: ' + location + '\n' +
+            '• จำนวน: ' + totals.totalQty + ' กล่อง (' + totals.totalPrice + ' ฿)\n' +
+            '• สถานะ: ' + status;
+
+          if (!confirm(confirmMsg)) return;
+
+          btnSaveManualOrderEl.disabled = true;
+          if (btnSaveManualOrderTextEl) btnSaveManualOrderTextEl.textContent = 'กำลังบันทึกข้อมูล...';
+
+          try {
+            var payload = {
+              items: manualOrderWorkingItems,
+              totalQty: totals.totalQty,
+              totalPrice: totals.totalPrice,
+              customerNickname: nickname,
+              customerName: selectedName,
+              lineUid: selectedUid,
+              phoneNumber: phone,
+              deliveryLocation: location,
+              deliveryNote: note,
+              paymentMethod: payMethod,
+              status: status
+            };
+
+            var res = await adminApi('adminCreateOrder', payload);
+            if (res && res.success) {
+              alert(res.message || 'บันทึกออเดอร์ใหม่สำเร็จเรียบร้อยแล้ว!');
+              closeManualOrderModal();
+              loadAllAdminData();
+            } else {
+              alert('ไม่สามารถบันทึกออเดอร์ได้: ' + (res ? res.message : 'ไม่ทราบสาเหตุ'));
+            }
+          } catch (err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            btnSaveManualOrderEl.disabled = false;
+            if (btnSaveManualOrderTextEl) btnSaveManualOrderTextEl.textContent = 'บันทึกออเดอร์ลงระบบ';
+          }
+        });
+      }
+
+      // -------------------------------------------------------------
       // 🥗 DYNAMIC BOM INGREDIENTS LOGIC
       // -------------------------------------------------------------
       var bomContainer = document.getElementById('bomIngredientsContainer');
@@ -5215,6 +5800,177 @@
         });
       }
 
+      // -------------------------------------------------------------
+      // ⏱️ QUICK TOGGLE STORE MODAL LOGIC (เปิด-ปิดร้าน & กำหนดวันเปิด)
+      // -------------------------------------------------------------
+      var btnQuickToggleStoreEl = document.getElementById('btnQuickToggleStore');
+      var quickToggleStoreModalEl = document.getElementById('quickToggleStoreModal');
+      var btnCloseQuickToggleEl = document.getElementById('btn-close-quick-toggle');
+      var btnCancelQuickToggleEl = document.getElementById('btnCancelQuickToggle');
+      var btnConfirmQuickToggleEl = document.getElementById('btnConfirmQuickToggle');
+      var btnConfirmQuickToggleTextEl = document.getElementById('btnConfirmQuickToggleText');
+
+      var quickToggleBannerIconEl = document.getElementById('quickToggleBannerIcon');
+      var quickToggleBannerHeadingEl = document.getElementById('quickToggleBannerHeading');
+      var quickToggleBannerSubEl = document.getElementById('quickToggleBannerSub');
+      var quickToggleStatusBannerEl = document.getElementById('quickToggleStatusBanner');
+      var quickToggleCloseOptionsEl = document.getElementById('quickToggleCloseOptions');
+      var quickToggleReopenDateEl = document.getElementById('quickToggleReopenDate');
+      var quickToggleCustomNoticeEl = document.getElementById('quickToggleCustomNotice');
+      var btnClearReopenDateEl = document.getElementById('btnClearReopenDate');
+
+      var _pendingTargetStatus = 'CLOSED';
+
+      function closeQuickToggleModal() {
+        if (quickToggleStoreModalEl) quickToggleStoreModalEl.classList.add('hidden');
+      }
+
+      if (btnCloseQuickToggleEl) btnCloseQuickToggleEl.addEventListener('click', closeQuickToggleModal);
+      if (btnCancelQuickToggleEl) btnCancelQuickToggleEl.addEventListener('click', closeQuickToggleModal);
+
+      function openQuickToggleModal() {
+        var currentStatus = String((st.config && st.config.storeStatus) || 'OPEN').toUpperCase();
+        _pendingTargetStatus = (currentStatus === 'OPEN') ? 'CLOSED' : 'OPEN';
+
+        if (_pendingTargetStatus === 'CLOSED') {
+          // Prepare for CLOSING store
+          if (quickToggleBannerIconEl) quickToggleBannerIconEl.textContent = '🔴';
+          if (quickToggleBannerHeadingEl) quickToggleBannerHeadingEl.textContent = 'ยืนยันปิดรับออเดอร์หน้าร้านชั่วคราว';
+          if (quickToggleBannerSubEl) quickToggleBannerSubEl.textContent = 'ลูกค้าจะไม่สามารถส่งออเดอร์ใหม่ผ่านหน้าเว็บได้จนกว่าแม่ค้าจะเปิดอีกครั้ง';
+          if (quickToggleStatusBannerEl) {
+            quickToggleStatusBannerEl.className = 'p-3.5 rounded-2xl border border-red-200 bg-red-50 text-center space-y-1';
+          }
+          if (quickToggleCloseOptionsEl) quickToggleCloseOptionsEl.classList.remove('hidden');
+
+          // Pre-fill existing reopen date and notice
+          if (quickToggleReopenDateEl) quickToggleReopenDateEl.value = (st.config && st.config.reopenDate) || '';
+          if (quickToggleCustomNoticeEl) quickToggleCustomNoticeEl.value = (st.config && st.config.closedReasonNotice) || '';
+
+          // Reset preset radios
+          var presets = document.querySelectorAll('input[name="quickNoticePreset"]');
+          var matchedPreset = false;
+          var curNotice = (st.config && st.config.closedReasonNotice) || '';
+          presets.forEach(function(r) {
+            if (r.value === curNotice) {
+              r.checked = true;
+              matchedPreset = true;
+            }
+          });
+          if (!matchedPreset && presets.length > 0) {
+            presets[0].checked = true;
+          }
+
+          if (btnConfirmQuickToggleEl) {
+            btnConfirmQuickToggleEl.className = 'w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-extrabold py-3 px-4 rounded-xl shadow-md text-sm flex items-center justify-center space-x-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50';
+          }
+          if (btnConfirmQuickToggleTextEl) btnConfirmQuickToggleTextEl.textContent = 'ยืนยันปิดรับออเดอร์';
+        } else {
+          // Prepare for OPENING store
+          if (quickToggleBannerIconEl) quickToggleBannerIconEl.textContent = '🟢';
+          if (quickToggleBannerHeadingEl) quickToggleBannerHeadingEl.textContent = 'ยืนยันเปิดรับออเดอร์หน้าร้าน';
+          if (quickToggleBannerSubEl) quickToggleBannerSubEl.textContent = 'ลูกค้าจะสามารถเลือกเมนูและสั่งแซนวิชผ่านหน้าเว็บได้ตามปกติ';
+          if (quickToggleStatusBannerEl) {
+            quickToggleStatusBannerEl.className = 'p-3.5 rounded-2xl border border-emerald-200 bg-emerald-50 text-center space-y-1';
+          }
+          if (quickToggleCloseOptionsEl) quickToggleCloseOptionsEl.classList.add('hidden');
+
+          if (btnConfirmQuickToggleEl) {
+            btnConfirmQuickToggleEl.className = 'w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-extrabold py-3 px-4 rounded-xl shadow-md text-sm flex items-center justify-center space-x-2 cursor-pointer transition active:scale-[0.99] disabled:opacity-50';
+          }
+          if (btnConfirmQuickToggleTextEl) btnConfirmQuickToggleTextEl.textContent = 'ยืนยันเปิดรับออเดอร์ทันที';
+        }
+
+        if (quickToggleStoreModalEl) quickToggleStoreModalEl.classList.remove('hidden');
+      }
+
+      if (btnQuickToggleStoreEl) {
+        btnQuickToggleStoreEl.addEventListener('click', openQuickToggleModal);
+      }
+
+      // Quick Date chips helper
+      document.querySelectorAll('.quick-date-chip').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var days = parseInt(this.getAttribute('data-days'), 10) || 1;
+          var target = new Date();
+          target.setDate(target.getDate() + days);
+          var yyyy = target.getFullYear();
+          var mm = String(target.getMonth() + 1).padStart(2, '0');
+          var dd = String(target.getDate()).padStart(2, '0');
+          if (quickToggleReopenDateEl) quickToggleReopenDateEl.value = yyyy + '-' + mm + '-' + dd;
+        });
+      });
+
+      if (btnClearReopenDateEl) {
+        btnClearReopenDateEl.addEventListener('click', function() {
+          if (quickToggleReopenDateEl) quickToggleReopenDateEl.value = '';
+        });
+      }
+
+      // Preset radio change -> set to custom notice input
+      document.querySelectorAll('input[name="quickNoticePreset"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          if (this.checked && quickToggleCustomNoticeEl) {
+            quickToggleCustomNoticeEl.value = this.value;
+          }
+        });
+      });
+
+      // Confirm Quick Toggle Submit
+      if (btnConfirmQuickToggleEl) {
+        btnConfirmQuickToggleEl.addEventListener('click', async function() {
+          var reopenDate = '';
+          var closedNotice = '';
+
+          if (_pendingTargetStatus === 'CLOSED') {
+            reopenDate = (quickToggleReopenDateEl ? quickToggleReopenDateEl.value : '').trim();
+            closedNotice = (quickToggleCustomNoticeEl ? quickToggleCustomNoticeEl.value : '').trim();
+          }
+
+          btnConfirmQuickToggleEl.disabled = true;
+          if (btnConfirmQuickToggleTextEl) btnConfirmQuickToggleTextEl.textContent = 'กำลังบันทึกสถานะ...';
+
+          try {
+            var payload = {
+              Store_Status: _pendingTargetStatus,
+              Reopen_Date: reopenDate,
+              Closed_Reason_Notice: closedNotice
+            };
+
+            var res = await adminApi('updateConfig', { payload: payload });
+            if (res && res.success) {
+              if (st.config) {
+                st.config.storeStatus = _pendingTargetStatus;
+                st.config.Store_Status = _pendingTargetStatus;
+                st.config.reopenDate = reopenDate;
+                st.config.Reopen_Date = reopenDate;
+                st.config.closedReasonNotice = closedNotice;
+                st.config.Closed_Reason_Notice = closedNotice;
+              }
+              updateHeaderQuickToggle(st.config);
+              var selStatus = document.getElementById('cfg_Store_Status');
+              if (selStatus) selStatus.value = _pendingTargetStatus;
+              var dateInp = document.getElementById('cfg_Reopen_Date');
+              if (dateInp) dateInp.value = reopenDate;
+              var noteInp = document.getElementById('cfg_Closed_Reason_Notice');
+              if (noteInp) noteInp.value = closedNotice;
+
+              closeQuickToggleModal();
+              alert(_pendingTargetStatus === 'OPEN' ? '🟢 เปิดรับออเดอร์หน้าร้านเรียบร้อยแล้ว!' : '🔴 ปิดรับออเดอร์หน้าร้านชั่วคราวเรียบร้อยแล้ว!');
+              loadAllAdminData();
+            } else {
+              alert('ไม่สามารถเปลี่ยนสถานะร้านค้าได้: ' + (res ? res.message : 'ไม่ทราบสาเหตุ'));
+            }
+          } catch(err) {
+            alert('เกิดข้อผิดพลาด: ' + err);
+          } finally {
+            btnConfirmQuickToggleEl.disabled = false;
+            if (btnConfirmQuickToggleTextEl) {
+              btnConfirmQuickToggleTextEl.textContent = (_pendingTargetStatus === 'CLOSED') ? 'ยืนยันปิดรับออเดอร์' : 'ยืนยันเปิดรับออเดอร์ทันที';
+            }
+          }
+        });
+      }
+
       // Store Settings Toggles Listener
       var chkCutoffEl = document.getElementById('cfg_Enable_Cutoff_Time');
       if (chkCutoffEl) {
@@ -5274,6 +6030,8 @@
 
           var payload = {
             Store_Status: document.getElementById('cfg_Store_Status').value,
+            Reopen_Date: (document.getElementById('cfg_Reopen_Date')?.value || '').trim(),
+            Closed_Reason_Notice: (document.getElementById('cfg_Closed_Reason_Notice')?.value || '').trim(),
             Store_Icon: document.getElementById('cfg_Store_Icon').value.trim(),
             Store_Title: document.getElementById('cfg_Store_Title').value.trim(),
             Store_Subtitle: document.getElementById('cfg_Store_Subtitle').value.trim(),
