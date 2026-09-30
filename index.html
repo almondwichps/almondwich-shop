@@ -230,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.0.0</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.6.0</span>
       </p>
     </footer>
 
@@ -406,40 +406,83 @@
             </div>
           </div>
         </div>
+
+        <!-- Payment Method Options inside Cart -->
+        <div id="paymentMethodSection" class="bg-gray-50 rounded-2xl p-3.5 border border-gray-200 space-y-2">
+          <label class="block text-xs font-bold text-gray-800 flex items-center justify-between">
+            <span>วิธีชำระเงิน <span class="text-red-500">*</span></span>
+            <span class="text-[10px] text-gray-500 font-normal">เลือกวิธีที่สะดวก</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <label id="paymentLabelTransfer" class="payment-option-label relative border-2 border-brand-500 bg-brand-50/50 rounded-2xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition">
+              <input type="radio" name="paymentMethod" value="Transfer" checked class="sr-only">
+              <i class="fa-solid fa-qrcode text-brand-600 text-lg mb-1"></i>
+              <span class="text-xs font-bold text-gray-800">โอนเงิน (PromptPay)</span>
+              <span class="text-[10px] text-gray-500">โอนสแกน QR</span>
+            </label>
+
+            <label id="paymentLabelCOD" class="payment-option-label relative border-2 border-gray-200 bg-white rounded-2xl p-2.5 flex flex-col items-center justify-center cursor-pointer transition">
+              <input type="radio" name="paymentMethod" value="COD" class="sr-only">
+              <i class="fa-solid fa-hand-holding-dollar text-gray-400 text-lg mb-1"></i>
+              <span class="text-xs font-bold text-gray-800">เก็บปลายทาง (COD)</span>
+              <span class="text-[10px] text-gray-500">ชำระตอนรับของ</span>
+            </label>
+          </div>
+
+          <!-- 0-Baht Free Order Notice (Visible when final price is 0) -->
+          <div id="freeOrderNotice" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-2 text-center space-y-0.5">
+            <div class="text-emerald-800 font-extrabold text-xs flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-gift text-emerald-600 text-sm"></i>
+              <span>ออเดอร์นี้ใช้สิทธิ์แลกฟรี ยอดสุทธิ 0 บาท</span>
+            </div>
+            <p class="text-[10px] text-emerald-700">ไม่ต้องชำระเงิน กดยืนยันสั่งซื้อได้ทันที!</p>
+          </div>
+        </div>
       </div>
 
       <!-- Drawer Footer Button -->
       <div class="pt-3 border-t border-gray-100 space-y-2">
         <div class="flex justify-between items-baseline text-xs px-1">
-          <span class="text-gray-500 font-medium">ยอดรวมแซนวิช:</span>
+          <span class="text-gray-500 font-medium">ยอดรวมสุทธิ:</span>
           <span id="cartDrawerTotalPrice" class="text-lg font-black text-brand-600">0 ฿</span>
         </div>
         <button id="btnProceedToPayment" type="button" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer text-sm">
-          <span>ดำเนินการชำระเงิน</span>
-          <i class="fa-solid fa-arrow-right"></i>
+          <i class="fa-solid fa-paper-plane"></i>
+          <span id="btnProceedToPaymentText">ยืนยันสั่งซื้อแซนวิช</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- STEP 3: PAYMENT & CONFIRMATION MODAL -->
+  <!-- STEP 3: ORDER-FIRST PAYMENT & SLIP UPLOAD MODAL -->
   <div id="paymentModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center overscroll-contain">
     <div class="bg-white rounded-t-3xl max-w-md w-full p-5 max-h-[90vh] flex flex-col shadow-2xl animate-slide-up overscroll-contain">
       <!-- Payment Header -->
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
         <button id="btnBackToCart" type="button" class="text-xs font-bold text-gray-500 hover:text-gray-800 flex items-center space-x-1 cursor-pointer">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>กลับไปที่ตะกร้า</span>
+          <i class="fa-solid fa-xmark"></i>
+          <span>ปิด / ส่งสลิปทีหลัง</span>
         </button>
         <h3 class="font-bold text-sm text-gray-900 flex items-center space-x-1.5">
-          <i class="fa-solid fa-credit-card text-brand-500"></i>
-          <span>ชำระเงิน</span>
+          <i class="fa-solid fa-qrcode text-brand-500"></i>
+          <span>สแกนโอนเงินชำระค่าแซนวิช</span>
         </h3>
         <span class="w-12"></span>
       </div>
 
       <!-- Scrollable Payment Content -->
       <div class="overflow-y-auto flex-1 py-3 space-y-3.5">
+        <!-- Order Confirmed Success Alert Banner -->
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 text-xs flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 text-base">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div>
+            <p class="font-extrabold text-emerald-900">บันทึกออเดอร์เรียบร้อยแล้ว!</p>
+            <p class="text-[11px] text-emerald-700">รหัสออเดอร์: <span id="paymentModalOrderId" class="font-mono font-bold text-brand-700">ORD-XXXX</span></p>
+          </div>
+        </div>
+
         <!-- Order Summary Card -->
         <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-200 text-xs space-y-2">
           <h4 class="font-bold text-gray-800 flex items-center justify-between">
@@ -458,35 +501,6 @@
               <span id="paymentSummaryTotalPrice" class="text-lg font-black text-brand-600">0 ฿</span>
             </div>
           </div>
-        </div>
-
-        <!-- Payment Method Options -->
-        <div id="paymentMethodSection" class="space-y-2">
-          <label class="block text-xs font-bold text-gray-800">เลือกวิธีชำระเงิน:</label>
-          <div class="grid grid-cols-2 gap-2">
-            <label id="paymentLabelTransfer" class="payment-option-label relative border-2 border-brand-500 bg-brand-50/50 rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition">
-              <input type="radio" name="paymentMethod" value="Transfer" checked class="sr-only">
-              <i class="fa-solid fa-qrcode text-brand-600 text-xl mb-1"></i>
-              <span class="text-xs font-bold text-gray-800">โอนเงิน (PromptPay)</span>
-              <span class="text-[10px] text-gray-500">แนบสลิปยืนยัน</span>
-            </label>
-
-            <label id="paymentLabelCOD" class="payment-option-label relative border-2 border-gray-200 bg-white rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition">
-              <input type="radio" name="paymentMethod" value="COD" class="sr-only">
-              <i class="fa-solid fa-hand-holding-dollar text-gray-400 text-xl mb-1"></i>
-              <span class="text-xs font-bold text-gray-800">เก็บปลายทาง (COD)</span>
-              <span class="text-[10px] text-gray-500">ชำระตอนรับของ</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- 0-Baht Free Order Notice (Visible when final price is 0) -->
-        <div id="freeOrderNotice" class="hidden bg-emerald-50 border border-emerald-300 rounded-2xl p-3.5 text-center space-y-1">
-          <div class="text-emerald-800 font-extrabold text-xs flex items-center justify-center space-x-1.5">
-            <i class="fa-solid fa-gift text-emerald-600 text-sm"></i>
-            <span>ออเดอร์นี้ใช้สิทธิ์แลกฟรี ยอดสุทธิ 0 บาท</span>
-          </div>
-          <p class="text-[11px] text-emerald-700">ไม่ต้องชำระเงินและไม่ต้องแนบสลิป สามารถกดยืนยันออเดอร์ได้ทันที!</p>
         </div>
 
         <!-- Transfer Slip Section -->
@@ -526,7 +540,10 @@
           </div>
 
           <div class="space-y-1.5">
-            <label class="block text-xs font-semibold text-gray-700">แนบสลิปการโอนเงิน <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-gray-700 flex items-center justify-between">
+              <span>แนบสลิปการโอนเงิน</span>
+              <span class="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded font-bold">โอนแล้วแนบที่นี่</span>
+            </label>
             <label class="block cursor-pointer bg-white border border-dashed border-gray-300 rounded-2xl p-3 text-center hover:bg-gray-50 transition">
               <input type="file" id="slipFileInput" accept="image/*" class="sr-only">
               <div id="slipUploadPlaceholder" class="flex items-center justify-center space-x-2 text-xs text-gray-500">
@@ -543,10 +560,13 @@
       </div>
 
       <!-- Payment Footer Button -->
-      <div class="pt-3 border-t border-gray-100">
+      <div class="pt-3 border-t border-gray-100 space-y-2">
         <button id="btnSubmitOrder" type="button" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer text-sm">
-          <i class="fa-solid fa-paper-plane"></i>
-          <span>ยืนยันการสั่งซื้อพรีออเดอร์</span>
+          <i class="fa-solid fa-upload"></i>
+          <span id="btnSubmitOrderText">ส่งสลิปยืนยันการโอน</span>
+        </button>
+        <button id="btnSkipSlipToSuccess" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 px-4 rounded-xl text-xs transition cursor-pointer">
+          ส่งสลิปภายหลัง (ข้ามไปหน้าสรุป)
         </button>
       </div>
     </div>
@@ -682,6 +702,63 @@
     </div>
   </div>
 
+  <!-- RETRO SLIP UPLOAD MODAL (From Order History) -->
+  <div id="retroSlipModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-2.5">
+        <h3 class="font-bold text-xs text-gray-900 flex items-center space-x-1.5">
+          <i class="fa-solid fa-cloud-arrow-up text-brand-500"></i>
+          <span>แนบสลิปชำระเงินย้อนหลัง</span>
+        </h3>
+        <button id="btnCloseRetroSlipModal" type="button" class="text-gray-400 hover:text-gray-600 cursor-pointer">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="bg-amber-50 rounded-2xl p-3 border border-amber-200 text-xs space-y-1">
+        <p class="font-bold text-amber-950">รหัสออเดอร์: <span id="retroSlipOrderId" class="font-mono text-brand-700">ORD-XXXX</span></p>
+        <p class="text-[11px] text-amber-800">ยอดที่ต้องชำระ: <span id="retroSlipTotalPrice" class="font-black text-brand-700">0</span> บาท</p>
+      </div>
+
+      <!-- Quick Action Buttons for PromptPay QR -->
+      <div class="bg-stone-50 rounded-2xl p-3 border border-stone-200 text-center space-y-2">
+        <div class="flex items-center justify-center space-x-2">
+          <button type="button" id="btnRetroZoomQr" class="text-[11px] bg-white border border-stone-300 hover:bg-stone-100 text-stone-700 px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer transition">
+            <i class="fa-solid fa-qrcode text-brand-500"></i>
+            <span>ดู QR โอนเงิน</span>
+          </button>
+          <button type="button" id="btnRetroCopyPP" class="text-[11px] bg-brand-50 border border-brand-200 hover:bg-brand-100 text-brand-700 px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1.5 shadow-sm cursor-pointer transition">
+            <i class="fa-solid fa-copy text-brand-500"></i>
+            <span id="btnRetroCopyPPText">คัดลอกเลขพร้อมเพย์</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Slip File Upload -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-semibold text-gray-700">เลือกรูปสลิปการโอนเงิน <span class="text-red-500">*</span></label>
+        <label class="block cursor-pointer bg-white border border-dashed border-gray-300 rounded-2xl p-3 text-center hover:bg-gray-50 transition">
+          <input type="file" id="retroSlipFileInput" accept="image/*" class="sr-only">
+          <div id="retroSlipUploadPlaceholder" class="flex items-center justify-center space-x-2 text-xs text-gray-500">
+            <i class="fa-solid fa-cloud-arrow-up text-brand-500 text-base"></i>
+            <span>แตะเพื่อเลือกรูปสลิป</span>
+          </div>
+          <div id="retroSlipUploadPreview" class="hidden flex items-center justify-center space-x-2 text-xs text-green-700 font-medium">
+            <i class="fa-solid fa-circle-check text-green-600 text-base"></i>
+            <span id="retroSlipFileNameText">เลือกสลิปเรียบร้อยแล้ว</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="pt-2">
+        <button id="btnSubmitRetroSlip" type="button" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-2xl text-xs shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>ส่งสลิปยืนยัน</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- FULLSCREEN LOADING SPINNER -->
   <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
     <div class="bg-white rounded-2xl p-5 flex items-center space-x-3 shadow-xl">
@@ -754,6 +831,7 @@
     function gasCall(fn, args, onSuccess, onFail) {
       let payload = {};
       if (fn === 'submitOrder' && args && args[0]) payload = { payload: args[0] };
+      else if (fn === 'uploadOrderSlip' && args && args[0]) payload = { payload: args[0] };
       else if (fn === 'getCustomerOrders' && args) payload = { lineUid: args[0] };
       else if (fn === 'cancelOrder' && args) payload = { orderId: args[0], lineUid: args[1] };
       else if (fn === 'getCustomerPoints' && args) payload = { lineUid: args[0], customerName: args[1] };
@@ -1582,10 +1660,10 @@
         paymentMethod: totalPrice <= 0 && state.isRedeemingPoints ? 'Points_Free' : state.paymentMethod,
         isRedeemingPoints: state.isRedeemingPoints,
         freeMenuId: state.freeMenuId,
-        slipBase64: (totalPrice > 0 && state.paymentMethod === 'Transfer') ? state.slipBase64 : ''
+        slipBase64: '' // Order-First: created without blocking for slip
       };
 
-      showLoading(true, "กำลังส่งออเดอร์...");
+      showLoading(true, "กำลังบันทึกออเดอร์...");
 
       gasCall('submitOrder', [payload], function(res) {
         showLoading(false);
@@ -1593,15 +1671,192 @@
           const submittedItems = [...items];
           const submittedPrice = totalPrice;
           const submittedMethod = payload.paymentMethod;
+          state.currentSubmittedOrder = {
+            orderId: res.orderId,
+            items: submittedItems,
+            totalPrice: submittedPrice,
+            paymentMethod: submittedMethod,
+            customerNickname: nickname,
+            deliveryLocation: location,
+            phoneNumber: phone,
+            deliveryNote: note
+          };
+
           clearCart();
-          closePaymentModal();
-          onOrderSubmitted(res, submittedItems, submittedPrice, submittedMethod);
+          closeCartDrawer();
+
+          // If COD or Free Order (0 Baht): Proceed directly to Success Modal
+          if (submittedMethod === 'COD' || submittedMethod === 'Points_Free' || submittedPrice <= 0) {
+            onOrderSubmitted(res, submittedItems, submittedPrice, submittedMethod);
+          } else {
+            // Transfer: Open Order-First Payment Modal for scanning and slip upload
+            openOrderPaymentModal(res.orderId, submittedItems, submittedPrice);
+          }
         } else {
           alert("ไม่สามารถบันทึกออเดอร์ได้: " + (res ? res.message : "ไม่ทราบสาเหตุ"));
         }
       }, function(err) {
         showLoading(false);
         alert("ไม่สามารถบันทึกออเดอร์ได้: " + err);
+      });
+    }
+
+    function openOrderPaymentModal(orderId, items, totalPrice) {
+      const modal = document.getElementById('paymentModal');
+      const orderIdEl = document.getElementById('paymentModalOrderId');
+      if (orderIdEl) orderIdEl.textContent = orderId;
+
+      state.activePendingOrderId = orderId;
+      state.slipBase64 = '';
+
+      const placeholder = document.getElementById('slipUploadPlaceholder');
+      const preview = document.getElementById('slipUploadPreview');
+      const fileInput = document.getElementById('slipFileInput');
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (preview) preview.classList.add('hidden');
+      if (fileInput) fileInput.value = '';
+
+      if (modal) modal.classList.remove('hidden');
+      setBodyScrollLock(true);
+    }
+
+    function uploadOrderSlipHandler() {
+      const orderId = state.activePendingOrderId;
+      if (!orderId) {
+        alert("ไม่พบรหัสออเดอร์ที่ต้องการแนบสลิป");
+        return;
+      }
+      if (!state.slipBase64) {
+        alert("กรุณาเลือกรูปสลิปการโอนเงินก่อนกดส่งสลิปนะคะ");
+        return;
+      }
+
+      showLoading(true, "กำลังอัปโหลดสลิป...");
+
+      const payload = {
+        orderId: orderId,
+        lineUid: state.lineUid,
+        slipBase64: state.slipBase64
+      };
+
+      gasCall('uploadOrderSlip', [payload], function(res) {
+        showLoading(false);
+        if (res && res.success) {
+          closePaymentModal();
+          const ord = state.currentSubmittedOrder || { orderId: orderId, totalPrice: 0, paymentMethod: 'Transfer' };
+          onOrderSubmitted({ success: true, orderId: orderId }, ord.items, ord.totalPrice, ord.paymentMethod);
+          showToast("แนบสลิปโอนเงินสำเร็จแล้ว ขอบคุณค่ะ!");
+        } else {
+          alert("ไม่สามารถอัปโหลดสลิปได้: " + (res ? res.message : "เกิดข้อผิดพลาด"));
+        }
+      }, function(err) {
+        showLoading(false);
+        alert("เกิดข้อผิดพลาดในการอัปโหลดสลิป: " + err);
+      });
+    }
+
+    // Retro Slip Upload from History Tab
+    function openRetroSlipModal(orderId, totalPrice) {
+      state.retroOrderId = orderId;
+      state.retroSlipBase64 = '';
+
+      const idEl = document.getElementById('retroSlipOrderId');
+      const priceEl = document.getElementById('retroSlipTotalPrice');
+      if (idEl) idEl.textContent = orderId;
+      if (priceEl) priceEl.textContent = totalPrice || '0';
+
+      const placeholder = document.getElementById('retroSlipUploadPlaceholder');
+      const preview = document.getElementById('retroSlipUploadPreview');
+      const fileInput = document.getElementById('retroSlipFileInput');
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (preview) preview.classList.add('hidden');
+      if (fileInput) fileInput.value = '';
+
+      const modal = document.getElementById('retroSlipModal');
+      if (modal) modal.classList.remove('hidden');
+      setBodyScrollLock(true);
+    }
+
+    function closeRetroSlipModal() {
+      const modal = document.getElementById('retroSlipModal');
+      if (modal) modal.classList.add('hidden');
+      checkAndReleaseBodyScroll();
+    }
+
+    function handleRetroSlipFileSelect(event) {
+      const file = event && event.target && event.target.files ? event.target.files[0] : null;
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          state.retroSlipBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+          const placeholder = document.getElementById('retroSlipUploadPlaceholder');
+          const preview = document.getElementById('retroSlipUploadPreview');
+          const fileNameEl = document.getElementById('retroSlipFileNameText');
+          if (placeholder) placeholder.classList.add('hidden');
+          if (preview) preview.classList.remove('hidden');
+          if (fileNameEl) fileNameEl.textContent = file.name;
+        };
+        img.onerror = () => {
+          state.retroSlipBase64 = e.target.result;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitRetroSlipHandler() {
+      const orderId = state.retroOrderId;
+      if (!orderId) {
+        alert("ไม่พบรหัสออเดอร์");
+        return;
+      }
+      if (!state.retroSlipBase64) {
+        alert("กรุณาเลือกรูปสลิปการโอนเงินก่อนค่ะ");
+        return;
+      }
+
+      showLoading(true, "กำลังอัปโหลดสลิป...");
+
+      const payload = {
+        orderId: orderId,
+        lineUid: state.lineUid,
+        slipBase64: state.retroSlipBase64
+      };
+
+      gasCall('uploadOrderSlip', [payload], function(res) {
+        showLoading(false);
+        if (res && res.success) {
+          closeRetroSlipModal();
+          showToast("แนบสลิปเรียบร้อยแล้วค่ะ ขอบคุณมากค่ะ!");
+          loadCustomerHistory(); // Reload history to update badge/slip preview
+        } else {
+          alert("ไม่สามารถแนบสลิปได้: " + (res ? res.message : "เกิดข้อผิดพลาด"));
+        }
+      }, function(err) {
+        showLoading(false);
+        alert("เกิดข้อผิดพลาด: " + err);
       });
     }
 
@@ -1777,9 +2032,16 @@
 
       container.innerHTML = orders.map(ord => {
         let statusBadge = '';
+        const isTransfer = (ord.paymentMethod === 'Transfer');
+        const hasSlip = !!(ord.slipUrl && String(ord.slipUrl).trim());
+
         switch (ord.status) {
           case 'Pending':
-            statusBadge = '<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">⏳ รอตรวจสลิป / Pending</span>';
+            if (isTransfer && !hasSlip) {
+              statusBadge = '<span class="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">⏳ รอแนบสลิป</span>';
+            } else {
+              statusBadge = '<span class="bg-blue-100 text-blue-900 border border-blue-200 px-2 py-0.5 rounded-full text-[10px] font-bold">⏳ รอตรวจสลิป / Pending</span>';
+            }
             break;
           case 'Paid':
             statusBadge = '<span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold">🍳 ร้านรับออเดอร์แล้ว (กำลังทำแซนวิช)</span>';
@@ -1801,6 +2063,7 @@
         }
 
         const canCancel = (ord.status !== 'Delivered' && ord.status !== 'Cancelled');
+        const canUploadSlip = (isTransfer && !hasSlip && ord.status !== 'Cancelled');
         const itemsHtml = Array.isArray(ord.items) 
           ? ord.items.map(i => `<div class="flex justify-between text-gray-600"><span>• ${i.name || i.id || 'Item'}</span><span>x ${i.qty || 1}</span></div>`).join('')
           : `<div class="text-gray-600">• ${ord.items || '-'}</div>`;
@@ -1818,6 +2081,14 @@
             <div class="text-xs space-y-1">
               ${itemsHtml}
               ${ord.redeemedPoints > 0 ? '<div class="text-[11px] text-amber-600 font-semibold">🎁 ใช้สิทธิ์แลกฟรี 10 แต้ม</div>' : ''}
+              ${canUploadSlip ? `
+                <div class="pt-2">
+                  <button type="button" class="btn-open-retro-slip w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-[0.99] text-white font-extrabold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md transition cursor-pointer" data-order-id="${ord.orderId}" data-total-price="${ord.totalPrice}">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>📤 แนบสลิปโอนเงิน (คลิกที่นี่)</span>
+                  </button>
+                </div>
+              ` : ''}
               ${ord.deliveryProofUrl ? `
                 <div class="pt-1.5">
                   <button type="button" class="btn-customer-view-proof w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition cursor-pointer shadow-sm" data-proof="${ord.deliveryProofUrl}">
@@ -2156,48 +2427,10 @@
         });
       }
 
-      // Step Navigation: Proceed to Payment
+      // Step Navigation & Order Creation: Proceed from Cart (Submit Order First!)
       const btnProceed = document.getElementById('btnProceedToPayment');
       if (btnProceed) {
-        btnProceed.addEventListener('click', function() {
-          const redeemPolicy = String((state.config && (state.config.redemptionPolicy || state.config.Redemption_Policy)) || 'MIN_1').trim().toUpperCase();
-          const isStandaloneAllowed = (redeemPolicy === 'FREE_0');
-
-          if (state.cartItems.length === 0 && (!state.isRedeemingPoints || !isStandaloneAllowed)) {
-            alert("กรุณาเลือกแซนวิชอย่างน้อย 1 กล่อง");
-            return;
-          }
-
-          const nicknameInput = document.getElementById('custNicknameInput');
-          const locationInput = document.getElementById('deliveryLocationInput');
-          const phoneInput = document.getElementById('custPhoneInput');
-
-          const nickname = (nicknameInput ? nicknameInput.value : '').trim();
-          const location = (locationInput ? locationInput.value : '').trim();
-          const phone = (phoneInput ? phoneInput.value : '').trim();
-
-          if (!nickname) {
-            alert("กรุณาระบุชื่อเล่นผู้รับของ");
-            if (nicknameInput) nicknameInput.focus();
-            return;
-          }
-
-          if (!location) {
-            alert("กรุณาระบุสถานที่จัดส่ง / ตึก / ชั้น / แผนก");
-            if (locationInput) locationInput.focus();
-            return;
-          }
-
-          // Remember locally
-          try {
-            localStorage.setItem('almondwich_nickname', nickname);
-            localStorage.setItem('almondwich_location', location);
-            if (phone) localStorage.setItem('almondwich_phone', phone);
-          } catch (e) {}
-
-          closeCartDrawer();
-          openPaymentModal();
-        });
+        btnProceed.addEventListener('click', submitOrderHandler);
       }
 
       // Step Navigation: Back to Cart from Payment
@@ -2205,24 +2438,27 @@
       if (btnBackCart) {
         btnBackCart.addEventListener('click', function() {
           closePaymentModal();
-          openCartDrawer();
+          switchTab('order');
         });
       }
 
-      // Event Delegation for Cancel order in history
-      const historyContainer = document.getElementById('historyListContainer');
-      if (historyContainer) {
-        historyContainer.addEventListener('click', function(e) {
-          const btn = e.target.closest('.btn-cancel-order');
-          if (!btn) return;
-          const orderId = btn.getAttribute('data-cancel-order-id');
-          if (orderId) {
-            cancelOrderHandler(orderId);
-          }
+      // Skip Slip Upload directly to Success Screen
+      const btnSkipSlip = document.getElementById('btnSkipSlipToSuccess');
+      if (btnSkipSlip) {
+        btnSkipSlip.addEventListener('click', function() {
+          closePaymentModal();
+          const ord = state.currentSubmittedOrder || { orderId: state.activePendingOrderId, totalPrice: 0, paymentMethod: 'Transfer' };
+          onOrderSubmitted({ success: true, orderId: state.activePendingOrderId }, ord.items, ord.totalPrice, ord.paymentMethod);
         });
       }
 
-      // Payment Method Options
+      // Upload Order Slip Button
+      const btnSubmit = document.getElementById('btnSubmitOrder');
+      if (btnSubmit) {
+        btnSubmit.addEventListener('click', uploadOrderSlipHandler);
+      }
+
+      // Payment Method Options in Cart Drawer
       const labelTransfer = document.getElementById('paymentLabelTransfer');
       if (labelTransfer) {
         labelTransfer.addEventListener('click', function() {
@@ -2243,36 +2479,44 @@
         slipInput.addEventListener('change', handleSlipFileSelect);
       }
 
-      // Loyalty Redeem Checkbox
-      const chkRedeem = document.getElementById('chkRedeemPoints');
-      if (chkRedeem) {
-        chkRedeem.addEventListener('change', function(e) {
-          state.isRedeemingPoints = e.target.checked;
-          const freeSelect = document.getElementById('freeMenuSelectContainer');
-          if (freeSelect) {
-            if (e.target.checked) {
-              freeSelect.classList.remove('hidden');
-            } else {
-              freeSelect.classList.add('hidden');
-            }
+      // Retro Slip Modal Listeners
+      const btnCloseRetro = document.getElementById('btnCloseRetroSlipModal');
+      if (btnCloseRetro) {
+        btnCloseRetro.addEventListener('click', closeRetroSlipModal);
+      }
+
+      const retroSlipInput = document.getElementById('retroSlipFileInput');
+      if (retroSlipInput) {
+        retroSlipInput.addEventListener('change', handleRetroSlipFileSelect);
+      }
+
+      const btnSubmitRetro = document.getElementById('btnSubmitRetroSlip');
+      if (btnSubmitRetro) {
+        btnSubmitRetro.addEventListener('click', submitRetroSlipHandler);
+      }
+
+      const btnRetroZoom = document.getElementById('btnRetroZoomQr');
+      if (btnRetroZoom) {
+        btnRetroZoom.addEventListener('click', function() {
+          openQrZoom();
+        });
+      }
+
+      const btnRetroCopy = document.getElementById('btnRetroCopyPP');
+      if (btnRetroCopy) {
+        btnRetroCopy.addEventListener('click', function() {
+          const ppEl = document.getElementById('promptPayNumber');
+          const cleanNum = (ppEl ? ppEl.textContent : '').replace(/[^0-9]/g, '');
+          if (!cleanNum) {
+            alert("ไม่พบเบอร์พร้อมเพย์");
+            return;
           }
-          updateCartUI();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(cleanNum).then(() => {
+              showToast(`คัดลอกเลขพร้อมเพย์ ${cleanNum} แล้ว สลับไปแอปธนาคารได้เลย`);
+            });
+          }
         });
-      }
-
-      // Free Menu Selector
-      const freeMenuEl = document.getElementById('freeMenuSelect');
-      if (freeMenuEl) {
-        freeMenuEl.addEventListener('change', function(e) {
-          state.freeMenuId = e.target.value;
-          updateCartUI();
-        });
-      }
-
-      // Submit Order Button
-      const btnSubmit = document.getElementById('btnSubmitOrder');
-      if (btnSubmit) {
-        btnSubmit.addEventListener('click', submitOrderHandler);
       }
 
       // Refresh History Button
@@ -2344,13 +2588,21 @@
       if (btnCloseProof1) btnCloseProof1.addEventListener('click', closeProofModal);
       if (btnCloseProof2) btnCloseProof2.addEventListener('click', closeProofModal);
 
-      // Event Delegation for Proof View, Cancel Order, and Re-order in History List
+      // Event Delegation for Proof View, Retro Slip, Cancel Order, and Re-order in History List
       if (historyContainer) {
         historyContainer.addEventListener('click', function(e) {
           const proofBtn = e.target.closest('.btn-customer-view-proof');
           if (proofBtn) {
             const proofUrl = proofBtn.getAttribute('data-proof');
             if (proofUrl) openProofModal(proofUrl);
+            return;
+          }
+
+          const retroBtn = e.target.closest('.btn-open-retro-slip');
+          if (retroBtn) {
+            const orderId = retroBtn.getAttribute('data-order-id');
+            const totalPrice = retroBtn.getAttribute('data-total-price');
+            if (orderId) openRetroSlipModal(orderId, totalPrice);
             return;
           }
 
