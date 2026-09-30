@@ -85,7 +85,7 @@
         </button>
       </form>
       <div class="text-[11px] text-stone-400 font-medium">
-        🔒 AlmondWich Security System v5.8.2
+        🔒 AlmondWich Security System v5.8.3
       </div>
     </div>
   </div>
@@ -103,7 +103,7 @@
           <div>
             <div class="flex items-center space-x-2">
               <h1 class="font-black text-base tracking-tight leading-tight text-amber-50">ALMONDWICH MERCHANT</h1>
-              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.8.2</span>
+              <span class="text-[10px] bg-brand-600 text-white font-mono px-2 py-0.5 rounded-md font-bold shadow-sm">v5.8.3</span>
             </div>
             <p class="text-[11px] text-stone-400">ระบบจัดการหลังบ้านและคำนวณวัตถุดิบ (BOM)</p>
           </div>
@@ -4674,6 +4674,22 @@
       var currentEditingOrder = null;
       var editOrderWorkingItems = []; // [{ id, name, price, qty, note }]
 
+      // Safe Menu Properties Normalizer (Compatible with Google Sheets Menu_BOM & internal models)
+      function getMenuItemId(m) {
+        if (!m) return '';
+        return String(m.id || m.Menu_ID || m.menuId || m.menu_id || '').trim();
+      }
+      function getMenuItemName(m) {
+        if (!m) return 'แซนวิช';
+        return String(m.name || m.Menu_Name || m.menuName || m.menu_name || 'แซนวิช').trim();
+      }
+      function getMenuItemPrice(m) {
+        if (!m) return 35;
+        var p = (m.price !== undefined) ? m.price : ((m.Price !== undefined) ? m.Price : 35);
+        var num = Number(p);
+        return isNaN(num) ? 35 : num;
+      }
+
       var editOrderModalEl = document.getElementById('editOrderModal');
       var editModalOrderIdEl = document.getElementById('editModalOrderId');
       var editModalCustNameEl = document.getElementById('editModalCustName');
@@ -4761,30 +4777,33 @@
 
             // Populate options from available menu list
             menuList.forEach(function(m) {
+              var mId = getMenuItemId(m);
+              var mName = getMenuItemName(m);
+              var mPrice = getMenuItemPrice(m);
               var opt = document.createElement('option');
-              opt.value = m.id;
-              opt.textContent = m.name + ' (' + m.price + ' ฿)';
-              if (m.id === item.id) opt.selected = true;
+              opt.value = mId;
+              opt.textContent = mName + ' (' + mPrice + ' ฿)';
+              if (mId === item.id) opt.selected = true;
               menuSelect.appendChild(opt);
             });
 
             // If item not found in current menu list, add custom option
-            var hasMatch = menuList.some(function(m) { return m.id === item.id; });
+            var hasMatch = menuList.some(function(m) { return getMenuItemId(m) === item.id; });
             if (!hasMatch && item.id) {
               var customOpt = document.createElement('option');
               customOpt.value = item.id;
-              customOpt.textContent = item.name + ' (' + item.price + ' ฿)';
+              customOpt.textContent = (item.name || 'แซนวิช') + ' (' + (item.price || 35) + ' ฿)';
               customOpt.selected = true;
               menuSelect.appendChild(customOpt);
             }
 
             menuSelect.addEventListener('change', function() {
               var chosenId = this.value;
-              var chosenMenu = menuList.find(function(m) { return m.id === chosenId; });
+              var chosenMenu = menuList.find(function(m) { return getMenuItemId(m) === chosenId; });
               if (chosenMenu) {
-                editOrderWorkingItems[idx].id = chosenMenu.id;
-                editOrderWorkingItems[idx].name = chosenMenu.name;
-                editOrderWorkingItems[idx].price = chosenMenu.price;
+                editOrderWorkingItems[idx].id = getMenuItemId(chosenMenu);
+                editOrderWorkingItems[idx].name = getMenuItemName(chosenMenu);
+                editOrderWorkingItems[idx].price = getMenuItemPrice(chosenMenu);
               }
               calculateEditTotals();
             });
@@ -4884,11 +4903,14 @@
       if (btnAddEditOrderItemEl) {
         btnAddEditOrderItemEl.addEventListener('click', function() {
           var menuList = st.menuItems || [];
-          var defaultMenu = menuList.length > 0 ? menuList[0] : { id: 'M01', name: 'แซนวิช', price: 35 };
+          var defaultMenu = menuList.length > 0 ? menuList[0] : null;
+          var mId = defaultMenu ? getMenuItemId(defaultMenu) : 'M01';
+          var mName = defaultMenu ? getMenuItemName(defaultMenu) : 'แซนวิช';
+          var mPrice = defaultMenu ? getMenuItemPrice(defaultMenu) : 35;
           editOrderWorkingItems.push({
-            id: defaultMenu.id,
-            name: defaultMenu.name,
-            price: defaultMenu.price || 35,
+            id: mId,
+            name: mName,
+            price: mPrice,
             qty: 1,
             note: ''
           });
@@ -5024,11 +5046,14 @@
 
         // Add default first item from menu
         var menuList = st.menuItems || [];
-        var defaultMenu = menuList.length > 0 ? menuList[0] : { id: 'M01', name: 'แซนวิช', price: 35 };
+        var defaultMenu = menuList.length > 0 ? menuList[0] : null;
+        var mId = defaultMenu ? getMenuItemId(defaultMenu) : 'M01';
+        var mName = defaultMenu ? getMenuItemName(defaultMenu) : 'แซนวิช';
+        var mPrice = defaultMenu ? getMenuItemPrice(defaultMenu) : 35;
         manualOrderWorkingItems.push({
-          id: defaultMenu.id,
-          name: defaultMenu.name,
-          price: defaultMenu.price || 35,
+          id: mId,
+          name: mName,
+          price: mPrice,
           qty: 1,
           note: ''
         });
@@ -5082,29 +5107,32 @@
             menuSelect.className = 'flex-1 bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-bold text-slate-800';
 
             menuList.forEach(function(m) {
+              var mId = getMenuItemId(m);
+              var mName = getMenuItemName(m);
+              var mPrice = getMenuItemPrice(m);
               var opt = document.createElement('option');
-              opt.value = m.id;
-              opt.textContent = m.name + ' (' + m.price + ' ฿)';
-              if (m.id === item.id) opt.selected = true;
+              opt.value = mId;
+              opt.textContent = mName + ' (' + mPrice + ' ฿)';
+              if (mId === item.id) opt.selected = true;
               menuSelect.appendChild(opt);
             });
 
-            var hasMatch = menuList.some(function(m) { return m.id === item.id; });
+            var hasMatch = menuList.some(function(m) { return getMenuItemId(m) === item.id; });
             if (!hasMatch && item.id) {
               var customOpt = document.createElement('option');
               customOpt.value = item.id;
-              customOpt.textContent = item.name + ' (' + item.price + ' ฿)';
+              customOpt.textContent = (item.name || 'แซนวิช') + ' (' + (item.price || 35) + ' ฿)';
               customOpt.selected = true;
               menuSelect.appendChild(customOpt);
             }
 
             menuSelect.addEventListener('change', function() {
               var chosenId = this.value;
-              var chosenMenu = menuList.find(function(m) { return m.id === chosenId; });
+              var chosenMenu = menuList.find(function(m) { return getMenuItemId(m) === chosenId; });
               if (chosenMenu) {
-                manualOrderWorkingItems[idx].id = chosenMenu.id;
-                manualOrderWorkingItems[idx].name = chosenMenu.name;
-                manualOrderWorkingItems[idx].price = chosenMenu.price;
+                manualOrderWorkingItems[idx].id = getMenuItemId(chosenMenu);
+                manualOrderWorkingItems[idx].name = getMenuItemName(chosenMenu);
+                manualOrderWorkingItems[idx].price = getMenuItemPrice(chosenMenu);
               }
               calculateManualTotals();
             });
@@ -5199,11 +5227,14 @@
       if (btnAddManualOrderItemEl) {
         btnAddManualOrderItemEl.addEventListener('click', function() {
           var menuList = st.menuItems || [];
-          var defaultMenu = menuList.length > 0 ? menuList[0] : { id: 'M01', name: 'แซนวิช', price: 35 };
+          var defaultMenu = menuList.length > 0 ? menuList[0] : null;
+          var mId = defaultMenu ? getMenuItemId(defaultMenu) : 'M01';
+          var mName = defaultMenu ? getMenuItemName(defaultMenu) : 'แซนวิช';
+          var mPrice = defaultMenu ? getMenuItemPrice(defaultMenu) : 35;
           manualOrderWorkingItems.push({
-            id: defaultMenu.id,
-            name: defaultMenu.name,
-            price: defaultMenu.price || 35,
+            id: mId,
+            name: mName,
+            price: mPrice,
             qty: 1,
             note: ''
           });
