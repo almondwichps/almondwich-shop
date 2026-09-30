@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Last Updated: 2026-09-30 (v5.8.1) -->
+<!-- Last Updated: 2026-09-30 (v5.8.2) -->
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -230,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.1</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.2</span>
       </p>
     </footer>
 
@@ -779,7 +779,7 @@
     // --- API HELPER (Fetch without custom headers to prevent GAS CORS Preflight OPTIONS) ---
     async function apiCall(action, payload) {
       try {
-        const bodyObj = Object.assign({ action: action }, payload || {});
+        const bodyObj = Object.assign({ action: action, _ts: Date.now() }, payload || {});
         const res = await fetch(GAS_API_URL, {
           method: "POST",
           body: JSON.stringify(bodyObj)
@@ -2277,12 +2277,11 @@
     }
 
     function loadStoreData() {
-      // Background revalidation: fetch fresh store config
+      // Background revalidation: fetch fresh store config (Realtime sync with Admin)
       gasCall('getStoreConfig', [], function(res) {
         if (!res || !res.success) return;
         state.config = res;
         try {
-          // Cache non-volatile store branding & setup info
           localStorage.setItem('almond_cached_config', JSON.stringify(res));
         } catch(e) {}
         updateStoreStatusUI(res);
@@ -2309,15 +2308,15 @@
 
       liffLog('initLiff กำลังทำงาน...');
 
-      // รอ LIFF SDK โหลด (เช็คถี่ขึ้นทุก 50ms สูงสุด 20 รอบ = 1 วินาที)
+      // รอ LIFF SDK โหลดอย่างปลอดภัย (เช็คทุก 100ms สูงสุด 60 รอบ = 6 วินาที)
       let waitCount = 0;
-      while (typeof liff === 'undefined' && waitCount < 20) {
-        await new Promise(r => setTimeout(r, 50));
+      while (typeof liff === 'undefined' && waitCount < 60) {
+        await new Promise(r => setTimeout(r, 100));
         waitCount++;
       }
 
       if (typeof liff === 'undefined') {
-        liffLog('❌ LIFF SDK ไม่พร้อมใช้งาน (' + (waitCount * 50) + 'ms)', true);
+        liffLog('❌ LIFF SDK ไม่พร้อมใช้งาน (' + (waitCount * 100) + 'ms)', true);
         if (!state.displayName || state.displayName === 'กำลังโหลด...') {
           state.displayName = 'คุณลูกค้า';
         }
@@ -2326,13 +2325,13 @@
       }
 
       try {
-        // Timeout 6 วินาที
+        // Timeout 8 วินาทีสำหรับการ init
         const liffInitPromise = liff.init({
           liffId: LIFF_ID,
           withLoginOnExternalBrowser: true
         });
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('liff.init timeout 6s')), 6000)
+          setTimeout(() => reject(new Error('liff.init timeout 8s')), 8000)
         );
 
         await Promise.race([liffInitPromise, timeoutPromise]);
@@ -2344,12 +2343,21 @@
           liff.login();
           return;
         } else {
-          const profile = await liff.getProfile();
+          // ดึงโปรไฟล์พร้อมกลไก Retry เผื่อเครือข่ายกระตุก
+          let profile = null;
+          try {
+            profile = await liff.getProfile();
+          } catch (pErr) {
+            console.warn('[LIFF] getProfile retry 1st fail:', pErr);
+            await new Promise(r => setTimeout(r, 400));
+            profile = await liff.getProfile();
+          }
+
           if (profile && profile.userId) {
             state.lineUid = profile.userId;
             state.displayName = profile.displayName || 'คุณลูกค้า';
             state.pictureUrl = profile.pictureUrl || '';
-            liffLog('✅ Login profile: ' + profile.displayName + ' (' + profile.userId + ')');
+            liffLog('✅ Login profile สำเร็จ: ' + profile.displayName + ' (' + profile.userId + ')');
 
             // Save verified profile to local cache for instant 0ms hydration on next visit
             try {
