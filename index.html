@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Last Updated: 2026-09-30 (v5.7.0) -->
+<!-- Last Updated: 2026-09-30 (v5.8.1) -->
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -9,8 +9,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- LINE LIFF SDK -->
-  <script async charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <!-- LINE LIFF SDK (Synchronous load for instant profile readiness) -->
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <script>
     tailwind.config = {
@@ -230,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.0</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.1</span>
       </p>
     </footer>
 
@@ -2302,36 +2302,37 @@
     async function initLiff() {
       const LIFF_ID = "2011369262-LFQQa3SO";
 
-      // Helper: clean logging without screen popup
       function liffLog(msg, isError) {
         if (isError) console.error('[LIFF]', msg);
         else console.log('[LIFF]', msg);
       }
 
-      liffLog('initLiff เริ่มทำงาน...');
+      liffLog('initLiff กำลังทำงาน...');
 
-      // รอ LIFF SDK โหลด
+      // รอ LIFF SDK โหลด (เช็คถี่ขึ้นทุก 50ms สูงสุด 20 รอบ = 1 วินาที)
       let waitCount = 0;
-      while (typeof liff === 'undefined' && waitCount < 25) {
-        await new Promise(r => setTimeout(r, 150));
+      while (typeof liff === 'undefined' && waitCount < 20) {
+        await new Promise(r => setTimeout(r, 50));
         waitCount++;
       }
 
       if (typeof liff === 'undefined') {
-        liffLog('❌ LIFF SDK ไม่โหลด (' + (waitCount * 150) + 'ms)', true);
-        state.displayName = 'คุณลูกค้า';
+        liffLog('❌ LIFF SDK ไม่พร้อมใช้งาน (' + (waitCount * 50) + 'ms)', true);
+        if (!state.displayName || state.displayName === 'กำลังโหลด...') {
+          state.displayName = 'คุณลูกค้า';
+        }
         updateProfileUI();
         return;
       }
 
       try {
-        // Timeout 8 วินาที
+        // Timeout 6 วินาที
         const liffInitPromise = liff.init({
           liffId: LIFF_ID,
           withLoginOnExternalBrowser: true
         });
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('liff.init timeout 8s')), 8000)
+          setTimeout(() => reject(new Error('liff.init timeout 6s')), 6000)
         );
 
         await Promise.race([liffInitPromise, timeoutPromise]);
@@ -2344,21 +2345,32 @@
           return;
         } else {
           const profile = await liff.getProfile();
-          if (profile) {
-            state.lineUid = profile.userId || state.lineUid;
+          if (profile && profile.userId) {
+            state.lineUid = profile.userId;
             state.displayName = profile.displayName || 'คุณลูกค้า';
             state.pictureUrl = profile.pictureUrl || '';
-            liffLog('✅ Login profile: ' + profile.displayName);
+            liffLog('✅ Login profile: ' + profile.displayName + ' (' + profile.userId + ')');
+
+            // Save verified profile to local cache for instant 0ms hydration on next visit
+            try {
+              localStorage.setItem('almond_user_profile', JSON.stringify({
+                lineUid: profile.userId,
+                displayName: profile.displayName || '',
+                pictureUrl: profile.pictureUrl || ''
+              }));
+            } catch(e) {}
           }
         }
       } catch (err) {
         const errMsg = err && err.message ? err.message : String(err);
         liffLog('❌ ' + errMsg, true);
-        state.displayName = state.displayName || 'คุณลูกค้า';
+        if (!state.displayName || state.displayName === 'กำลังโหลด...') {
+          state.displayName = 'คุณลูกค้า';
+        }
       } finally {
         updateProfileUI();
         if (state.lineUid && state.lineUid !== 'MOCK_USER_001') {
-          // Instant display from local cache if present
+          // Instant display points from local cache if present
           try {
             const cachedPts = localStorage.getItem('almond_points_' + state.lineUid);
             if (cachedPts) {
@@ -2393,8 +2405,28 @@
     }
 
     function initCustomerApp() {
-      // 1. Cache-First: Hydrate menus and config from localStorage immediately for 0ms render
+      // 1. Cache-First: Hydrate menus, config, and user profile from localStorage immediately for 0ms render
       try {
+        const cachedProfileStr = localStorage.getItem('almond_user_profile');
+        if (cachedProfileStr) {
+          const parsedProfile = JSON.parse(cachedProfileStr);
+          if (parsedProfile && parsedProfile.lineUid && parsedProfile.lineUid.startsWith('U')) {
+            state.lineUid = parsedProfile.lineUid;
+            state.displayName = parsedProfile.displayName || 'คุณลูกค้า';
+            state.pictureUrl = parsedProfile.pictureUrl || '';
+            updateProfileUI();
+
+            const cachedPts = localStorage.getItem('almond_points_' + state.lineUid);
+            if (cachedPts) {
+              onPointsLoaded(JSON.parse(cachedPts));
+            }
+          }
+        } else {
+          // New visitor: set friendly greeting immediately instead of lingering 'กำลังโหลด...'
+          state.displayName = 'คุณลูกค้า';
+          updateProfileUI();
+        }
+
         const cachedMenusStr = localStorage.getItem('almond_cached_menus');
         if (cachedMenusStr) {
           const parsedMenus = JSON.parse(cachedMenusStr);
@@ -2747,11 +2779,11 @@
         }
       } catch (e) {}
 
-      // Background Live updates
-      loadStoreData();
-
-      // Init LIFF
+      // Priority 1: Initialize LIFF and identify customer identity immediately
       initLiff();
+
+      // Priority 2: Background Live updates for store config and menus
+      loadStoreData();
     }
 
     // Error handler
