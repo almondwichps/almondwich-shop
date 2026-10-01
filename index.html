@@ -230,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.3</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.4</span>
       </p>
     </footer>
 
@@ -1647,11 +1647,6 @@
 
       const totalPrice = Math.max(0, rawPrice); // Purchased items price, free item is 0 Baht
 
-      if (totalPrice > 0 && state.paymentMethod === 'Transfer' && !state.slipBase64) {
-        alert("กรุณาแนบรูปสลิปการโอนเงินเพื่อยืนยันออเดอร์");
-        return;
-      }
-
       const nicknameInput = document.getElementById('custNicknameInput');
       const locationInput = document.getElementById('deliveryLocationInput');
       const phoneInput = document.getElementById('custPhoneInput');
@@ -1758,6 +1753,11 @@
       const modal = document.getElementById('paymentModal');
       const orderIdEl = document.getElementById('paymentModalOrderId');
       if (orderIdEl) orderIdEl.textContent = orderId;
+
+      const payPriceEl = document.getElementById('paymentSummaryTotalPrice');
+      if (payPriceEl && totalPrice !== undefined) {
+        payPriceEl.textContent = `${totalPrice} ฿`;
+      }
 
       state.activePendingOrderId = orderId;
       state.slipBase64 = '';
