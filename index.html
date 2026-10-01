@@ -2479,7 +2479,7 @@
       }
 
       // Menu Detail Modal Controls
-      const btnCloseDetail = document.getElementById('btnCloseMenuDetail') || document.getElementById('btnCloseDetailModal');
+      const btnCloseDetail = document.getElementById('btnCloseDetailModal');
       if (btnCloseDetail) btnCloseDetail.addEventListener('click', closeMenuDetail);
 
       const btnDetailMinus = document.getElementById('btnDetailMinus');
@@ -2611,10 +2611,27 @@
             alert("ไม่พบเบอร์พร้อมเพย์");
             return;
           }
+          const copySuccess = () => {
+            showToast(`คัดลอกเลขพร้อมเพย์ ${cleanNum} แล้ว สลับไปแอปธนาคารได้เลย`);
+          };
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(cleanNum).then(() => {
-              showToast(`คัดลอกเลขพร้อมเพย์ ${cleanNum} แล้ว สลับไปแอปธนาคารได้เลย`);
+            navigator.clipboard.writeText(cleanNum).then(copySuccess).catch(() => {
+              const tempInput = document.createElement('input');
+              tempInput.value = cleanNum;
+              document.body.appendChild(tempInput);
+              tempInput.select();
+              document.execCommand('copy');
+              document.body.removeChild(tempInput);
+              copySuccess();
             });
+          } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = cleanNum;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            copySuccess();
           }
         });
       }
