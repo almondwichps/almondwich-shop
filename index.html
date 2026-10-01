@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Last Updated: 2026-09-30 (v5.8.2) -->
+<!-- Last Updated: 2026-10-01 (v5.9.0) -->
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -230,7 +230,7 @@
         <span id="footerStoreTitle">AlmondWich Fresh Sandwiches</span>
       </p>
       <p class="text-[10px] text-stone-400 font-mono tracking-wider">
-        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.8.4</span>
+        System Version <span class="bg-stone-200/80 text-stone-600 px-1.5 py-0.5 rounded font-bold">v5.9.0</span>
       </p>
     </footer>
 
@@ -565,9 +565,15 @@
           <i class="fa-solid fa-upload"></i>
           <span id="btnSubmitOrderText">ส่งสลิปยืนยันการโอน</span>
         </button>
-        <button id="btnSkipSlipToSuccess" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 px-4 rounded-xl text-xs transition cursor-pointer">
-          ส่งสลิปภายหลัง (ข้ามไปหน้าสรุป)
-        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btnSendSlipViaLine" type="button" class="w-full bg-[#06c755] hover:bg-[#05b34c] text-white font-bold py-2.5 px-2 rounded-xl text-xs transition cursor-pointer flex items-center justify-center space-x-1 shadow-xs">
+            <i class="fa-brands fa-line text-sm"></i>
+            <span>ส่งสลิปทาง LINE</span>
+          </button>
+          <button id="btnSkipSlipToSuccess" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 px-2 rounded-xl text-xs transition cursor-pointer flex items-center justify-center">
+            <span>ส่งสลิปภายหลัง</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -750,10 +756,14 @@
         </label>
       </div>
 
-      <div class="pt-2">
+      <div class="pt-2 space-y-2">
         <button id="btnSubmitRetroSlip" type="button" class="w-full bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-2xl text-xs shadow-md transition flex items-center justify-center space-x-2 cursor-pointer">
           <i class="fa-solid fa-paper-plane"></i>
           <span>ส่งสลิปยืนยัน</span>
+        </button>
+        <button id="btnSendRetroSlipViaLine" type="button" class="w-full bg-[#06c755] hover:bg-[#05b34c] active:bg-[#049b42] text-white font-bold py-2.5 px-4 rounded-xl text-xs transition flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs">
+          <i class="fa-brands fa-line text-base"></i>
+          <span>ส่งสลิปทางแชต LINE แม่ค้า</span>
         </button>
       </div>
     </div>
@@ -833,6 +843,7 @@
       if (fn === 'submitOrder' && args && args[0]) payload = { payload: args[0] };
       else if (fn === 'uploadOrderSlip' && args && args[0]) payload = { payload: args[0] };
       else if (fn === 'getCustomerOrders' && args) payload = { lineUid: args[0] };
+      else if (fn === 'customerSwitchToTransfer' && args) payload = { orderId: args[0], lineUid: args[1] };
       else if (fn === 'cancelOrder' && args) payload = { orderId: args[0], lineUid: args[1] };
       else if (fn === 'getCustomerPoints' && args) payload = { lineUid: args[0], customerName: args[1] };
       
@@ -1913,6 +1924,48 @@
       });
     }
 
+    // Customer: Switch COD order to Transfer payment and open slip modal
+    function switchToTransferHandler(orderId, totalPrice) {
+      if (!orderId) return;
+      if (!confirm(`คุณต้องการเปลี่ยนวิธีชำระเงินของออเดอร์ ${orderId} เป็น "โอนเงินผ่านพร้อมเพย์" ใช่หรือไม่?`)) return;
+
+      showLoading(true, "กำลังเปลี่ยนวิธีชำระเงิน...");
+
+      gasCall('customerSwitchToTransfer', [orderId, state.lineUid], function(res) {
+        showLoading(false);
+        if (res && res.success) {
+          showToast("เปลี่ยนเป็นโอนเงินเรียบร้อยแล้วค่ะ กรุณาแนบสลิป");
+          loadCustomerHistory();
+          openRetroSlipModal(orderId, totalPrice || res.totalPrice);
+        } else {
+          alert("ไม่สามารถเปลี่ยนวิธีชำระได้: " + (res ? res.message : "เกิดข้อผิดพลาด"));
+        }
+      }, function(err) {
+        showLoading(false);
+        alert("เกิดข้อผิดพลาด: " + err);
+      });
+    }
+
+    // Helper: Send Slip & Order details via LINE OA Chat
+    function sendSlipViaLine(orderId, totalPrice) {
+      const oid = orderId || state.activePendingOrderId || (state.currentSubmittedOrder ? state.currentSubmittedOrder.orderId : '');
+      const price = totalPrice !== undefined ? totalPrice : (state.totalPrice || 0);
+      const custNick = (document.getElementById('custNicknameInput') ? document.getElementById('custNicknameInput').value.trim() : '') || state.displayName || 'ลูกค้า';
+
+      const botId = (state.config && (state.config.lineBotBasicId || state.config.Line_Bot_Basic_ID)) ? String(state.config.lineBotBasicId || state.config.Line_Bot_Basic_ID).trim() : DEFAULT_LINE_BOT_BASIC_ID;
+      const cleanBotId = '@' + (botId || DEFAULT_LINE_BOT_BASIC_ID).replace(/^@/, '');
+
+      const msg = `ส่งสลิปโอนเงินค่าแซนวิชค่ะ 🧾\nรหัสออเดอร์: ${oid || '-'}\nผู้สั่ง: ${custNick}\nยอดโอน: ${price} บาท\n(แนบรูปสลิปในแชตนี้ได้เลยค่ะ)`;
+
+      // Auto copy order message to clipboard for ease
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).catch(() => {});
+      }
+
+      const lineUrl = `https://line.me/R/oaMessage/${encodeURIComponent(cleanBotId)}/?${encodeURIComponent(msg)}`;
+      window.open(lineUrl, '_blank');
+    }
+
     function onOrderSubmitted(res, submittedItems, submittedPrice, submittedMethod) {
       if (res && res.success) {
         const modalOrderId = document.getElementById('modalOrderId');
@@ -2117,6 +2170,7 @@
 
         const canCancel = (ord.status !== 'Delivered' && ord.status !== 'Cancelled');
         const canUploadSlip = (isTransfer && !hasSlip && ord.status !== 'Cancelled');
+        const canSwitchToTransfer = (ord.paymentMethod === 'COD' && ord.status !== 'Delivered' && ord.status !== 'Cancelled');
         const itemsHtml = Array.isArray(ord.items) 
           ? ord.items.map(i => `<div class="flex justify-between text-gray-600"><span>• ${i.name || i.id || 'Item'}</span><span>x ${i.qty || 1}</span></div>`).join('')
           : `<div class="text-gray-600">• ${ord.items || '-'}</div>`;
@@ -2139,6 +2193,14 @@
                   <button type="button" class="btn-open-retro-slip w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-[0.99] text-white font-extrabold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md transition cursor-pointer" data-order-id="${ord.orderId}" data-total-price="${ord.totalPrice}">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                     <span>📤 แนบสลิปโอนเงิน (คลิกที่นี่)</span>
+                  </button>
+                </div>
+              ` : ''}
+              ${canSwitchToTransfer ? `
+                <div class="pt-2">
+                  <button type="button" class="btn-switch-to-transfer w-full bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-700 font-bold py-2 px-3 rounded-xl text-xs border border-blue-200 flex items-center justify-center space-x-1.5 transition cursor-pointer shadow-xs" data-order-id="${ord.orderId}" data-total-price="${ord.totalPrice}">
+                    <i class="fa-solid fa-money-bill-transfer text-blue-600"></i>
+                    <span>💳 เปลี่ยนใจเป็นโอนเงิน (แนบสลิป)</span>
                   </button>
                 </div>
               ` : ''}
@@ -2558,6 +2620,14 @@
         btnSubmit.addEventListener('click', uploadOrderSlipHandler);
       }
 
+      // Send Slip via LINE OA from Payment Modal
+      const btnLineSlip = document.getElementById('btnSendSlipViaLine');
+      if (btnLineSlip) {
+        btnLineSlip.addEventListener('click', function() {
+          sendSlipViaLine(state.activePendingOrderId, state.totalPrice);
+        });
+      }
+
       // Payment Method Options in Cart Drawer
       const labelTransfer = document.getElementById('paymentLabelTransfer');
       if (labelTransfer) {
@@ -2593,6 +2663,15 @@
       const btnSubmitRetro = document.getElementById('btnSubmitRetroSlip');
       if (btnSubmitRetro) {
         btnSubmitRetro.addEventListener('click', submitRetroSlipHandler);
+      }
+
+      const btnLineRetroSlip = document.getElementById('btnSendRetroSlipViaLine');
+      if (btnLineRetroSlip) {
+        btnLineRetroSlip.addEventListener('click', function() {
+          const priceEl = document.getElementById('retroSlipTotalPrice');
+          const price = priceEl ? parseFloat(priceEl.textContent) : 0;
+          sendSlipViaLine(state.retroOrderId, price);
+        });
       }
 
       const btnRetroZoom = document.getElementById('btnRetroZoomQr');
@@ -2721,6 +2800,14 @@
             const orderId = retroBtn.getAttribute('data-order-id');
             const totalPrice = retroBtn.getAttribute('data-total-price');
             if (orderId) openRetroSlipModal(orderId, totalPrice);
+            return;
+          }
+
+          const switchBtn = e.target.closest('.btn-switch-to-transfer');
+          if (switchBtn) {
+            const orderId = switchBtn.getAttribute('data-order-id');
+            const totalPrice = switchBtn.getAttribute('data-total-price');
+            if (orderId) switchToTransferHandler(orderId, totalPrice);
             return;
           }
 
